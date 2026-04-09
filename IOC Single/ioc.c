@@ -21,8 +21,8 @@ void __interrupt() ISR(void)
 {
     if (PIR0bits.IOCIF != 0)
     {
-        LATC = (uint8_t)(~PORTD);
-        IOCDF = 0x00;
+        LATD = (uint8_t)(~PORTC);
+        IOCCF = 0x00;
         PIR0bits.IOCIF = 0;
     }
 }

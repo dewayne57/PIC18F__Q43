@@ -8,7 +8,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// PIC 18F27Q43 Configuration Bit Settings
+// PIC 18F47Q43 Configuration Bit Settings
 #pragma config FEXTOSC = OFF            // Dont use the external oscillator
 #pragma config RSTOSC = HFINTOSC_64MHZ  // Use internal 64MHz high frequency osc
 #pragma config CSWEN = OFF              // No clock switching allowed

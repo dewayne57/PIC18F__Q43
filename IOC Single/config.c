@@ -80,25 +80,25 @@ void SYSTEM_Initialize(void)
 
     // Set up port C
     //
-    // This port is the LED outputs based on the switch inputs on
-    // port D.
-    TRISC = 0x00;   // All pins output
+    // This port is all digital inputs with weak pull-ups enabled and interrupt on
+    // change configured for the encoder inputs and the "enter" button.
+    TRISC = 0xFF;   // All pins input
     ANSELC = 0x00;  // All digital
-    LATC = 0xFF;    // All LEDs off (active low)
-    ODCONC = 0x00;  // No open-drain (LEDs will be driven high or low by the MCP23017)
-    WPUD = 0x00;    // No pull-ups needed on port D since they are outputs to the LEDs
-    SLRCOND = 0x00; // No slew rate control needed for LED outputs
-    INLVLD = 0x00;  // No input level control needed for outputs
+    LATC = 0x00;
+    ODCONC = 0x00;  // No open-drain
+    WPUC = 0xFF;    // Weak pull-ups enabled on all input pins
+    SLRCONC = 0x00; // No slew rate control
+    INLVLC = 0x00;  // TTL input levels
 
     // Set up port D
     //
-    // This port is all digital inputs with weak pull-ups enabled and interrupt on change configured for the encoder inputs and the "enter" button. The I2C lines are bit-banged on port C, so they are not configured as I2C module pins.
-    TRISD = 0xFF;  // All pins input
-    ANSELD = 0x00;
-    LATD = 0x00;
-    ODCOND = 0x00; // No open-drain 
-    WPUD = 0xFF;
-    INLVLD = 0x00;
+    // This port is the LED outputs driven by the switch inputs on port C.
+    TRISD = 0x00;  // All pins output
+    ANSELD = 0x00; // All digital
+    LATD = 0xFF;   // All LEDs off (active low)
+    ODCOND = 0x00; // No open-drain
+    WPUD = 0x00;   // No pull-ups needed on outputs
+    INLVLD = 0x00; // No input level control needed for outputs
     SLRCOND = 0x00;
 
     /*
@@ -107,15 +107,15 @@ void SYSTEM_Initialize(void)
     PMD0bits.SYSCMD = 0; // System clock network enabled
     PMD0bits.IOCMD = 0;  // Interrupt on change module enabled
 
-    // IOC on all PORTD pins for both edges.
-    IOCDP = 0xFF;
-    IOCDN = 0xFF;
-    IOCDF = 0x00;
+    // IOC on all PORTC pins for both edges.
+    IOCCP = 0xFF;
+    IOCCN = 0xFF;
+    IOCCF = 0x00;
     PIR0bits.IOCIF = 0;
     PIE0bits.IOCIE = 1;
 
-    // Initialize output state so PORTC mirrors inverted PORTD at startup.
-    LATC = (uint8_t)(~PORTD);
+    // Initialize output state so PORTD mirrors inverted PORTC at startup.
+    LATD = (uint8_t)(~PORTC);
 
     /*
      * Enable global interrupts
