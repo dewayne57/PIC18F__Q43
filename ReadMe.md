@@ -30,17 +30,6 @@ The development environment used for these examples:
 - Visual Studio Code 1.113
 - KiCad 9.0.7
 
-## Repository Status
-
-At the moment, this repository contains project folders but no committed source
-or schematic files inside them yet:
-
-- IOC Single/
-- IOC Vectored/
-
-This README documents the intended examples and behavior so the structure is
-clear as projects are added.
-
 ## Included Example Families
 
 ### Interrupt-On-Change (IOC)
