@@ -26,8 +26,6 @@ void SYSTEM_Initialize(void)
     INTCON0bits.GIEH = 0;   // High-priority interrupts disabled
     INTCON0bits.GIEL = 0;   // Low-priority interrupts disabled
     INTCON0bits.IPEN = 1;   // Enable interrupt priority levels
-    RCONbits.IPEN = 1;      // Enable interrupt priority levels (redundant with INTCON0bits.IPEN 
-                            // but set for safety)
 
     /*
      * Clear all interrupt enables
