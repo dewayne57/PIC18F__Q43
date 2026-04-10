@@ -5,7 +5,7 @@
 	(uuid "a268f71e-0835-4511-aa86-9e5be2256047")
 	(paper "A")
 	(title_block
-		(title "IOC Non-Vectored Interrupts")
+		(title "IOC Vectored Interrupts")
 		(date "2026-04-10")
 		(rev "1")
 		(company "Dewayne Hafenstein")

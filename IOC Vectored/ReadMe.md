@@ -1,4 +1,4 @@
-# IOC Single
+# IOC Vectored
 
 ## License
 This material is provided free of charge on an "AS-IS" basis under the terms of the
@@ -20,8 +20,8 @@ limitations under the License.
 ```
 
 ## Overview
-This project demonstrates Interrupt-On-Change (IOC) on a PIC18F27Q43 using a flat
-(non-hierarchical, single-vector) interrupt structure.
+This project demonstrates Interrupt-On-Change (IOC) on a PIC18F27Q43 using the vectored,
+priority interrupt system.
 
 ## Behavior
 
@@ -32,16 +32,18 @@ This project demonstrates Interrupt-On-Change (IOC) on a PIC18F27Q43 using a fla
 
 ## Interrupt Model
 
-- Config bit MVECEN is set to 0 for non-vectored interrupts.
-- Runtime interrupt priority mode is disabled (IPEN = 0).
-- A single ISR handles IOC events and clears IOC flags before returning.
+- Config bit MVECEN is set to 1 for vectored interrupts.
+- Runtime interrupt priority mode is enabled (IPEN = 1).
+- An IOC-specific interrupt service routine handles all IOC events on a low-priority 
+  basis.  If other interrupts are handled, they will have their own specific interrupt 
+  service routines.
 
 ## Source Files
 
-- IOC_Single/main.c: Program entry point and main loop.
-- IOC_Single/config.h: Device configuration bits and initialization prototype.
-- IOC_Single/config.c: System initialization, port setup, IOC enable, and global interrupt enable.
-- IOC_Single/ioc.c: Flat ISR implementation for IOC processing.
+- IOC_Vectored/main.c: Program entry point and main loop.
+- IOC_Vectored/config.h: Device configuration bits and initialization prototype.
+- IOC_Vectored/config.c: System initialization, port setup, IOC enable, and global interrupt enable.
+- IOC_Vectored/ioc.c: Flat ISR implementation for IOC processing.
 
 ## Notes
 
