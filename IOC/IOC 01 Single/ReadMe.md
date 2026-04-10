@@ -1,4 +1,4 @@
-# IOC Single
+# IOC 01 Single
 
 ## License
 This material is provided free of charge on an "AS-IS" basis under the terms of the
@@ -25,10 +25,10 @@ This project demonstrates Interrupt-On-Change (IOC) on a PIC18F27Q43 using a fla
 
 ## Behavior
 
-- PORTD is configured as digital inputs with weak pull-ups enabled.
-- IOC is enabled on all PORTD pins on both rising and falling edges.
-- On any IOC event, the ISR reads PORTD, inverts the value, and writes the result to PORTC.
-- PORTC therefore shows the inverted real-time state of PORTD.
+- PORTC is configured as digital inputs with weak pull-ups enabled.
+- IOC is enabled on all PORTC pins on both rising and falling edges.
+- On any IOC event, the ISR reads PORTC, inverts the value, and writes the result to PORTD.
+- PORTD therefore shows the inverted real-time state of PORTC.
 
 ## Interrupt Model
 
@@ -38,12 +38,12 @@ This project demonstrates Interrupt-On-Change (IOC) on a PIC18F27Q43 using a fla
 
 ## Source Files
 
-- IOC_Single/main.c: Program entry point and main loop.
-- IOC_Single/config.h: Device configuration bits and initialization prototype.
-- IOC_Single/config.c: System initialization, port setup, IOC enable, and global interrupt enable.
-- IOC_Single/ioc.c: Flat ISR implementation for IOC processing.
+- IOC/IOC 01 Single/main.c: Program entry point and main loop.
+- IOC/IOC 01 Single/config.h: Device configuration bits and initialization prototype.
+- IOC/IOC 01 Single/config.c: System initialization, port setup, IOC enable, and global interrupt enable.
+- IOC/IOC 01 Single/ioc.c: Flat ISR implementation for IOC processing.
 
 ## Notes
 
-- Initial output is set during initialization so PORTC immediately reflects inverted PORTD state.
+- Initial output is set during initialization so PORTD immediately reflects inverted PORTC state.
 - This is a minimal demonstration intended for straightforward IOC bring-up and testing.
