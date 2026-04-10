@@ -2,6 +2,20 @@
 
 This family demonstrates Digital Signal Modulator use for waveform shaping and modulation.
 
+## What It Is
+Digital Signal Modulator (DSM) combines and modulates digital sources to create
+specialized output waveforms.
+
+## What It Does
+- Applies modulation behavior to a base signal.
+- Supports output shaping for interference and switching control.
+- Enables hardware-level waveform conditioning.
+
+## Common Uses
+- Spread-spectrum style output patterns.
+- Drive waveform shaping in mixed-signal systems.
+- Experimental modulation for EMI optimization studies.
+
 ## Projects
 - DSM 01 Output Modulation Profile
 

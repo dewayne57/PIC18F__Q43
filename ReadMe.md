@@ -100,6 +100,7 @@ Projects:
 
 - ADCC 01 Window Comparator Hysteresis
 - ADCC 02 Oversampling Filtering
+- ADCC 03 DMA Sample Buffer
 - DAC 01 Reference Ladder
 - ADC DAC 02 Software Servo Threshold
 
@@ -107,6 +108,7 @@ Demonstrated concepts:
 
 - Hardware threshold windows and hysteresis behavior
 - Oversampling and filtering tradeoffs
+- DMA-backed sample buffering
 - DAC reference generation and ADC verification
 - Closed-loop analog setpoint control
 
@@ -244,11 +246,14 @@ This family demonstrates UART console and interrupt-driven receive paths.
 Projects:
 
 - UART 01 Interrupt Echo Console
+- UART 02 DMA TX Stream
+- UART 03 DMA RX Ring Buffer
 
 Demonstrated concepts:
 
 - Interrupt-driven RX handling
 - Console command and echo flow
+- DMA-assisted serial data movement
 
 ### Inter-Integrated Circuit (I2C)
 
@@ -257,11 +262,16 @@ This family demonstrates controller mode transactions and bus status handling.
 Projects:
 
 - I2C 01 Host Transaction Basics
+- I2C 02 Bit Bang Master
+- I2C 03 Module Slave Responder
+- I2C 04 Module Master DMA
 
 Demonstrated concepts:
 
 - Start/address/data/stop flow
 - ACK and error handling
+- Bit-bang versus module-based operation
+- DMA-assisted module master payload transfers
 
 ### Serial Peripheral Interface (SPI)
 
@@ -270,11 +280,13 @@ This family demonstrates SPI host transfers and loopback validation.
 Projects:
 
 - SPI 01 Host Loopback Transfer
+- SPI 02 DMA Burst Transfer
 
 Demonstrated concepts:
 
 - Full-duplex transfer timing
 - Data integrity checks
+- DMA-backed burst transactions
 
 ### Fixed Voltage Reference (FVR)
 

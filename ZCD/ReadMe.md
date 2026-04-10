@@ -2,6 +2,20 @@
 
 This family demonstrates zero crossing detection and timing event capture.
 
+## What It Is
+Zero Crossing Detector (ZCD) is a specialized analog detector that identifies
+when an AC waveform crosses near zero volts.
+
+## What It Does
+- Detects zero-cross events with hardware timing.
+- Generates events/interrupts aligned to AC phase transitions.
+- Enables phase-coherent control logic.
+
+## Common Uses
+- AC mains phase synchronization.
+- Triac or phase-angle control timing.
+- Line-frequency measurement and monitoring.
+
 ## Projects
 - ZCD 01 Zero Crossing Timestamp
 

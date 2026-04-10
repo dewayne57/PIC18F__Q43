@@ -2,6 +2,20 @@
 
 This family demonstrates multiple Signal Measurement Timer operating modes on PIC18F Q43.
 
+## What It Is
+Signal Measurement Timer (SMT) is a dedicated timing peripheral for precise
+measurement of period, pulse width, duty cycle, and event timing.
+
+## What It Does
+- Captures timing intervals with hardware counters.
+- Measures frequency and duty characteristics of incoming digital signals.
+- Reduces CPU overhead for high-resolution timing tasks.
+
+## Common Uses
+- PWM quality and frequency measurement.
+- Pulse-width sensing from ultrasonic, tachometer, or sensor outputs.
+- Timestamp capture for event diagnostics.
+
 ## Projects
 - SMT 01 Period Duty Capture
 - SMT 02 Pulse Width Single Shot
