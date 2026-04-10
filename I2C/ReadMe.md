@@ -3,6 +3,10 @@
 This family demonstrates I2C implementations using software bit-bang master,
 internal hardware I2C master, and hardware I2C slave operation.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Inter-Integrated Circuit (I2C) is a two-wire, address-based serial bus for
 multi-device communication.

@@ -2,6 +2,10 @@
 
 This family demonstrates internal temperature indicator usage and trend reporting.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Temperature Indicator is an internal silicon temperature sensing source exposed
 through analog measurement paths.

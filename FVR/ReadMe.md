@@ -2,6 +2,10 @@
 
 This family demonstrates Fixed Voltage Reference bring-up and analog subsystem integration.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Fixed Voltage Reference (FVR) is an internal precision reference source used by
 analog peripherals.

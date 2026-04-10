@@ -2,6 +2,10 @@
 
 This family demonstrates comparator threshold detection and interrupt response.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Comparator (CMP) is an analog block that compares two input voltages and emits
 a digital high/low result.

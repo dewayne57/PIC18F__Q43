@@ -2,6 +2,10 @@
 
 This family demonstrates capture compare features for timestamping and event generation.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Capture/Compare/PWM (CCP) provides hardware capture of timer values and compare
 events tied to programmable timing thresholds.

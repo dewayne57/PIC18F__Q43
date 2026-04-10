@@ -2,6 +2,10 @@
 
 This family demonstrates zero crossing detection and timing event capture.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Zero Crossing Detector (ZCD) is a specialized analog detector that identifies
 when an AC waveform crosses near zero volts.

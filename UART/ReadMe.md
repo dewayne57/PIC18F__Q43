@@ -2,6 +2,10 @@
 
 This family demonstrates UART communication patterns including interrupt driven receive.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Universal Asynchronous Receiver Transmitter (UART) is a serial communication
 peripheral for byte-oriented asynchronous data exchange.

@@ -2,6 +2,10 @@
 
 This family demonstrates windowed watchdog timing constraints and fault behavior.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Windowed Watchdog Timer (WWDT) is a safety timer that requires service only
 within a valid time window.

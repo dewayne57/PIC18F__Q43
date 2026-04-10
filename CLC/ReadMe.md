@@ -2,6 +2,10 @@
 
 This family demonstrates Configurable Logic Cell implementations that offload firmware logic.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Configurable Logic Cell (CLC) is a small on-chip logic fabric that combines
 internal and external signals into custom digital logic functions.

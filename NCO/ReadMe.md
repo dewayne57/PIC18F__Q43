@@ -2,6 +2,10 @@
 
 This family demonstrates Numerically Controlled Oscillator generation and calibration flows.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Numerically Controlled Oscillator (NCO) is a hardware phase-accumulator block
 that generates deterministic output frequencies from an increment value.

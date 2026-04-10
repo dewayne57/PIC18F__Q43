@@ -2,6 +2,10 @@
 
 This family demonstrates timer modes for periodic ticks, counting, and timeout control.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Timers are hardware counters driven by internal or external clocks for creating
 time bases and measuring intervals.

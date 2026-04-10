@@ -2,6 +2,10 @@
 
 This family demonstrates multiple Signal Measurement Timer operating modes on PIC18F Q43.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Signal Measurement Timer (SMT) is a dedicated timing peripheral for precise
 measurement of period, pulse width, duty cycle, and event timing.

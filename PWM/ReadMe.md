@@ -2,6 +2,10 @@
 
 This family demonstrates PWM signal generation and runtime duty cycle control.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Pulse Width Modulation (PWM) is a hardware waveform generator that controls duty
 cycle and period for average-power and timing applications.

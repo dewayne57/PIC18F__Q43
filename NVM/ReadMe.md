@@ -2,6 +2,10 @@
 
 This family demonstrates safe nonvolatile memory operations and data integrity checks.
 
+## Implementation Status Notice
+This peripheral family is not yet fully implemented. Current content is planning and
+scaffold-focused; register-complete, validated demonstrations are still in progress.
+
 ## What It Is
 Nonvolatile Memory (NVM) controls internal flash/EEPROM programming sequences
 for persistent storage.
