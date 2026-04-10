@@ -4,6 +4,13 @@
 	(generator_version "9.0")
 	(uuid "a268f71e-0835-4511-aa86-9e5be2256047")
 	(paper "A")
+	(title_block
+		(title "IOC Non-Vectored Interrupts")
+		(date "2026-04-10")
+		(rev "1")
+		(company "Dewayne Hafenstein")
+		(comment 1 "Interrupt On Change")
+	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_01x05"
 			(pin_names
@@ -3562,6 +3569,16 @@
 			)
 			(embedded_fonts no)
 		)
+	)
+	(text "Note, the device shown is the TQFP-44 \npackaged variant. The pin assignments\nvary from one package type to another."
+		(exclude_from_sim no)
+		(at 131.064 132.842 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d4d23086-137f-4456-9eaa-d1b3bb43dcaf")
 	)
 	(junction
 		(at 80.01 116.84)
