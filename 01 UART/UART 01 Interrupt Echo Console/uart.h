@@ -12,6 +12,6 @@
 #include <stdint.h>
 
 void UART1_Initialize(void);
-void UART1_Task(void);
+void UART1_WriteChar(char data);
 
 #endif /* UART_H */

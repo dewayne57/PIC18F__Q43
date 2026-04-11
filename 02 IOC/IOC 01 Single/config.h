@@ -50,6 +50,8 @@
 #pragma config WRTD = OFF              // Data EEPROM is not write protected
 #pragma config CP = OFF                // Code is not protected
 
+#define _XTAL_FREQ 64000000UL          // Define the system clock frequency for delay functions
+
 void SYSTEM_Initialize(void);
 
 #endif /* CONFIG_H */

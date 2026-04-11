@@ -6,16 +6,20 @@
  ***************************************************************************************** */
 
 #include <xc.h>
+#include <stdio.h>
 #include "config.h"
 #include "uart.h"
 
 void main(void)
 {
+    int counter = 0; 
     SYSTEM_Initialize();
     UART1_Initialize();
 
     while (1)
     {
-        UART1_Task();
+        printf("Loop %i\n", counter); 
+        counter = counter + 1;
+        __delay_ms(1000); 
     }
 }

@@ -97,3 +97,8 @@ IOC Vectored/dist/default/production/IOC_Vectored.production.o
 IOC Vectored/dist/default/production/IOC_Vectored.production.rlf
 IOC Vectored/dist/default/production/IOC_Vectored.production.sdb
 IOC Vectored/dist/default/production/IOC_Vectored.production.sym
+build
+debug
+dist
+/01 UART/UART 01 Interrupt Echo Console/*.log
+/01 UART/UART 01 Interrupt Echo Console/defmplabxtrace.log.inx

@@ -10,6 +10,7 @@ Planned demonstration for UART behavior on PIC18F Q43 devices.
 - uart.h: Peripheral demo API.
 - uart.c: Peripheral task scaffold for iterative bring-up.
 
+
 ## Status
 Source scaffold created. Replace task internals with hardware register configuration next.
 
