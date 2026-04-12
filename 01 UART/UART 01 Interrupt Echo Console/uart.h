@@ -11,7 +11,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef UART1_VECTORED_INTERRUPTS
+#define UART1_VECTORED_INTERRUPTS 0
+#endif
+
 void UART1_Initialize(void);
-void UART1_WriteChar(char data);
+bool UART1_ReadChar(char *data);
+uint8_t UART1_RxAvailable(void);
 
 #endif /* UART_H */
