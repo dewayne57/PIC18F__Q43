@@ -30,6 +30,16 @@
  *   will block until the ISR has made room for the remaining data.  This allows for
  *   efficient use of the buffer while still ensuring that all data is transmitted without
  *   loss.
+ *
+ *   It is important to note that the transmit buffer empty interrupt is only generated
+ *   when the UART is enabled AND the transmit buffer is empty, so the initial transmission
+ *   must be triggered by adding data to the buffer and enabling the transmit interrupt. When
+ *   all transmission is complete and the buffer is empty, the transmit interrupt will be
+ *   disabled until new data is added to the buffer, at which point the interrupt will be
+ *   enabled again to start the transmission process. This ensures that the ISR is only
+ *   called when there is data to be sent, allowing for efficient use of CPU resources
+ *   while still providing responsive UART communication.
+ *
  ***************************************************************************************** */
 
 #include <xc.h>
@@ -67,43 +77,46 @@ static bool uart1_initialized = false;
 ///       which should be defined according to the desired baud rate and the system clock frequency.
 void UART1_Initialize(void)
 {
-    tx_head = 0U;
-    tx_tail = 0U;
-    rx_head = 0U;
-    rx_tail = 0U;
+    tx_head = 0;
+    tx_tail = 0;
+    rx_head = 0;
+    rx_tail = 0;
 
     /* Configure UART1 GPIO directions from project pin assignment. */
-    TRISBbits.TRISB0 = 0U; /* TX1 - Output*/
-    TRISBbits.TRISB1 = 1U; /* RX1 - Input */
-    TRISBbits.TRISB2 = 1U; /* CTS1 - Input */
-    TRISBbits.TRISB3 = 0U; /* RTS1 - Output */
+    TRISBbits.TRISB0 = 0; /* TX1 - Output*/
+    TRISBbits.TRISB1 = 1; /* RX1 - Input */
+    TRISBbits.TRISB2 = 1; /* CTS1 - Input */
+    TRISBbits.TRISB3 = 0; /* RTS1 - Output */
 
     /* Unlock PPS registers for configuration.   */
     PPS_Unlock();
 
     /* PPS output mapping for TX1 on RB0. */
-    RB0PPS = 0x20U;   /* RB0 is TX1 output, so set to UART1 TX function */
-    RB3PPS = 0x22U;   /* RB3 is RTS1 output, so set to UART1 RTS function */
-    U1RXPPS = 0x09U;  /* RB1 is RX1 input, so set to UART1 RX function */
-    U1CTSPPS = 0x0AU; /* RB2 is CTS1 input, so set to UART1 CTS function */
+    RB0PPS = 0x20;   /* RB0 is TX1 output, so set to UART1 TX function */
+    RB3PPS = 0x22;   /* RB3 is RTS1 output, so set to UART1 RTS function */
+    U1RXPPS = 0x09;  /* RB1 is RX1 input, so set to UART1 RX function */
+    U1CTSPPS = 0x0A; /* RB2 is CTS1 input, so set to UART1 CTS function */
 
     /* Lock PPS registers after configuration. */
     PPS_Lock();
 
     /* Async mode, 8-bit, no parity, 1 stop-bit with configured baud rate and HW flow control. */
-    U1CON0 = 0x30U; /* TXEN + RXEN */
-    U1CON1 = 0x80U; /* UART module enabled */
-    U1CON2 = 0x02U; /* CTS/RTS flow control enabled */
-
+    U1CON0 = 0x00;
+    U1CON0bits.TXEN = 1; /* Enable transmitter */
+    U1CON0bits.RXEN = 1; /* Enable receiver */
+    U1CON1 = 0x00;
+    U1CON1bits.ON = 1; /* Enable UART1 */
+    U1CON2 = 0x00;
+    U1CON2bits.RUNOVF = 1; /* Enable receiver buffer overflow detection */
+    U1CON2bits.FLO = 2;    /* Set RTS to deasserted level when transmit buffer is empty */
     U1BRG = (uint16_t)UART_1_BRG_VALUE;
 
-    /* Disable UART1 transmit and receive interrupts for now. */
-    U1ERRIR = 0x00U; /* Clear all error flags */
-    U1ERRIEbits.U1TXMTIE = 1U; /* Enable TX empty interrupt */
-    
-    PIE4bits.U1TXIE = 0U;
-    PIE4bits.U1RXIE = 1U;
-    INTCON0bits.GIE = 1U;
+    U1ERRIR = 0x00U;          /* Clear all error flags */
+    U1ERRIEbits.U1TXMTIE = 1; /* Enable TX empty interrupt */
+
+    PIE4bits.U1TXIE = 0;
+    PIE4bits.U1RXIE = 0;
+    INTCON0bits.GIE = 1;
 
     uart1_initialized = true;
 }
@@ -226,10 +239,10 @@ static void UART1_SendNext(void)
     }
 
     U1TXB = (uint8_t)next;
-    PIE4bits.U1TXIE = 1U;
+    PIE4bits.U1TXIE = 1U; // Enable transmit interrupt to send next character when ready
 }
 
-/// @brief Handles the UART1 receive interrupt. This function checks if the receive interrupt is 
+/// @brief Handles the UART1 receive interrupt. This function checks if the receive interrupt is
 ///        enabled and if the receive interrupt flag is set.
 /// @param  None
 /// @return None
@@ -238,15 +251,16 @@ static void UART1_SendNext(void)
 ///       called from the main ISR to handle UART1 interrupts.
 #if UART1_VECTORED_INTERRUPTS
 void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
-#else 
-void UART1_RX_ISR(void) 
-#endif 
+#else
+void UART1_RX_ISR(void)
+#endif
 {
     if ((PIE4bits.U1RXIE != 0U) && (PIR4bits.U1RXIF != 0U))
     {
         if (UART1_RxBufferFreeCount() == 0U)
         {
-            /* Software RX buffer is full, block further RX interrupts until data is consumed. */
+            /* Software RX buffer is full, block further RX interrupts until data is consumed. 
+            We need to re-enable the interrupt once there is space available in the buffer. */
             PIE4bits.U1RXIE = 0U;
         }
         else
@@ -257,10 +271,19 @@ void UART1_RX_ISR(void)
     }
 }
 
-/// @brief Handles the UART1 transmit interrupt. This function checks if the transmit interrupt is 
+/// @brief Handles the UART1 transmit interrupt. This function checks if the transmit interrupt is
 ///        enabled and if the transmit interrupt flag is set. If so, it calls UART1_SendNext to
 ///        send the next character from the transmit buffer. If the buffer is empty, the transmit
 ///        interrupt will be disabled by UART1_SendNext until new data is added to the buffer.
+///        The Q43 datasheet indicates that this interrupt is generated only when the UART is
+///        enabled and the transmit buffer is empty, so this function will be called whenever the
+///        UART is ready to send the next character, allowing for efficient transmission of data from
+///        the buffer without blocking the main application.  However, the initial send must be
+///        triggered by adding data to the buffer and enabling the transmit interrupt, which is handled
+///        by the UART1_WriteBufferBlocking function. This means we need to toggle the interrupt
+///        enable bit to start the transmission process when new data is added to the buffer, and the
+///        ISR will take care of sending the data and disabling the interrupt when the buffer is empty.
+///
 /// @param  None
 /// @return None
 #if UART1_VECTORED_INTERRUPTS
@@ -273,42 +296,6 @@ void UART1_TX_ISR(void)
     {
         UART1_SendNext();
         PIR4bits.U1TXIF = 0U;
-    }
-}
-
-/// @brief Writes a buffer of data to the UART1 transmit buffer in a blocking manner.
-/// @param data Pointer to the buffer containing the data to be transmitted.
-/// @param length The number of bytes to be transmitted.
-/// @return None
-static void UART1_WriteBufferBlocking(const char *data, uint16_t length)
-{
-    while ((data != (const char *)0) && (length > 0U))
-    {
-        uint8_t free_count = UART1_TxBufferFreeCount();
-        uint16_t to_copy = length;
-
-        if (to_copy > free_count)
-        {
-            to_copy = (uint16_t)free_count;
-        }
-
-        while (to_copy > 0U)
-        {
-            (void)UART1_TxBufferPush(*data);
-            data++;
-            length--;
-            to_copy--;
-        }
-
-        PIE4bits.U1TXIE = 1U;
-
-        if (length > 0U)
-        {
-            while (UART1_TxBufferFreeCount() == 0U)
-            {
-                /* Wait until ISR drains at least one byte. */
-            }
-        }
     }
 }
 
@@ -349,15 +336,25 @@ uint8_t UART1_RxAvailable(void)
 ///        XC8 standard library when printf is used, allowing for formatted output to be sent over UART1.
 /// @param data The character to be transmitted.
 /// @return None
-/// @note This function uses the UART1_WriteBufferBlocking function to ensure that the character is added
-///       to the transmit buffer and transmitted over UART1. Any calls to printf in the application will 
-///       ultimately call this function for each character, enabling seamless integration of UART output 
-///       with standard C library functions.  Any output sent to printf will be discarded if UART1 is not 
-///       initialized, so it is important to call UART1_Initialize before using printf for UART output.
 void putch(char data)
 {
     if (uart1_initialized)
     {
-        UART1_WriteBufferBlocking(&data, 1U);
+        if (UART1_TxBufferFreeCount() < 1)
+        {
+            /* Wait until ISR drains at least one byte. */
+            while (UART1_TxBufferFreeCount() == 0U)
+            {
+            }
+        }
+
+        (void)UART1_TxBufferPush(data);
+        if (U1FIFObits.TXBE == 1 && PIE4bits.U1TXIE == 0U)
+        {
+            /* If the transmit buffer is empty, and we have not enabled the interrupts,
+             prime the pump to start sending data. */
+            UART1_SendNext();
+        }
+        PIE4bits.U1TXIE = 1;
     }
 }
