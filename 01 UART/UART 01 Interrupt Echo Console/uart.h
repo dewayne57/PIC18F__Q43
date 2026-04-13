@@ -11,12 +11,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifndef UART1_VECTORED_INTERRUPTS
-#define UART1_VECTORED_INTERRUPTS 0
-#endif
+/*
+ * Define the macro UART1_VECTORED_INTERRUPTS if you want the code to use 
+ * vectored prioritized interrupts. If undefined, the code uses the single
+ * level flat interrupt (legacy) mode. 
+ */
 
 void UART1_Initialize(void);
 bool UART1_ReadChar(char *data);
 uint8_t UART1_RxAvailable(void);
+void UART1_RX_ISR(void);
+void UART1_TX_ISR(void);
 
 #endif /* UART_H */

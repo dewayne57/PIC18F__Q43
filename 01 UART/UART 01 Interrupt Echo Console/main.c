@@ -33,13 +33,13 @@ void main(void)
         // allows the main application to remain responsive while still providing UART communication
         // capabilities. The use of UART1_RxAvailable ensures that we only attempt to read when data
         // is present, preventing blocking on an empty buffer.
-        if ((UART1_RxAvailable() > 0U) && UART1_ReadChar(&received))
-        {
+        while ((UART1_RxAvailable() > 0U)) {
+            UART1_ReadChar(&received);
             printf("%c", received);
         }
         
         __delay_ms(1000); 
-        printf("Test");
+//        printf("Test\r\n");
     }
 }
 
@@ -64,11 +64,11 @@ void __interrupt() ISR(void)
 {
     if (PIR4bits.U1RXIF != 0U)
     {
-        UART1_HandleRxInterrupt();
+        UART1_RX_ISR();
     }
     if (PIR4bits.U1TXIF != 0U)
     {
-        UART1_HandleTxInterrupt();
+        UART1_TX_ISR();
     }
 
 }

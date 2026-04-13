@@ -51,7 +51,7 @@
 #pragma config CP = OFF               // Code is not protected
 
 #define _XTAL_FREQ 64000000UL         // Define the system clock frequency for delay functions
-#define BAUD_RATE 9600                // Define the baud rate for UART communication
+#define BAUD_RATE 57600               // Define the baud rate for UART communication
 #define UART_1_BRG_VALUE ((_XTAL_FREQ / (16UL * BAUD_RATE)) - 1) // Calculate the baud rate
                                       // generator value
 #define UART_1_PARITY 0               // No parity
