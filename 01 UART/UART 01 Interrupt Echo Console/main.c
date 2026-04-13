@@ -37,6 +37,9 @@ void main(void)
         {
             printf("%c", received);
         }
+        
+        __delay_ms(1000); 
+        printf("Test");
     }
 }
 
