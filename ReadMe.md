@@ -32,10 +32,55 @@ The development environment used for these examples:
 
 ## Included Example Families
 
-### Interrupt-On-Change (IOC)
+These modules demonstrate how to use various peripherals of the Q43 family.  In order to 
+demonstrate many of these features it is easiest to have the ability to send diagnostic 
+messages to a serial UART connected to a terminal emulator.  This allows the code to 
+write messages that help you understand how the code works. 
 
-This example family is intended to use weak pull-ups on PORTC input pins and
-drive LEDs on PORTD outputs corresponding to switch positions.
+Therefore, the first module is dedicated to using the UART.  This module will be used 
+as part of all other modules to allow logging.  
+
+### 01 - Universal Asynchronous Receiver Transmitter (UART)
+
+This family demonstrates UART console and interrupt-driven receive paths.  There is a 
+fair amount of information available that demonstrates using the UARTs in a blocking 
+approach, meaning that the code loops through the data sending each byte, waiting for 
+the UART to become free, then sending the next byte, and so forth. 
+
+The problem with this approach is that it stops all other processing in the microcontroller
+and is almost never used in real production applications.  Instead, non-blocking approaches
+requiring the use of interrupts is the best approach because it allows the microcontroller 
+to perform whatever it needs to do, and serial I/O is interrupt driven.
+
+Therefore, I am not going to show the blocking implementation but instead focus on 
+interrupt-driven (asynchronous) approachs to read and write serial data.
+
+Projects:
+
+- UART 01 Interrupt Echo Console: This module demnstrates the use of the UART in an interrupt
+  driven read and write implementation, implementing putch() for use of c runtime functions,
+  and the echo of received data. 
+
+- UART 02 DMA TX Stream: This demonstration shows the use of DMA (Direct Memory Access) to 
+  transfer data from an in-memory buffer using the hardware DMA facility to manage the 
+  transfer of the data.  DMA offloads the software by setting up the hardware to do the 
+  transfers automatically. 
+
+- UART 03 DMA RX Ring Buffer: This module shows using DMA to receive data into a ring buffer
+  using only the facilities of DMA and not having to manage the ring buffer in code.  The 
+  UART 01 module uses a ring buffer (circular queue) but uses code reacting to the interrupt 
+  to move the data.  This example changes that to use DMA.  
+
+Demonstrated concepts:
+
+- Interrupt-driven TX/RX handling
+- Console command and echo flow
+- DMA-assisted serial data movement
+
+### 02 - Interrupt-On-Change (IOC)
+
+This example family is intended to use weak pull-ups on PORTC input pins and drive LEDs on 
+PORTD outputs corresponding to switch positions.
 
 Expected behavior:
 
@@ -238,22 +283,6 @@ Demonstrated concepts:
 
 - Modulation source selection
 - Output behavior characterization
-
-### Universal Asynchronous Receiver Transmitter (UART)
-
-This family demonstrates UART console and interrupt-driven receive paths.
-
-Projects:
-
-- UART 01 Interrupt Echo Console
-- UART 02 DMA TX Stream
-- UART 03 DMA RX Ring Buffer
-
-Demonstrated concepts:
-
-- Interrupt-driven RX handling
-- Console command and echo flow
-- DMA-assisted serial data movement
 
 ### Inter-Integrated Circuit (I2C)
 
