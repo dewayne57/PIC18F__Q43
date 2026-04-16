@@ -90,14 +90,16 @@ Expected behavior:
 
 Projects:
 
-- IOC 01 Single
-- IOC 02 Vectored
+- IOC 01 Single: Demonstrates handling interrupt on change using the legacy "flat" interrupt 
+  structure. 
+- IOC 02 Vectored: Demonstrates handling interrupt on change using the priority vectored 
+  interrupt system. 
 
 Demonstrated concepts:
 
 - Interrupt-On-Change configuration
 - Single-level interrupt handling
-- Vectored interrupt handling
+- Prioritized vectored interrupt handling
 
 ### Signal Measurement Timer (SMT)
 
