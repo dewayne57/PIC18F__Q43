@@ -1,6 +1,6 @@
 /* *****************************************************************************************
- *   File Name: uart_dma_rx.h
- *   Description: DMA RX ping-pong buffer API for UART 03 DMA RX.
+ *   File Name: uart_dma_tx.h
+ *   Description: DMA module API for UART TX in UART 03 DMA RX.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-01
  *
@@ -16,17 +16,14 @@
  *   limitations under the License.
  * ***************************************************************************************** */
 
-#ifndef UART_DMA_RX_H
-#define UART_DMA_RX_H
+#ifndef UART_DMA_TX_H
+#define UART_DMA_TX_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
-void UART_DMA_RX_StateInitialize(void);
-void UART_DMA_RX_ISR(void);
+void UART_DMA_TX_ISR(void);
+void putch(uint8_t byte);
+void UART_DMA_TX_StateInitialize(void);
 
-bool UART_DMA_RX_BufferAvailable(void);
-const uint8_t *UART_DMA_RX_GetBuffer(uint16_t *length);
-void UART_DMA_RX_ReleaseBuffer(void);
-
-#endif /* UART_DMA_RX_H */
+#endif /* UART_DMA_TX_H */

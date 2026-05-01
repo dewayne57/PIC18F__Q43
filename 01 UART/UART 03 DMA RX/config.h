@@ -1,9 +1,24 @@
 /* *****************************************************************************************
  *   File Name: config.h
- *   Description: Device config and system init declarations for UART 03 DMA RX Ring Buffer.
+ *   Description: Device config and system init declarations for UART 03 DMA RX.
  *   Author: Dewayne Hafenstein
- *   Date: 2026-04-10
- ***************************************************************************************** */
+ *   Date: 2026-05-01
+ *
+ *   Copyright (c) 2026, Dewayne Hafenstein.
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ *   This file provides configuration bit settings and system initialization function
+ *   declarations for the UART 03 DMA RX project. It sets up the microcontroller's
+ *   oscillator and pin configurations, then initializes UART and DMA for receive.
+ * ***************************************************************************************** */
 
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -22,8 +37,16 @@
 #pragma config XINST = OFF
 #pragma config PPS1WAY = OFF
 
-#define APP_FOSC_HZ             (64000000UL)
+#define _XTAL_FREQ (64000000L)
+#define _UART_BAUD (115200L)
+#define UART_BUFFER_SIZE (256U)
 
-void SYSTEM_Initialize(void);
+/* Software-managed RTS output used to throttle remote TX when RX buffers are full. */
+#define UART_RTS_TRIS TRISDbits.TRISD1
+#define UART_RTS_LAT  LATDbits.LATD1
+#define UART_RTS_READY_LEVEL (0U)
+#define UART_RTS_PAUSE_LEVEL (1U)
+
+void UART_Initialize(void);
 
 #endif /* CONFIG_H */

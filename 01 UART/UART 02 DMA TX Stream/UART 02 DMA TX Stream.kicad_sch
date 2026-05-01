@@ -2859,28 +2859,6 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "NOTE:  A common mistake is to wire the controllers TX output to the TX\npin of the FT232.  The  FT232 is labeled from the perspective of a remote\ndevice you want to connect to, so the FT232 TX pin should be connected to\nthe controllers RX input, FT232 RX pin to the controllers TX output, etc. \n\nThis is NOT the case when using an RS232 level shifter such as the \nMAX232, which is simply translating the signals to RS-232 levels. "
-		(exclude_from_sim no)
-		(at 63.246 187.96 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b16dd079-2fbb-4b25-ab5b-a17b3975c937")
-	)
-	(text "Notes:\n1. Implement one or the other interface options, USB or RS-232,\n   but not both.\n2. Place C101 and C102 physically close to U101.\n3. For USB interface, place C109 and C110 physically close to U103.\n4. For RS-232 interface, locate C103 - C107 physically close to U102.\n5. This example does not use hardware or software flow control!"
-		(exclude_from_sim no)
-		(at 30.734 158.242 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "df92f4b9-ed46-45fc-b52c-62b12e15ec86")
-	)
 	(text "USB Interface"
 		(exclude_from_sim no)
 		(at 230.886 100.838 0)

@@ -1,20 +1,36 @@
-# UART 03 DMA RX Ring Buffer
+# UART 03 DMA RX
 
 ## Overview
-Demonstrate DMA-driven UART receive into a ring buffer for continuous data capture.
+Demonstrate DMA-driven UART transmit and receive in one project.
+
+This example keeps the DMA TX stream behavior from UART 02 and adds DMA RX
+double-buffering (ping-pong). For RX, DMA fills one of two `rx_buffers` while
+firmware processes the other. No separate ready-buffer pool is used.
+
+When a DMA transfer completes, application code checks availability with
+UART_DMA_RX_BufferAvailable(), then retrieves a direct pointer from
+UART_DMA_RX_GetBuffer(). After processing, UART_DMA_RX_ReleaseBuffer() marks the
+buffer free so DMA can reuse it.
+
+If both RX buffers are occupied, RX DMA pauses and software deasserts RTS
+(not-ready) to throttle the sender. RX automatically resumes and RTS returns to
+ready once a buffer is released.
+
+TX output uses the retained DMA TX path (`putch`), so periodic status text and
+echoed RX payloads are transmitted without polling on every byte.
 
 ## Source Files
 - main.c: Program entry point and demo loop.
 - config.h: Device configuration bits and shared constants.
-- config.c: Baseline GPIO and system initialization.
-- uart_dma_rx.h: DMA demo API.
-- uart_dma_rx.c: DMA task scaffold for iterative bring-up.
+- config.c: Baseline GPIO, UART, DMA1 (RX), DMA2 (TX), and interrupt initialization.
+- uart_dma_tx.h: DMA TX API for `putch` output.
+- uart_dma_tx.c: DMA TX buffering and ISR logic.
+- uart_dma_rx.h: DMA RX ping-pong API.
+- uart_dma_rx.c: DMA RX ISR and buffer management logic.
 
-## Status
-Source scaffold created. Replace DMA placeholders with peripheral-specific DMA register setup.
-
-## Suggested Milestones
-1. Configure DMA channels, trigger source, source and destination addresses.
-2. Add transaction state machine and completion interrupt handling.
-3. Add bus/error fault handling paths and timeout recovery.
-4. Measure throughput and CPU load compared to non-DMA path.
+## Test Procedure
+1. Build with XC8 and program the target.
+2. Connect a UART host terminal at 115200 baud.
+3. Verify periodic "Hello, UART DMA TX + RX DMA!" messages.
+4. Send at least 256 bytes from the host.
+5. Verify the RX buffer status line and echoed payload are transmitted.

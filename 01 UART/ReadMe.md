@@ -1,6 +1,7 @@
 # UART Example Family
 
-This family demonstrates UART communication patterns including interrupt driven receive.
+This family demonstrates UART communication patterns including interrupt-driven
+and DMA-driven transmit/receive paths.
 
 ## Implementation Status Notice
 This peripheral family is not yet fully implemented. Current content is planning and
@@ -24,7 +25,7 @@ peripheral for byte-oriented asynchronous data exchange.
 ## Projects
 - UART 01 Interrupt Echo Console
 - UART 02 DMA TX Stream
-- UART 03 DMA RX Ring Buffer
+- UART 03 DMA RX
 
 ## Shared Goals
 - Demonstrate reliable peripheral initialization.

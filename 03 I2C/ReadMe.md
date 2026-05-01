@@ -1,11 +1,8 @@
 # I2C Example Family
 
 This family demonstrates I2C implementations using software bit-bang master,
-internal hardware I2C master, and hardware I2C slave operation.
-
-## Implementation Status Notice
-This peripheral family is not yet fully implemented. Current content is planning and
-scaffold-focused; register-complete, validated demonstrations are still in progress.
+internal hardware I2C master, and hardware I2C slave operation.  It also demonstrates
+the use of DMA for both master and slave operation.
 
 ## What It Is
 Inter-Integrated Circuit (I2C) is a two-wire, address-based serial bus for
@@ -25,6 +22,8 @@ multi-device communication.
 	and supports register-style or command-style peripheral emulation.
 - Internal I2C module master with DMA: Uses hardware I2C plus DMA channel
 	offload for multi-byte payload moves and reduced CPU intervention.
+- Internal I2C module slave with DMA: Uses hardware I2C plus DMA channel 
+    offload for multi-byte payload moves and reduced CPU intervention. 
 
 ## Common Uses
 - Sensor and EEPROM interfaces.
@@ -32,10 +31,11 @@ multi-device communication.
 - Low-pin-count peripheral expansion.
 
 ## Projects
-- I2C 01 Host Transaction Basics
-- I2C 02 Bit Bang Master
-- I2C 03 Module Slave Responder
+- I2C 01 Bit Bang Master
+- I2C 02 Module Master
+- I2C 03 Module Slave 
 - I2C 04 Module Master DMA
+- I2C 05 Module Slave DMA 
 
 ## Shared Goals
 - Demonstrate reliable peripheral initialization.
@@ -43,4 +43,4 @@ multi-device communication.
 - Provide reusable firmware patterns for future projects.
 - Compare software and hardware I2C tradeoffs in timing and CPU load.
 - Provide reference patterns for both bus-master and bus-slave roles.
-- Demonstrate DMA-assisted payload transfer for hardware master mode.
+- Demonstrate DMA-assisted payload transfer.

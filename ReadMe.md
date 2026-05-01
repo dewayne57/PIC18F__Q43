@@ -57,19 +57,19 @@ interrupt-driven (asynchronous) approachs to read and write serial data.
 
 Projects:
 
-- UART 01 Interrupt Echo Console: This module demnstrates the use of the UART in an interrupt
-  driven read and write implementation, implementing putch() for use of c runtime functions,
-  and the echo of received data. 
+- UART 01 Interrupt Echo Console: This module demonstrates the use of the UART in an
+  interrupt-driven read and write implementation, implementing putch() for use of C runtime
+  functions, and the echo of received data.
 
 - UART 02 DMA TX Stream: This demonstration shows the use of DMA (Direct Memory Access) to 
   transfer data from an in-memory buffer using the hardware DMA facility to manage the 
   transfer of the data.  DMA offloads the software by setting up the hardware to do the 
   transfers automatically. 
 
-- UART 03 DMA RX Ring Buffer: This module shows using DMA to receive data into a ring buffer
-  using only the facilities of DMA and not having to manage the ring buffer in code.  The 
-  UART 01 module uses a ring buffer (circular queue) but uses code reacting to the interrupt 
-  to move the data.  This example changes that to use DMA.  
+- UART 03 DMA RX: This module keeps the DMA TX stream path and adds DMA RX ping-pong
+  buffers, exposing an API to check when a receive buffer is available and retrieve it for
+  processing. The UART 01 module uses an interrupt-managed ring buffer; this example
+  demonstrates an alternative receive path where DMA performs the byte movement into memory.
 
 Demonstrated concepts:
 
@@ -101,44 +101,75 @@ Demonstrated concepts:
 - Single-level interrupt handling
 - Prioritized vectored interrupt handling
 
-### Signal Measurement Timer (SMT)
+### 03 - Inter-Integrated Circuit (I2C)
 
-This example family explores multiple SMT operating patterns for measuring real
-digital signals and extracting stable timing metrics.
-
-Projects:
-
-- SMT 01 Period Duty Capture
-- SMT 02 Pulse Width Single Shot
-- SMT 03 Windowed Frequency Meter
-- SMT 04 Signal Quality Monitor
-- SMT 05 Sleep Event Timestamping
-
-Demonstrated concepts:
-
-- Period and duty-cycle capture
-- Pulse-width timing with timeout handling
-- Windowed counting and jitter statistics
-- Sleep-aware timestamping workflows
-
-### Numerically Controlled Oscillator (NCO)
-
-This example family demonstrates fixed and dynamic frequency generation using
-the NCO peripheral, including measurement-assisted calibration.
+This family demonstrates I2C communication using both bit-bang and module-based approaches,
+covering host and peripheral (slave) roles as well as DMA-assisted transfers.
 
 Projects:
 
-- NCO 01 Static Synthesizer
-- NCO 02 Sweep Chirp Generator
-- NCO 03 Closed Loop Calibration
+- I2C 01 Bit Bang Master: Implements I2C host transactions in software without the hardware
+  module, demonstrating start/stop conditions, byte transfer, and ACK handling.
+- I2C 02 Module Master: Demonstrates host mode transactions using the hardware I2C module,
+  including address, data, and error handling.
+- I2C 03 Module Slave: Demonstrates peripheral (responder) mode using the hardware I2C
+  module, handling address match and data exchange.
+- I2C 04 Module Master DMA: Extends module master operation with DMA-assisted payload
+  transfers to reduce firmware overhead on bulk transactions.
+- I2C 05 Module Slave DMA: Extends module slave operation with DMA-assisted data movement
+  for higher-throughput peripheral responses.
 
 Demonstrated concepts:
 
-- Increment math and output frequency resolution
-- Glitch-aware dynamic frequency updates
-- Closed-loop correction using SMT feedback
+- Start/address/data/stop flow
+- ACK and error handling
+- Bit-bang versus module-based operation
+- Host and peripheral (slave) roles
+- DMA-assisted module transfers
 
-### ADCC and DAC
+### 04 - Serial Peripheral Interface (SPI)
+
+This family demonstrates SPI host transfers and loopback validation.
+
+Projects:
+
+- SPI 01 Host Loopback Transfer
+- SPI 02 DMA Burst Transfer
+
+Demonstrated concepts:
+
+- Full-duplex transfer timing
+- Data integrity checks
+- DMA-backed burst transactions
+
+### 05 - Cyclic Redundancy Check (CRC)
+
+This family demonstrates hardware-assisted CRC generation and verification for
+buffers and persistent data checks.
+
+Projects:
+
+- CRC 01 Stream Verify
+
+Demonstrated concepts:
+
+- Runtime CRC calculation on data streams
+- Verification against expected signatures
+
+### 06 - Fixed Voltage Reference (FVR)
+
+This family demonstrates internal reference bring-up for analog subsystems.
+
+Projects:
+
+- FVR 01 Reference Bring Up
+
+Demonstrated concepts:
+
+- Reference level enable and settling
+- Analog path integration checks
+
+### 07 - ADCC and DAC
 
 This example family demonstrates analog acquisition and threshold control using
 the ADCC and DAC peripherals.
@@ -159,78 +190,20 @@ Demonstrated concepts:
 - DAC reference generation and ADC verification
 - Closed-loop analog setpoint control
 
-### Complementary Waveform Generator (CWG)
+### 08 - Temperature Indicator
 
-This example family focuses on safe power-stage style signal generation,
-including dead-band control and hardware fault handling.
-
-Projects:
-
-- CWG 01 Complementary PWM Dead Band
-- CWG 02 Auto Shutdown Restart
-- CWG 03 Ramping Startup
-
-Demonstrated concepts:
-
-- Complementary outputs with dead-time insertion
-- Hardware fault shutdown and restart behavior
-- Controlled startup ramps for safer switching
-
-### Cyclic Redundancy Check (CRC)
-
-This family demonstrates hardware-assisted CRC generation and verification for
-buffers and persistent data checks.
+This family demonstrates internal temperature indicator read and trend use.
 
 Projects:
 
-- CRC 01 Stream Verify
+- Temp 01 Internal Sensor Trend
 
 Demonstrated concepts:
 
-- Runtime CRC calculation on data streams
-- Verification against expected signatures
+- Internal temperature acquisition
+- Trend reporting and thresholds
 
-### Nonvolatile Memory (NVM)
-
-This family demonstrates safe flash write and verification workflows.
-
-Projects:
-
-- NVM 01 Flash Row Write Verify
-
-Demonstrated concepts:
-
-- Row erase and write sequencing
-- Post-write integrity checks
-
-### Windowed Watchdog Timer (WWDT)
-
-This family demonstrates watchdog servicing within valid timing windows and
-fault detection when service timing is violated.
-
-Projects:
-
-- WWDT 01 Window Service Monitor
-
-Demonstrated concepts:
-
-- Valid service windows
-- Reset path verification
-
-### Configurable Logic Cell (CLC)
-
-This family demonstrates hardware logic mapping to reduce firmware load.
-
-Projects:
-
-- CLC 01 Hardware Logic Mapping
-
-Demonstrated concepts:
-
-- Combinational logic implementation
-- Event routing through peripheral logic
-
-### Timers
+### 09 - Timers
 
 This family demonstrates timer usage across periodic interrupts, counting, and
 one-shot timeout workflows.
@@ -247,105 +220,7 @@ Demonstrated concepts:
 - Edge counting and gate timing
 - One-shot timeout behavior
 
-### Capture Compare PWM (CCP)
-
-This family demonstrates capture and compare event handling.
-
-Projects:
-
-- CCP 01 Capture Compare Basics
-
-Demonstrated concepts:
-
-- Timestamp capture flow
-- Compare event scheduling
-
-### Pulse Width Modulation (PWM)
-
-This family demonstrates PWM output generation and runtime duty updates.
-
-Projects:
-
-- PWM 01 Edge Aligned Duty Control
-
-Demonstrated concepts:
-
-- Duty cycle control
-- Output timing validation
-
-### Digital Signal Modulator (DSM)
-
-This family demonstrates basic output modulation configurations.
-
-Projects:
-
-- DSM 01 Output Modulation Profile
-
-Demonstrated concepts:
-
-- Modulation source selection
-- Output behavior characterization
-
-### Inter-Integrated Circuit (I2C)
-
-This family demonstrates controller mode transactions and bus status handling.
-
-Projects:
-
-- I2C 01 Host Transaction Basics
-- I2C 02 Bit Bang Master
-- I2C 03 Module Slave Responder
-- I2C 04 Module Master DMA
-
-Demonstrated concepts:
-
-- Start/address/data/stop flow
-- ACK and error handling
-- Bit-bang versus module-based operation
-- DMA-assisted module master payload transfers
-
-### Serial Peripheral Interface (SPI)
-
-This family demonstrates SPI host transfers and loopback validation.
-
-Projects:
-
-- SPI 01 Host Loopback Transfer
-- SPI 02 DMA Burst Transfer
-
-Demonstrated concepts:
-
-- Full-duplex transfer timing
-- Data integrity checks
-- DMA-backed burst transactions
-
-### Fixed Voltage Reference (FVR)
-
-This family demonstrates internal reference bring-up for analog subsystems.
-
-Projects:
-
-- FVR 01 Reference Bring Up
-
-Demonstrated concepts:
-
-- Reference level enable and settling
-- Analog path integration checks
-
-### Temperature Indicator
-
-This family demonstrates internal temperature indicator read and trend use.
-
-Projects:
-
-- Temp 01 Internal Sensor Trend
-
-Demonstrated concepts:
-
-- Internal temperature acquisition
-- Trend reporting and thresholds
-
-### Comparator (CMP)
+### 10 - Comparator (CMP)
 
 This family demonstrates comparator threshold events and interrupt response.
 
@@ -358,7 +233,113 @@ Demonstrated concepts:
 - Threshold crossing detection
 - Interrupt-driven event handling
 
-### Zero Crossing Detector (ZCD)
+### 11 - Configurable Logic Cell (CLC)
+
+This family demonstrates hardware logic mapping to reduce firmware load.
+
+Projects:
+
+- CLC 01 Hardware Logic Mapping
+
+Demonstrated concepts:
+
+- Combinational logic implementation
+- Event routing through peripheral logic
+
+### 12 - Numerically Controlled Oscillator (NCO)
+
+This example family demonstrates fixed and dynamic frequency generation using
+the NCO peripheral, including measurement-assisted calibration.
+
+Projects:
+
+- NCO 01 Static Synthesizer
+- NCO 02 Sweep Chirp Generator
+- NCO 03 Closed Loop Calibration
+
+Demonstrated concepts:
+
+- Increment math and output frequency resolution
+- Glitch-aware dynamic frequency updates
+- Closed-loop correction using SMT feedback
+
+### 13 - Pulse Width Modulation (PWM)
+
+This family demonstrates PWM output generation and runtime duty updates.
+
+Projects:
+
+- PWM 01 Edge Aligned Duty Control
+
+Demonstrated concepts:
+
+- Duty cycle control
+- Output timing validation
+
+### 14 - Complementary Waveform Generator (CWG)
+
+This example family focuses on safe power-stage style signal generation,
+including dead-band control and hardware fault handling.
+
+Projects:
+
+- CWG 01 Complementary PWM Dead Band
+- CWG 02 Auto Shutdown Restart
+- CWG 03 Ramping Startup
+
+Demonstrated concepts:
+
+- Complementary outputs with dead-time insertion
+- Hardware fault shutdown and restart behavior
+- Controlled startup ramps for safer switching
+
+### 15 - Digital Signal Modulator (DSM)
+
+This family demonstrates basic output modulation configurations.
+
+Projects:
+
+- DSM 01 Output Modulation Profile
+
+Demonstrated concepts:
+
+- Modulation source selection
+- Output behavior characterization
+
+### 16 - Capture Compare PWM (CCP)
+
+This family demonstrates capture and compare event handling.
+
+Projects:
+
+- CCP 01 Capture Compare Basics
+
+Demonstrated concepts:
+
+- Timestamp capture flow
+- Compare event scheduling
+
+### 17 - Signal Measurement Timer (SMT)
+
+This example family explores multiple SMT operating patterns for measuring real
+digital signals and extracting stable timing metrics.
+
+Projects:
+
+- SMT 01 Period Duty Capture
+- SMT 02 Pulse Width Single Shot
+- SMT 03 Windowed Frequency Meter
+- SMT 04 Signal Quality Monitor
+- SMT 05 Sleep Event Timestamping
+
+Demonstrated concepts:
+
+- Period and duty-cycle capture
+- Pulse-width timing with timeout handling
+- Windowed counting and jitter statistics
+- Sleep-aware timestamping workflows
+
+### 18 - Zero Crossing Detector (ZCD)
 
 This family demonstrates zero crossing event detection and timestamping.
 
@@ -370,6 +351,33 @@ Demonstrated concepts:
 
 - Zero crossing event detection
 - Timing correlation with other peripherals
+
+### 19 - Nonvolatile Memory (NVM)
+
+This family demonstrates safe flash write and verification workflows.
+
+Projects:
+
+- NVM 01 Flash Row Write Verify
+
+Demonstrated concepts:
+
+- Row erase and write sequencing
+- Post-write integrity checks
+
+### 20 - Windowed Watchdog Timer (WWDT)
+
+This family demonstrates watchdog servicing within valid timing windows and
+fault detection when service timing is violated.
+
+Projects:
+
+- WWDT 01 Window Service Monitor
+
+Demonstrated concepts:
+
+- Valid service windows
+- Reset path verification
 
 ## Getting Started
 
