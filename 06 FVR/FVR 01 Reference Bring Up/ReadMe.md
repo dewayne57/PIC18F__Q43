@@ -1,13 +1,12 @@
 # FVR 01 Reference Bring Up
 
 ## Overview
-Planned demonstration for FVR behavior on PIC18F Q43 devices.
+This project demonstrates how to initialize the internal fixed voltage reference 
+(FVR) on chip for use by the DAC and ADC peripherals.
 
-## Status
-Planned. Source and schematic capture are next steps.
 
-## Suggested Milestones
-1. Define pin map and clock assumptions.
-2. Bring up the peripheral with minimal firmware.
-3. Add interrupt and error path validation.
-4. Capture scope or logic analyzer evidence and notes.
+## Expected outcome
+After the microcontroller has initialized, the output should alternate between 
+"FVR enabled" and "FVR disabled" approximately each second.  This text is sent
+to the UART data stream to be displayed on the PC, as well as being indicated 
+by an LED (on = FVR Enabled). 

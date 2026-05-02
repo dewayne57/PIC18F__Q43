@@ -3,11 +3,10 @@
 ## Overview
 Step DAC through levels and verify transfer behavior with ADCC readback.
 
-## Status
-Planned. Project scaffolding and schematic capture are next steps.
+This example uses the DAC to generate a reference voltage and the ADCC to
+sample that voltage. The DAC output steps up by 0.1 V per second from 0 V to
+5 V, then steps back down from 5 V to 0 V at the same rate. This triangular
+sweep repeats indefinitely.
 
-## Suggested Milestones
-1. Define pin map and clock assumptions.
-2. Bring up peripheral in a minimal loopback setup.
-3. Add UART diagnostics and pass fail checks.
-4. Capture scope plots and schematic notes.
+After each step, the ADCC samples the DAC output and reports the measured
+voltage over UART.

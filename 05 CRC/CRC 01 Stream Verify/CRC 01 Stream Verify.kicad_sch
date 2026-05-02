@@ -5,7 +5,7 @@
 	(uuid "d3b5dd27-4845-413f-badb-7f64f7fb8d77")
 	(paper "A")
 	(title_block
-		(title "03 UART DMA RX Buffer")
+		(title "CRC 01 Stream Verify")
 		(date "2026-04-11")
 		(rev "1")
 		(company "Dewayne Hafenstein")
@@ -6089,7 +6089,7 @@
 			(uuid "01c6494b-3ea7-4c12-9784-7b360d274608")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "D102")
 					(unit 1)
@@ -6166,7 +6166,7 @@
 			(uuid "85cc652b-a08d-4ba3-98c8-1c12eeaf67e4")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0117")
 					(unit 1)
@@ -6243,7 +6243,7 @@
 			(uuid "e0cfd2c7-1968-4174-997b-e97b8b55a277")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0106")
 					(unit 1)
@@ -6321,7 +6321,7 @@
 			(uuid "955f8f85-ae13-4e65-813e-3f3fb59fee2d")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0112")
 					(unit 1)
@@ -6402,7 +6402,7 @@
 			(uuid "c9bb861a-b767-4fb8-b0de-4ae1f94057cc")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C102")
 					(unit 1)
@@ -6480,7 +6480,7 @@
 			(uuid "b1cad2d5-ccce-4bd8-a492-bd7a06399009")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0101")
 					(unit 1)
@@ -6557,7 +6557,7 @@
 			(uuid "3423853f-c2fb-4b44-b2df-034e089b47de")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0116")
 					(unit 1)
@@ -6635,7 +6635,7 @@
 			(uuid "b5110850-7a3e-45d9-9020-e5d4fef9b8bb")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0114")
 					(unit 1)
@@ -6726,7 +6726,7 @@
 			(uuid "8a21586d-aefa-4fcb-83a4-446d5e4c4504")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J101")
 					(unit 1)
@@ -6804,7 +6804,7 @@
 			(uuid "0dd67a1b-978c-4dd8-8b82-112fdf29114b")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0102")
 					(unit 1)
@@ -6882,7 +6882,7 @@
 			(uuid "8c86baf7-4508-4bf1-a205-6b350e93adbd")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0103")
 					(unit 1)
@@ -6964,7 +6964,7 @@
 			(uuid "66d8b6fc-ba9d-43b5-a107-87a347767ff3")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C103")
 					(unit 1)
@@ -7067,7 +7067,7 @@
 			(uuid "02255a5f-8854-4274-b1d7-c962fdf8c451")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J103")
 					(unit 1)
@@ -7145,7 +7145,7 @@
 			(uuid "1e603256-d571-41c7-b6b8-5ac627b4968d")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0108")
 					(unit 1)
@@ -7222,7 +7222,7 @@
 			(uuid "87ddfb8e-ccdd-492b-b4f9-6f17b2b9de21")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0109")
 					(unit 1)
@@ -7300,7 +7300,7 @@
 			(uuid "c5a4f2fc-74a3-4b83-b925-a54374564508")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0107")
 					(unit 1)
@@ -7382,7 +7382,7 @@
 			(uuid "9ea68326-a057-4f5b-b2ed-d0d537e98cb1")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R103")
 					(unit 1)
@@ -7472,7 +7472,7 @@
 			(uuid "16623f67-e322-44d6-b051-bcf8024b3dee")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "D101")
 					(unit 1)
@@ -7553,7 +7553,7 @@
 			(uuid "b1b9a0dd-3bf9-4006-884e-560c85c752c3")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C101")
 					(unit 1)
@@ -7634,7 +7634,7 @@
 			(uuid "f7bc70cc-a7c1-424e-8b70-310f4c4cc057")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C108")
 					(unit 1)
@@ -7713,7 +7713,7 @@
 			(uuid "1935c016-2d53-452f-aa4a-ff491083e1d9")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C107")
 					(unit 1)
@@ -7791,7 +7791,7 @@
 			(uuid "9c40ea85-97de-4a5a-8eba-9dacdb7232c2")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0110")
 					(unit 1)
@@ -7868,7 +7868,7 @@
 			(uuid "6954f414-a480-46a8-ac77-789ab5ce9bc0")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0105")
 					(unit 1)
@@ -7947,7 +7947,7 @@
 			(uuid "e382acfb-6bb1-49f6-8fc9-cc7ce1015267")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R101")
 					(unit 1)
@@ -8029,7 +8029,7 @@
 			(uuid "58295e2f-0e89-418b-9f6d-81c37e27458e")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R104")
 					(unit 1)
@@ -8106,7 +8106,7 @@
 			(uuid "f0784c50-be2a-44f7-8e76-0bd8079ec0fb")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0115")
 					(unit 1)
@@ -8183,7 +8183,7 @@
 			(uuid "665b1d9d-ce90-4820-8450-6ffe3f3a57ca")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0111")
 					(unit 1)
@@ -8272,7 +8272,7 @@
 			(uuid "2e120da4-8403-44f7-8087-6a3ae6576c6d")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J102")
 					(unit 1)
@@ -8397,7 +8397,7 @@
 			(uuid "f043c26b-087f-4c1f-836e-8aca376fad85")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U102")
 					(unit 1)
@@ -8478,7 +8478,7 @@
 			(uuid "8212cec5-25bc-46a7-9ba1-c97d36071e71")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C104")
 					(unit 1)
@@ -8557,7 +8557,7 @@
 			(uuid "8ea09eb7-d279-49c0-a831-fbe6bbaffda1")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C106")
 					(unit 1)
@@ -8763,7 +8763,7 @@
 			(uuid "7f4af101-21ed-4a9e-b7f4-7a2088390afc")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U101")
 					(unit 1)
@@ -8841,7 +8841,7 @@
 			(uuid "45262e46-97b8-4b5b-959f-99d5568ec56b")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0104")
 					(unit 1)
@@ -8922,7 +8922,7 @@
 			(uuid "6f8f03af-f5d3-42ee-8866-b15d594e30a7")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C110")
 					(unit 1)
@@ -9003,7 +9003,7 @@
 			(uuid "2b59259a-dd89-4ecd-9783-63ab4dc9fd05")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C109")
 					(unit 1)
@@ -9157,7 +9157,7 @@
 			(uuid "fe133c98-969a-4eb9-bfe3-c5191f6550ef")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U103")
 					(unit 1)
@@ -9236,7 +9236,7 @@
 			(uuid "326d1c27-7f9d-4667-aa86-a8e99ca359b3")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R102")
 					(unit 1)
@@ -9314,7 +9314,7 @@
 			(uuid "f69d8aed-1b03-4f2e-b4da-4392e5659e57")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0113")
 					(unit 1)
@@ -9394,7 +9394,7 @@
 			(uuid "b2df6edb-24a6-4fb1-b7aa-efcc627f7c6e")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "CRC 01 Stream Verify"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C105")
 					(unit 1)

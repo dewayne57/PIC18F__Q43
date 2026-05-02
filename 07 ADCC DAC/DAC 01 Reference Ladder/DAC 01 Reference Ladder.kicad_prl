@@ -61,7 +61,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "UART 03 DMA RX Buffer.kicad_prl",
+    "filename": "ADCC 01 Window Comparator Hysteresis.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {

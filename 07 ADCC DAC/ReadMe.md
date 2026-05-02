@@ -2,10 +2,6 @@
 
 This family demonstrates analog acquisition and threshold control using ADCC and DAC.
 
-## Implementation Status Notice
-This peripheral family is not yet fully implemented. Current content is planning and
-scaffold-focused; register-complete, validated demonstrations are still in progress.
-
 ## What It Is
 ADCC is an analog-to-digital converter with computation features, and DAC is an
 internal digital-to-analog reference/output source.

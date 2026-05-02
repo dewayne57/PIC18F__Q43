@@ -2,10 +2,6 @@
 
 This family demonstrates SPI host transfers with loopback verification.
 
-## Implementation Status Notice
-This peripheral family is not yet fully implemented. Current content is planning and
-scaffold-focused; register-complete, validated demonstrations are still in progress.
-
 ## What It Is
 Serial Peripheral Interface (SPI) is a synchronous full-duplex serial bus using
 clocked data lines and chip-select signaling.
@@ -22,11 +18,13 @@ clocked data lines and chip-select signaling.
 - High-throughput burst transfers using DMA.
 
 ## Projects
-- SPI 01 Host Loopback Transfer
-- SPI 02 DMA Burst Transfer
+- SPI 01 Host
+- SPI 02 Host DMA
+- SPI 03 Slave
+- SPI 04 Slave DMA
 
 ## Shared Goals
 - Demonstrate reliable peripheral initialization.
 - Show observable behavior with measurable outputs.
 - Provide reusable firmware patterns for future projects.
-- Demonstrate DMA-backed full-duplex burst handling.
+- Demonstrate DMA-backed full-duplex communication handling.

@@ -265,7 +265,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "UART 03 DMA RX Buffer.kicad_pro",
+    "filename": "ADCC 01 Window Comparator Hysteresis.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -432,18 +432,18 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "UART 03 DMA RX Buffer.kicad_sch",
-        "name": "UART 03 DMA RX Buffer",
+        "filename": "ADCC 01 Window Comparator Hysteresis.kicad_sch",
+        "name": "ADCC 01 Window Comparator Hysteresis",
         "uuid": "d3b5dd27-4845-413f-badb-7f64f7fb8d77"
       }
     ],
-    "used_designators": "#PWR110-112,C103-104,C106-108,J103,U102",
+    "used_designators": "RV1,D103,#PWR110-112,R105",
     "variants": []
   },
   "sheets": [
     [
       "d3b5dd27-4845-413f-badb-7f64f7fb8d77",
-      "UART 03 DMA RX Buffer"
+      "ADCC 01 Window Comparator Hysteresis"
     ]
   ],
   "text_variables": {},

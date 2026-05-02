@@ -61,7 +61,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "UART 03 DMA RX Buffer.kicad_prl",
+    "filename": "FVR 01 Reference Bring Up.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
