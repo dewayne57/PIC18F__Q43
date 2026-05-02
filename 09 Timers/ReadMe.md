@@ -14,6 +14,11 @@ time bases and measuring intervals.
 - Generates periodic interrupts.
 - Counts pulses over configured windows.
 - Produces one-shot timeouts and delays.
+- Triggers deterministic ADCC sampling.
+- Supports DMA-based sample logging.
+- Builds low-power wake sleep schedules.
+- Provides timer-synchronized PWM control.
+- Implements multi-rate software task scheduling.
 
 ## Common Uses
 - System scheduling and heartbeat ticks.
@@ -24,6 +29,13 @@ time bases and measuring intervals.
 - TMR 01 Periodic Interrupt Tick
 - TMR 02 External Counter Gate
 - TMR 03 One Shot Timeout
+- TMR 04 Timer Triggered ADCC Sampler
+- TMR 05 Timer ADCC DMA Burst Logger
+- TMR 06 Sleep Scheduler RTC Tick
+- TMR 07 Pulse Width Measurement Gate
+- TMR 08 PWM Ramp Generator
+- TMR 09 CLC Timed Pulse Qualifier
+- TMR 10 Multi Rate Task Wheel
 
 ## Shared Goals
 - Demonstrate reliable peripheral initialization.
