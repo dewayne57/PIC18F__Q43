@@ -102,3 +102,9 @@ debug
 dist
 /01 UART/UART 01 Interrupt Echo Console/*.log
 /01 UART/UART 01 Interrupt Echo Console/defmplabxtrace.log.inx
+03 I2C/I2C 01 Bit Bang Master/.history
+03 I2C/I2C 01 Bit Bang Master/.history
+03 I2C/I2C 02 Module Master/.history
+03 I2C/I2C 03 Module Slave/.history
+03 I2C/I2C 04 Module Master DMA/.history
+03 I2C/I2C 05 Module Slave DMA/.history
