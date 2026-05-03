@@ -23,6 +23,7 @@
 void main(void)
 {
     char received;
+    int counter = 0;
 
     SYSTEM_Initialize();
     UART1_Initialize();
@@ -39,7 +40,7 @@ void main(void)
         }
         
         __delay_ms(1000); 
-//        printf("Test\r\n");
+        printf("Test %i\r\n", counter++);
     }
 }
 
