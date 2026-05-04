@@ -103,3 +103,5 @@ dist
 /01 UART/UART 01 Interrupt Echo Console/*.log
 /01 UART/UART 01 Interrupt Echo Console/defmplabxtrace.log.inx
 **/.history
+/01 UART/UART 01 Interrupt Echo Console/UART 01 Echo Console-backups
+/01 UART/UART 02 DMA TX Stream/UART 02 DMA TX Stream-backups
