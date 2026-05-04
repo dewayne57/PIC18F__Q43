@@ -31,20 +31,13 @@
 
 void main(void)
 {
-    uint16_t ms_tick = 0U;
-
     UART_Initialize();
 
     while (true)
     {
-        __delay_ms(1);
-        ms_tick++;
-        if (ms_tick >= 1000U)
-        {
-            ms_tick = 0U;
-            printf("Hello, UART DMA TX + RX DMA!\r\n");
-        }
-
+        __delay_ms(1000);
+        printf("Hello, UART DMA TX + RX DMA!\r\n");
+ 
         if (UART_DMA_RX_BufferAvailable())
         {
             uint16_t length = 0U;
@@ -54,13 +47,7 @@ void main(void)
             {
                 uint16_t i;
                 printf("RX DMA buffer ready: %u bytes\r\n", length);
-                for (i = 0U; i < length; i++)
-                {
-                    putch(buffer[i]);
-                }
-                putch('\r');
-                putch('\n');
-
+                printf("Data: %s\r\n", buffer);
                 UART_DMA_RX_ReleaseBuffer();
             }
         }

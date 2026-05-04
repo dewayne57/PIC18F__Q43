@@ -12,9 +12,8 @@ UART_DMA_RX_BufferAvailable(), then retrieves a direct pointer from
 UART_DMA_RX_GetBuffer(). After processing, UART_DMA_RX_ReleaseBuffer() marks the
 buffer free so DMA can reuse it.
 
-If both RX buffers are occupied, RX DMA pauses and software deasserts RTS
-(not-ready) to throttle the sender. RX automatically resumes and RTS returns to
-ready once a buffer is released.
+UART1 hardware flow control is enabled with RTS on RB2 and CTS on RB3. If both
+RX buffers are occupied, RX DMA pauses and resumes once a buffer is released.
 
 TX output uses the retained DMA TX path (`putch`), so periodic status text and
 echoed RX payloads are transmitted without polling on every byte.

@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-/* PIC18F27Q43 Configuration Bit Settings */
+/* PIC18F Q43 Configuration Bit Settings */
 #pragma config FEXTOSC = OFF
 #pragma config RSTOSC = HFINTOSC_64MHZ
 #pragma config CSWEN = OFF
@@ -40,12 +40,6 @@
 #define _XTAL_FREQ (64000000L)
 #define _UART_BAUD (115200L)
 #define UART_BUFFER_SIZE (256U)
-
-/* Software-managed RTS output used to throttle remote TX when RX buffers are full. */
-#define UART_RTS_TRIS TRISDbits.TRISD1
-#define UART_RTS_LAT  LATDbits.LATD1
-#define UART_RTS_READY_LEVEL (0U)
-#define UART_RTS_PAUSE_LEVEL (1U)
 
 void UART_Initialize(void);
 

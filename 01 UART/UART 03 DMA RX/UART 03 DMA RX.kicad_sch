@@ -4120,7 +4120,7 @@
 	)
 	(text "NOTE:  A common mistake is to wire the controllers TX output to the TX\npin of the FT232.  The  FT232 is labeled from the perspective of a remote\ndevice you want to connect to, so the FT232 TX pin should be connected to\nthe controllers RX input, FT232 RX pin to the controllers TX output, etc.\nCross connect RTS and CTS as well. \n\nThis is NOT the case when using an RS232 level shifter such as the \nMAX232, which is simply translating the signals to RS-232 levels. "
 		(exclude_from_sim no)
-		(at 63.246 187.96 0)
+		(at 30.734 177.038 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4579,6 +4579,16 @@
 	)
 	(wire
 		(pts
+			(xy 232.41 62.23) (xy 219.71 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "22e4e545-a939-4c5f-a7b9-1a651454912d")
+	)
+	(wire
+		(pts
 			(xy 201.93 46.99) (xy 209.55 46.99)
 		)
 		(stroke
@@ -4649,6 +4659,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 54.61) (xy 222.25 72.39)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "30334c44-edfb-4ccd-8814-b3d0ff80b544")
+	)
+	(wire
+		(pts
 			(xy 242.57 147.32) (xy 234.95 147.32)
 		)
 		(stroke
@@ -4656,16 +4676,6 @@
 			(type default)
 		)
 		(uuid "30df5418-8b04-4387-9689-b9bd7a02b3b3")
-	)
-	(wire
-		(pts
-			(xy 212.09 62.23) (xy 212.09 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "34e296aa-40c4-4348-b773-44a448c2a4c2")
 	)
 	(wire
 		(pts
@@ -5189,6 +5199,16 @@
 	)
 	(wire
 		(pts
+			(xy 201.93 59.69) (xy 219.71 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "86ebd02e-85d1-46c1-a87f-5a99976f9d6b")
+	)
+	(wire
+		(pts
 			(xy 121.92 54.61) (xy 121.92 53.34)
 		)
 		(stroke
@@ -5339,6 +5359,16 @@
 	)
 	(wire
 		(pts
+			(xy 219.71 59.69) (xy 219.71 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a400df03-0943-4841-88a3-773cdc707daa")
+	)
+	(wire
+		(pts
 			(xy 139.7 119.38) (xy 162.56 119.38)
 		)
 		(stroke
@@ -5419,16 +5449,6 @@
 	)
 	(wire
 		(pts
-			(xy 201.93 59.69) (xy 212.09 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b3ab4812-da41-4a06-bc7f-034488e32fac")
-	)
-	(wire
-		(pts
 			(xy 241.3 134.62) (xy 238.76 134.62)
 		)
 		(stroke
@@ -5479,16 +5499,6 @@
 	)
 	(wire
 		(pts
-			(xy 222.25 72.39) (xy 222.25 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bc8e9f87-154e-4a0d-aa62-445606282d45")
-	)
-	(wire
-		(pts
 			(xy 33.02 85.09) (xy 60.96 85.09)
 		)
 		(stroke
@@ -5516,16 +5526,6 @@
 			(type default)
 		)
 		(uuid "c2f1907b-04f4-45b5-809d-afa56f00791a")
-	)
-	(wire
-		(pts
-			(xy 232.41 62.23) (xy 212.09 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c467dd4b-c9ed-499c-8127-94ea5094a741")
 	)
 	(wire
 		(pts
@@ -5897,7 +5897,7 @@
 		)
 		(uuid "3360aeaa-a0ed-4bfb-9fc3-bff936e020da")
 	)
-	(label "RTS"
+	(label "UART1_RTS"
 		(at 33.02 87.63 0)
 		(effects
 			(font
@@ -5907,7 +5907,7 @@
 		)
 		(uuid "39066d36-68a7-4e8d-b5c2-74d3cca68723")
 	)
-	(label "RTS"
+	(label "UART1_RTS"
 		(at 140.97 74.93 0)
 		(effects
 			(font
@@ -5917,7 +5917,7 @@
 		)
 		(uuid "3920cfc1-3e86-4633-b30e-90d8cbaa30ef")
 	)
-	(label "TxD"
+	(label "Send_Data"
 		(at 203.2 59.69 0)
 		(effects
 			(font
@@ -5937,7 +5937,7 @@
 		)
 		(uuid "4672a65a-05c1-4ec8-b714-da1a16506869")
 	)
-	(label "CTS"
+	(label "UART1_CTS"
 		(at 33.02 90.17 0)
 		(effects
 			(font
@@ -5947,7 +5947,7 @@
 		)
 		(uuid "6c09260b-4f94-47d3-9d8a-a1c2719301eb")
 	)
-	(label "RxD"
+	(label "Receive_Data"
 		(at 203.2 69.85 0)
 		(effects
 			(font
@@ -5977,7 +5977,7 @@
 		)
 		(uuid "e4b33925-b7dd-4547-bbb1-a9d4a44fecef")
 	)
-	(label "CTS"
+	(label "UART1_CTS"
 		(at 140.97 64.77 0)
 		(effects
 			(font
@@ -5987,7 +5987,7 @@
 		)
 		(uuid "e5d9773c-1118-4f3c-9f05-1a5d455a458b")
 	)
-	(label "RTS"
+	(label "UART1_RTS"
 		(at 139.7 121.92 0)
 		(effects
 			(font
@@ -5997,7 +5997,7 @@
 		)
 		(uuid "f8d9c07f-9abe-491a-8165-ce503445f76d")
 	)
-	(label "CTS"
+	(label "UART1_CTS"
 		(at 139.7 119.38 0)
 		(effects
 			(font
@@ -6089,7 +6089,7 @@
 			(uuid "01c6494b-3ea7-4c12-9784-7b360d274608")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "D102")
 					(unit 1)
@@ -6166,7 +6166,7 @@
 			(uuid "85cc652b-a08d-4ba3-98c8-1c12eeaf67e4")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0117")
 					(unit 1)
@@ -6243,7 +6243,7 @@
 			(uuid "e0cfd2c7-1968-4174-997b-e97b8b55a277")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0106")
 					(unit 1)
@@ -6321,7 +6321,7 @@
 			(uuid "955f8f85-ae13-4e65-813e-3f3fb59fee2d")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0112")
 					(unit 1)
@@ -6402,7 +6402,7 @@
 			(uuid "c9bb861a-b767-4fb8-b0de-4ae1f94057cc")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C102")
 					(unit 1)
@@ -6480,7 +6480,7 @@
 			(uuid "b1cad2d5-ccce-4bd8-a492-bd7a06399009")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0101")
 					(unit 1)
@@ -6557,7 +6557,7 @@
 			(uuid "3423853f-c2fb-4b44-b2df-034e089b47de")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0116")
 					(unit 1)
@@ -6635,7 +6635,7 @@
 			(uuid "b5110850-7a3e-45d9-9020-e5d4fef9b8bb")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0114")
 					(unit 1)
@@ -6726,7 +6726,7 @@
 			(uuid "8a21586d-aefa-4fcb-83a4-446d5e4c4504")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J101")
 					(unit 1)
@@ -6804,7 +6804,7 @@
 			(uuid "0dd67a1b-978c-4dd8-8b82-112fdf29114b")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0102")
 					(unit 1)
@@ -6882,7 +6882,7 @@
 			(uuid "8c86baf7-4508-4bf1-a205-6b350e93adbd")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0103")
 					(unit 1)
@@ -6964,7 +6964,7 @@
 			(uuid "66d8b6fc-ba9d-43b5-a107-87a347767ff3")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C103")
 					(unit 1)
@@ -7067,7 +7067,7 @@
 			(uuid "02255a5f-8854-4274-b1d7-c962fdf8c451")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J103")
 					(unit 1)
@@ -7145,7 +7145,7 @@
 			(uuid "1e603256-d571-41c7-b6b8-5ac627b4968d")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0108")
 					(unit 1)
@@ -7222,7 +7222,7 @@
 			(uuid "87ddfb8e-ccdd-492b-b4f9-6f17b2b9de21")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0109")
 					(unit 1)
@@ -7300,7 +7300,7 @@
 			(uuid "c5a4f2fc-74a3-4b83-b925-a54374564508")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0107")
 					(unit 1)
@@ -7382,7 +7382,7 @@
 			(uuid "9ea68326-a057-4f5b-b2ed-d0d537e98cb1")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R103")
 					(unit 1)
@@ -7472,7 +7472,7 @@
 			(uuid "16623f67-e322-44d6-b051-bcf8024b3dee")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "D101")
 					(unit 1)
@@ -7553,7 +7553,7 @@
 			(uuid "b1b9a0dd-3bf9-4006-884e-560c85c752c3")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C101")
 					(unit 1)
@@ -7634,7 +7634,7 @@
 			(uuid "f7bc70cc-a7c1-424e-8b70-310f4c4cc057")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C108")
 					(unit 1)
@@ -7713,7 +7713,7 @@
 			(uuid "1935c016-2d53-452f-aa4a-ff491083e1d9")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C107")
 					(unit 1)
@@ -7791,7 +7791,7 @@
 			(uuid "9c40ea85-97de-4a5a-8eba-9dacdb7232c2")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0110")
 					(unit 1)
@@ -7868,7 +7868,7 @@
 			(uuid "6954f414-a480-46a8-ac77-789ab5ce9bc0")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0105")
 					(unit 1)
@@ -7947,7 +7947,7 @@
 			(uuid "e382acfb-6bb1-49f6-8fc9-cc7ce1015267")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R101")
 					(unit 1)
@@ -8029,7 +8029,7 @@
 			(uuid "58295e2f-0e89-418b-9f6d-81c37e27458e")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R104")
 					(unit 1)
@@ -8106,7 +8106,7 @@
 			(uuid "f0784c50-be2a-44f7-8e76-0bd8079ec0fb")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0115")
 					(unit 1)
@@ -8183,7 +8183,7 @@
 			(uuid "665b1d9d-ce90-4820-8450-6ffe3f3a57ca")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0111")
 					(unit 1)
@@ -8272,7 +8272,7 @@
 			(uuid "2e120da4-8403-44f7-8087-6a3ae6576c6d")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J102")
 					(unit 1)
@@ -8397,7 +8397,7 @@
 			(uuid "f043c26b-087f-4c1f-836e-8aca376fad85")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U102")
 					(unit 1)
@@ -8478,7 +8478,7 @@
 			(uuid "8212cec5-25bc-46a7-9ba1-c97d36071e71")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C104")
 					(unit 1)
@@ -8557,7 +8557,7 @@
 			(uuid "8ea09eb7-d279-49c0-a831-fbe6bbaffda1")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C106")
 					(unit 1)
@@ -8763,7 +8763,7 @@
 			(uuid "7f4af101-21ed-4a9e-b7f4-7a2088390afc")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U101")
 					(unit 1)
@@ -8841,7 +8841,7 @@
 			(uuid "45262e46-97b8-4b5b-959f-99d5568ec56b")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0104")
 					(unit 1)
@@ -8922,7 +8922,7 @@
 			(uuid "6f8f03af-f5d3-42ee-8866-b15d594e30a7")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C110")
 					(unit 1)
@@ -9003,7 +9003,7 @@
 			(uuid "2b59259a-dd89-4ecd-9783-63ab4dc9fd05")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C109")
 					(unit 1)
@@ -9157,7 +9157,7 @@
 			(uuid "fe133c98-969a-4eb9-bfe3-c5191f6550ef")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U103")
 					(unit 1)
@@ -9236,7 +9236,7 @@
 			(uuid "326d1c27-7f9d-4667-aa86-a8e99ca359b3")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R102")
 					(unit 1)
@@ -9314,7 +9314,7 @@
 			(uuid "f69d8aed-1b03-4f2e-b4da-4392e5659e57")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0113")
 					(unit 1)
@@ -9394,7 +9394,7 @@
 			(uuid "b2df6edb-24a6-4fb1-b7aa-efcc627f7c6e")
 		)
 		(instances
-			(project "UART 03 DMA RX Buffer"
+			(project "UART 03 DMA RX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C105")
 					(unit 1)

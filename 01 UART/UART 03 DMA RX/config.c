@@ -30,20 +30,21 @@ void UART_Initialize(void)
     ANSELC = 0x00U;
     ANSELD = 0x00U;
 
-    /* UART1 pins: TX on RC6, RX on RC7. */
-    TRISCbits.TRISC6 = 0U;
-    TRISCbits.TRISC7 = 1U;
+    /* UART1 pins: RX on RB0, TX on RB1, RTS on RB2, CTS on RB3. */
+    TRISBbits.TRISB0 = 1U;
+    TRISBbits.TRISB1 = 0U;
+    TRISBbits.TRISB2 = 0U;
+    TRISBbits.TRISB3 = 1U;
 
-    /* Software RTS output, active level defined in config.h. */
-    UART_RTS_TRIS = 0U;
-    UART_RTS_LAT = UART_RTS_READY_LEVEL;
+    RB1PPS = 0x20U;
+    RB2PPS = 0x22U;
+    U1RXPPS = 0x08U;
+    U1CTSPPS = 0x0BU;
 
-    RC6PPS = 0x20U;
-    U1RXPPS = 0x17U;
-
-    /* UART enabled in async mode with TX and RX active. */
+    /* UART enabled in async mode with RTS/CTS hardware flow control. */
     U1CON0 = 0xB0U;
     U1CON1 = 0x80U;
+    U1CON2 = 0x83U;
     U1BRG = (uint16_t)((_XTAL_FREQ / (4UL * _UART_BAUD)) - 1UL);
 
     /* Initialize DMA1 used for UART RX buffer capture. */
@@ -83,6 +84,7 @@ void UART_Initialize(void)
     DMA2AIE = 1U;
     DMA2ORIE = 1U;
 
+    // Initialize application state for UART DMA RX and TX modules.
     UART_DMA_RX_StateInitialize();
     UART_DMA_TX_StateInitialize();
 
