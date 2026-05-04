@@ -1,9 +1,16 @@
 # PIC18F Q43 Family Examples
 
-This repository is intended to hold examples and schematic/code fragments for the
+This repository is intended to provide examples and schematic/code fragments for the
 Microchip PIC18F Q43 family. The goal is to demonstrate peripheral usage,
 interrupt behavior, and practical embedded patterns that can be reused in other
 projects.
+
+Therefore, the circuits tend to be as simple as possible, favoring older 
+technology external devices to ensure a hobbyist can obtain the needed parts.
+For example, when op-amps are used, I tend to favor older, simpler devices such 
+as OP07, LM1448, TL062, TL072, LM334, etc.  The same is true for other devices 
+as well. The goal is to demonstrate the use of the specific peripheral, not to 
+dazzle the reader with sophistication and complexity.
 
 ## Supported Devices
 
@@ -19,7 +26,13 @@ Planned target devices include:
 - PIC18F56Q43
 - PIC18F57Q43
 
-Projects were originally developed and tested on PIC18F27Q43 and PIC18F47Q43.
+Projects were originally developed and tested on PIC18F27Q43 and PIC18F47Q43.  In 
+most cases, the 47Q43 (TQFP-44) device is shown in the schematics.  This was for 
+convenience to me.  I have also tested all the circuits with the 27Q43 device, 
+but in some cases required modifications to the schematic (mainly because of 
+lack of ports or conflicts with the ICSP pins). I avoided using jumpers or other 
+means of disconnection of the ICSP pins to allow the user to run the code under 
+the debugger with full functionality. 
 
 ## Toolchain
 
@@ -28,7 +41,7 @@ The development environment used for these examples:
 - MPLAB X IDE 6.30
 - MPLAB XC8 3.10
 - Visual Studio Code 1.113
-- KiCad 9.0.7
+- KiCad 10.0.1
 
 ## Included Example Families
 
@@ -40,20 +53,31 @@ write messages that help you understand how the code works.
 Therefore, the first module is dedicated to using the UART.  This module will be used 
 as part of all other modules to allow logging.  
 
+The various groups of projects that demonstrate a specific peripheral are numbered 
+with a 2-digit prefix.  This numbering scheme is the order I felt made the most 
+sense to allow a new user to the Q43 to become familiar with the family. A user 
+already familiar with the Q43 family can safely use these demonstrations in any order.
+
 ### 01 - Universal Asynchronous Receiver Transmitter (UART)
 
 This family demonstrates UART console and interrupt-driven receive paths.  There is a 
 fair amount of information available that demonstrates using the UARTs in a blocking 
-approach, meaning that the code loops through the data sending each byte, waiting for 
-the UART to become free, then sending the next byte, and so forth. 
+approach.  This is simple to implement but almost never used in actual applications.
+The reason for this is that when the I/O operation is started, the code "blocks" 
+execution of other functions by looping and/or waiting for the I/O operation to 
+complete.  This essentially reduces the ability of the controller to perform 
+processing to the speed of the UART, which is terribly slow compared to the actual 
+capabilities of the controller.
 
-The problem with this approach is that it stops all other processing in the microcontroller
-and is almost never used in real production applications.  Instead, non-blocking approaches
-requiring the use of interrupts is the best approach because it allows the microcontroller 
-to perform whatever it needs to do, and serial I/O is interrupt driven.
+Instead, non-blocking approaches are almost always used.  This means the I/O 
+operation is started and the processing performed by the controller continues.  The 
+I/O operation continues asynchronously to the controller processing.  We then need 
+to know when the I/O operation is completed and start the next I/O operation, again 
+to proceed asynchronously.  This relies on hardware capabilities built-in to the 
+controller to generate interrupts when various conditions are reached. 
 
-Therefore, I am not going to show the blocking implementation but instead focus on 
-interrupt-driven (asynchronous) approachs to read and write serial data.
+Therefore, I am not going to show blocking implementations but instead focus on 
+interrupt-driven and DMA (asynchronous) approachs to read and write serial data.
 
 Projects:
 
@@ -61,7 +85,7 @@ Projects:
   interrupt-driven read and write implementation, implementing putch() for use of C runtime
   functions, and the echo of received data.
 
-- UART 02 DMA TX Stream: This demonstration shows the use of DMA (Direct Memory Access) to 
+- UART 02 DMA TX: This demonstration shows the use of DMA (Direct Memory Access) to 
   transfer data from an in-memory buffer using the hardware DMA facility to manage the 
   transfer of the data.  DMA offloads the software by setting up the hardware to do the 
   transfers automatically. 
@@ -70,12 +94,15 @@ Projects:
   buffers, exposing an API to check when a receive buffer is available and retrieve it for
   processing. The UART 01 module uses an interrupt-managed ring buffer; this example
   demonstrates an alternative receive path where DMA performs the byte movement into memory.
+  This project also introduces the use of hardware flow control (RTS/CTS) to prevent
+  buffer overruns. 
 
 Demonstrated concepts:
 
 - Interrupt-driven TX/RX handling
 - Console command and echo flow
 - DMA-assisted serial data movement
+- Hardware flow control
 
 ### 02 - Interrupt-On-Change (IOC)
 
