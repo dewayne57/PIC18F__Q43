@@ -1,0 +1,46 @@
+/* *****************************************************************************************
+ *   File Name: uart_dma_tx.h
+ *   Description: DMA module API for UART 02 DMA TX Stream.
+ *   Author: Dewayne Hafenstein
+ *   Date: 2026-04-10
+ * 
+ *   Copyright (c) 2026, Dewayne Hafenstein.
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * ***************************************************************************************** */
+
+#ifndef UART_DMA_TX_H
+#define UART_DMA_TX_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+/// @brief Initialize UART DMA TX module runtime state.
+/// @param None
+/// @return None
+void UART_DMA_TX_Initialize(void);
+
+/// @brief Service DMA TX completion and error interrupts.
+/// @param None
+/// @return None
+void UART_DMA_TX_ISR(void);
+
+/// @brief Redirect stdio character output to the UART DMA TX path.
+/// @param byte Character to transmit.
+/// @return None
+void putch(char byte);
+
+/// @brief Initialize internal ping-pong buffer state before use.
+/// @param None
+/// @return None
+void UART_DMA_TX_StateInitialize(void);
+
+
+#endif /* UART_DMA_TX_H */

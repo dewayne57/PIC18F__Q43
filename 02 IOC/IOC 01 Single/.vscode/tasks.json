@@ -1,0 +1,37 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: XC8 (PIC18F47Q43)",
+            "type": "shell",
+            "command": "\"C:/Program Files/Microchip/xc8/v3.10/bin/xc8-cc.exe\"",
+            "args": [
+                "-mcpu=18F47Q43",
+                "-mdfp=C:/Program Files/Microchip/MPLABX/v6.30/packs/Microchip/PIC18F-Q_DFP/1.28.451/xc8",
+                "-I.", 
+                "-o", "IOC_Single.elf",
+                "main.c",
+                "config.c",
+                "ioc.c"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "xc8",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.+):(\\d+):\\s+(warning|error):\\s+(.+)$",
+                    "file": 1,
+                    "line": 2,
+                    "severity": 3,
+                    "message": 4
+                }
+            }
+        }
+    ]
+}
