@@ -1,33 +1,26 @@
 /* *****************************************************************************************
  *   File Name: config.c
- *   Description: System initialization for UART 01 Interrupt Echo Console.
+ *   Description: System initialization for I2C 01 Bit Bang Master demonstration.
  *   Author: Dewayne Hafenstein
- *   Date: 2026-04-10
+ *   Date: 2026-05-11
  * 
  *   Configure Port B pins for use by UART 1 as follows: 
  *   RB0 - TX1 (output)
  *   RB1 - RX1 (input)
- *   RB2 - CTS1 (input)
- *   RB3 - RTS1 (output)
+ *   RB2 - External IOC interrupt input
  * 
- *  The demonstration will use the internal 64MHz high frequency oscillator as the system clock.
- *  The PIC 18F47Q43 has a built in baud rate generator that can be used to generate the required
- *  baud rates for the UART module. The baud rate generator can be configured to use the system clock
- *  or an external clock source. In this demonstration, we will use the system clock as the source for the baud rate generator.
- *  The baud rate generator can be configured to generate baud rates up to 115200 baud with a system clock of 64MHz.
- *  The UART module will be configured to use the baud rate generator to generate the required baud
- *  rates for the demonstration.
- *  The UART module will be configured to use the internal clock source for the baud rate generator,
- *  and the baud rate will be set to 9600 baud, No parity, 8 data bits, and 1 stop bit. 
+ *   Configure Port C pins for I2C bit bang master as follows:
+ *   RC3 - I2C SCK (Serial Clock) - open-drain output
+ *   RC4 - I2C SDA (Serial Data) - open-drain output
  * 
- *   Note, this will require the use of the PPS system to assign the UART 1 functions to 
- *   the appropriate pins.
+ *   The demonstration will use the internal 64MHz high frequency oscillator as the system clock.
  ***************************************************************************************** */
 
 #include <xc.h>
 #include <stdio.h>
 #include "config.h"
-#include "uart.h"
+#include "../../Libraries/PPSLIB/pps.h"
+#include "extern_ioc.h"
 
 /// @brief Initialize system-level hardware used by the UART demonstration.
 /// @param None
@@ -36,7 +29,9 @@ void SYSTEM_Initialize(void)
 {
     /* Disable global interrupts while modifying shared hardware registers to prevent
        an ISR from running on partially-configured hardware. */
-    INTCON0bits.GIE = 0;
+    INTCON0bits.GIEH = 0;
+    INTCON0bits.GIEL = 0;
+    INTCON0bits.IPEN = 1; // Enable priority interrupts, so we can use low-priority for the UART ISRs.
 
     /* The ANSEL (Analog SELect) registers control whether each I/O pin acts as an analog
        input (ANSEL bit = 1) or a digital I/O (ANSEL bit = 0).  Clearing them ensures that
@@ -46,7 +41,47 @@ void SYSTEM_Initialize(void)
     ANSELC = 0x00;  // All Port C pins: digital mode
     ANSELD = 0x00;  // All Port D pins: digital mode
 
+    /*
+     * Enable all peripheral modules that are required
+     */
+    PMD0bits.SYSCMD = 0; // System clock network enabled
+    PMD6bits.I2C1MD = 0; // I2C1 module enabled
+    PMD6bits.U1MD = 0;   // UART 1 enabled
+
+    // UART1 pin setup: RB0 = TX1, RB1 = RX1
+    TRISBbits.TRISB0 = 0;
+    TRISBbits.TRISB1 = 1;
+    ANSELBbits.ANSELB0 = 0;
+    ANSELBbits.ANSELB1 = 0;
+
+    // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (configured as open-drain outputs)
+    TRISCbits.TRISC3 = 1;  // RC3 initially high-impedance
+    TRISCbits.TRISC4 = 1;  // RC4 initially high-impedance
+    ANSELCbits.ANSELC3 = 0;
+    ANSELCbits.ANSELC4 = 0;
+
+    // External IOC on RB2 for interrupt input
+    TRISBbits.TRISB2 = 1;   // RB2 is input
+    ANSELBbits.ANSELB2 = 0; // RB2 is digital
+    WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
+
+    PPS_Unlock();
+    RB0PPS = 0x20;
+    U1RXPPS = 0x09;
+    PPS_Lock();
+
+    // Initialize external interrupt on change handler for RB2
+    ExternIoc_Initialize();
+
+    // Enable IOC on RB2 for both rising and falling edges
+    IOCBbits.IOCB2 = 1;
+    IOCCF = 0x00;
+    PIR0bits.IOCIF = 0;
+
+    __delay_ms(100); // Short delay to allow hardware to stabilize before enabling interrupts.
+
     /* Re-enable interrupts now that hardware registers are stable. */
-    INTCON0bits.GIE = 1;
+    INTCON0bits.GIEH = 1;
+    INTCON0bits.GIEL = 1;
 }
 
