@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include "uartlib.h"
 
+static void UART_SetBaudRate(const uart_handle_t *uart); 
+
 static uart_handle_t *uart_instances[5] = { (uart_handle_t *)0 };
 static uart_handle_t *uart_printf_target = (uart_handle_t *)0;
 
@@ -234,12 +236,32 @@ static void UART_ApplyConfiguration(const uart_handle_t *uart)
     default:
         break;
     }
+
+    UART_SetBaudRate(uart);
 }
 
 /// @brief Program the baud-rate divisor for the selected UART.
-static void UART_SetBaudRate(uart_port_t port, uint16_t brg_value)
+static void UART_SetBaudRate(const uart_handle_t *uart)
 {
-    switch (port)
+    uint16_t brg_value;
+
+    /*
+     * Compute the baud rate generator value from the requested baud rate and mode.  The 
+     * formula is:
+     * 
+     * - Standard speed (high_speed_baud=false): brg_value = (Fosc / (16 * BaudRate)) - 1
+     * - High speed     (high_speed_baud=true):  brg_value = (Fosc /  (4 * BaudRate)) - 1
+     */
+    if (uart->high_speed_baud)
+    {
+        brg_value = (uint16_t)((uart->fosc / (4U * uart->baud_rate)) - 1U);
+    }
+    else
+    {
+        brg_value = (uint16_t)((uart->fosc / (16U * uart->baud_rate)) - 1U);
+    }
+
+    switch (uart->port)
     {
     case UART_PORT_1:
         U1BRG = brg_value;
@@ -770,7 +792,7 @@ bool UART_Open(uart_handle_t *uart)
 
     UART_ResetHardware(uart->port);
     UART_ApplyConfiguration(uart);
-    UART_SetBaudRate(uart->port, uart->brg_value);
+    UART_SetBaudRate(uart);
     UART_ClearErrors(uart->port);
     UART_EnableShiftEmptyInterrupt(uart->port);
     UART_SetTxInterruptEnabled(uart->port, false);

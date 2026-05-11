@@ -20,6 +20,7 @@
 
 #include <xc.h>
 #include "config.h"
+#include "pps.h"
 #include <stdbool.h>
 
 static bool system_initialized = false;
@@ -33,11 +34,8 @@ void SYSTEM_Initialize(void)
 {
     system_initialized = false;
 
-    /*
-     * Disable interrupts and force flat (single-vector) mode
-     */
-    INTCON0bits.GIE = 0;
-    INTCON0bits.IPEN = 0;
+    INTCON0bits.GIE = 0;   // Disable interrupts during initialization.
+    INTCON0bits.IPEN = 0;  // Disable interrupt priority levels.
 
     /*
      * Clear all interrupt enables
@@ -119,6 +117,7 @@ void SYSTEM_Initialize(void)
      */
     PMD0bits.SYSCMD = 0; // System clock network enabled
     PMD0bits.IOCMD = 0;  // Interrupt on change module enabled
+    PMD6bits.U1MD = 0;   // UART 1 enabled
 
     // IOC on all PORTC pins for both edges.
     IOCCP = 0xFF;
@@ -126,14 +125,24 @@ void SYSTEM_Initialize(void)
     IOCCF = 0x00;
     PIR0bits.IOCIF = 0;
     PIE0bits.IOCIE = 1;
+    
+    /* Setup RB0 (TxD) and RB1 (RxD) for UART usage */
+    TRISBbits.TRISB0 = 0;
+    TRISBbits.TRISB1 = 1;
+    ANSELBbits.ANSELB0 = 0;
+    ANSELBbits.ANSELB1 = 0;
+
+    PPS_Unlock();
+    RB0PPS = 0x20;
+    U1RXPPS = 0x09;
+    PPS_Lock();
+
 
     // Initialize output state so PORTD mirrors inverted PORTC at startup.
     LATD = (uint8_t)(~PORTC);
 
-    /*
-     * Enable global interrupts
-     */
-    INTCON0bits.GIE = 1; // Interrupts enabled
+    /* Global interrupt enable. */
+    INTCON0bits.GIE = 1;
 
     system_initialized = true;
 }

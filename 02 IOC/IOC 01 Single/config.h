@@ -30,8 +30,7 @@
 #pragma config BOREN = 3               // Brown-out reset is enabled
 #pragma config LPBOREN = OFF           // Low power brown-out reset is disabled
 #pragma config IVT1WAY = 0             // IVTLOCK Set/cleared repeatedly
-#pragma config MVECEN = 0              // Vectored interrupts disabled <== Note: This is required
-                                       // for single level interrupts
+#pragma config MVECEN = 0              // Vectored interrupts disabled
 #pragma config PWRTS = 2               // Power up timer at 64mS
 #pragma config MCLRE = 1               // Master clear retains that function
 #pragma config XINST = OFF             // No extended instruction set

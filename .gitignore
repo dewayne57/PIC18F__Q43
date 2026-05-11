@@ -115,3 +115,7 @@ nbproject
 01 UART/UART 01 Interrupt Echo Console/nbproject/private/private.xml
 01 UART/UART 03 DMA RX/mcc-manifest-autosave.yml
 01 UART/UART 03 DMA RX/UART_03_DMA_RX.mc3
+IOC_Single-backups
+.vscode
+/02 IOC/IOC 01 Single/IOC_Single.cmf
+/02 IOC/IOC 01 Single/.vscode

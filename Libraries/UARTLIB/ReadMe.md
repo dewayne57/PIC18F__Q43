@@ -67,7 +67,7 @@ static char console_rx_buffer[128];
 
 static uart_handle_t console_uart = {
   .port = UART_PORT_1,
-  .brg_value = 68U,
+  .brg_value = 19200U,
   .high_speed_baud = false,
   .data_bits = 8U,
   .parity = UART_PARITY_NONE,

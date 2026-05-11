@@ -96,22 +96,25 @@ typedef enum
  */
 typedef struct
 {
+    uint32_t          fosc;             /**< Peripheral clock frequency in Hz, used to calculate baud rate divisors */  
+    uint32_t          baud_rate;        /**< Baud Rate Desired, such as 19200 */
+    uint16_t          tx_buffer_size;   /**< Transmit buffer size, must be a power of 2 */
+    uint16_t          rx_buffer_size;   /**< Receive buffer size, must be a power of 2 */
     uart_port_t       port;             /**< Which UART peripheral this handle controls */
-    uint16_t          brg_value;        /**< Pre-calculated BRG divisor value */
-     bool              high_speed_baud;  /**< BRGS mode select: false=standard, true=high speed */
+    bool              high_speed_baud;  /**< Baud rate mode select: false=standard, true=high speed */
     uint8_t           data_bits;        /**< 8 or 9 data bits */
     uart_parity_t     parity;           /**< Parity mode */
     uart_stop_bits_t  stop_bits;        /**< Number of stop bits */
     uart_flow_t       flow_control;     /**< Flow control mode */
     char             *tx_buffer;        /**< Application-owned transmit ring buffer */
-    uint16_t          tx_buffer_size;   /**< Transmit buffer size, must be a power of 2 */
     char             *rx_buffer;        /**< Application-owned receive ring buffer */
-    uint16_t          rx_buffer_size;   /**< Receive buffer size, must be a power of 2 */
+
+    /* The user must not set, only initially clear, the following fields. */
+    bool              initialized;      /**< Open/closed state: true=open, false=closed */
     volatile uint16_t tx_head;          /**< Next write slot in the transmit buffer */
     volatile uint16_t tx_tail;          /**< Next read slot in the transmit buffer */
     volatile uint16_t rx_head;          /**< Next write slot in the receive buffer */
     volatile uint16_t rx_tail;          /**< Next read slot in the receive buffer */
-    bool              initialized;      /**< Open/closed state: true=open, false=closed */
 } uart_handle_t;
 
 /**
