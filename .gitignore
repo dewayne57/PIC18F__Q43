@@ -119,3 +119,6 @@ IOC_Single-backups
 .vscode
 /02 IOC/IOC 01 Single/IOC_Single.cmf
 /02 IOC/IOC 01 Single/.vscode
+/02 IOC/IOC 01 Single/*.lck
+*.lck
+IOC_Vectored-backups
