@@ -69,7 +69,6 @@ void main(void)
 
      while (1)
      {
-          __delay_ms(1000);
           // Main loop
           // Add your application code here
      }

@@ -27,7 +27,7 @@
  *   3. Configure TRIS and PPS in the application.
  *   4. Call UART_Open(&handle).
  *   5. Route interrupts to UART_HandleRxInterrupt(&handle) and UART_HandleTxInterrupt(&handle),
- *      or enable UART_VECTORED_INTERRUPTS so the built-in wrappers for UART1-UART5 are used.
+ *      from application-owned ISR functions.
  *
  * ***************************************************************************************** */
 
@@ -138,8 +138,7 @@ bool UART_Open(uart_handle_t *uart);
  * @brief Close one UART instance so it can be safely reconfigured.
  *
  * Disables UART interrupts and turns off the selected UART module.  This call also detaches
- * the instance from the internal ISR routing table and clears printf routing if this handle
- * was the active printf target.
+ * clears printf routing if this handle was the active printf target.
  *
  * If the handle is already closed, this function does nothing.
  *
@@ -216,18 +215,5 @@ void UART_SelectPrintfTarget(uart_handle_t *uart);
  * @param data  Character emitted by the C runtime.
  */
 void putch(char data);
-
-#ifdef UART_VECTORED_INTERRUPTS
-void UART1_RX_ISR(void);
-void UART1_TX_ISR(void);
-void UART2_RX_ISR(void);
-void UART2_TX_ISR(void);
-void UART3_RX_ISR(void);
-void UART3_TX_ISR(void);
-void UART4_RX_ISR(void);
-void UART4_TX_ISR(void);
-void UART5_RX_ISR(void);
-void UART5_TX_ISR(void);
-#endif
 
 #endif /* UARTLIB_H */

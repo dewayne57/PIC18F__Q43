@@ -7,6 +7,7 @@
  ***************************************************************************************** */
 
 #include <xc.h>
+#include <stdio.h>
 
 /**
  * Interrupt Service Routine (ISR) for handling Interrupt-On-Change (IOC) events. This function is
@@ -32,4 +33,7 @@ void __interrupt(irq(0x07), low_priority) ISR(void)
     LATD = (uint8_t)(~PORTC);
     IOCCF = 0x00;
     PIR0bits.IOCIF = 0;
+
+    printf("Switch input is now 0X%02X\r\n", PORTC); // Diagnostic output to the UART \
+        echoing the state of the switch input.
 }

@@ -7,6 +7,7 @@
 
 #include <xc.h>
 #include "config.h"
+#include "../../Libraries/PPSLIB/pps.h"
 #include <stdbool.h>
 
 static bool system_initialized = false;
@@ -107,6 +108,18 @@ void SYSTEM_Initialize(void)
      */
     PMD0bits.SYSCMD = 0; // System clock network enabled
     PMD0bits.IOCMD = 0;  // Interrupt on change module enabled
+    PMD6bits.U1MD = 0;   // UART 1 enabled
+
+    // UART1 pin setup: RB0 = TX1, RB1 = RX1
+    TRISBbits.TRISB0 = 0;
+    TRISBbits.TRISB1 = 1;
+    ANSELBbits.ANSELB0 = 0;
+    ANSELBbits.ANSELB1 = 0;
+
+    PPS_Unlock();
+    RB0PPS = 0x20;
+    U1RXPPS = 0x09;
+    PPS_Lock();
 
     // IOC on all PORTC pins for both edges.
     IOCCP = 0xFF;
@@ -121,8 +134,7 @@ void SYSTEM_Initialize(void)
     /*
      * Enable global interrupts
      */
-    INTCON0bits.GIEL = 1; // Low-priority interrupts enabled
-    INTCON0bits.GIEH = 1; // High-priority interrupts enabled
+    INTCON0bits.GIE = 1; // Interrupts enabled
 
     system_initialized = true;
 }

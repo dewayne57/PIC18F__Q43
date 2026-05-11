@@ -67,8 +67,9 @@ static char console_rx_buffer[128];
 
 static uart_handle_t console_uart = {
   .port = UART_PORT_1,
-  .brg_value = 19200U,
   .high_speed_baud = false,
+  .baud_rate = 19200U,
+  .fosc = _XTAL_FREQ,
   .data_bits = 8U,
   .parity = UART_PARITY_NONE,
   .stop_bits = UART_STOP_BITS_1,
@@ -124,12 +125,12 @@ if (UART_Open(&console_uart))
 - `UART_Open()` validates the handle, initializes hardware, resets ring-buffer indices,
   and sets `initialized = true`.
 - `UART_Open()` called on an already-open handle does nothing and returns success.
-- `UART_Close()` disables UART interrupts, turns the UART module off, detaches ISR
-  routing for that instance, and sets `initialized = false`.
+- `UART_Close()` disables UART interrupts, turns the UART module off,
+  and sets `initialized = false`.
 - `UART_Close()` called on an already-closed handle does nothing.
 - To reconfigure an existing UART instance:
   1. Call `UART_Close(&handle);`
-  2. Update handle fields (`brg_value`, framing, flow control, etc.)
+  2. Update handle fields (`baud_rate`, `fosc`, framing, flow control, etc.)
   3. Call `UART_Open(&handle);`
 
 ### Baud Rate Formula
@@ -143,7 +144,7 @@ if (UART_Open(&console_uart))
 
 For baud rates of 115200 and above, high-speed mode is often required for reliable operation
 depending on oscillator tolerance and link conditions. If standard mode is unstable at high
-baud rates, set `high_speed_baud = true` and recalculate `brg_value` using the high-speed formula.
+baud rates, set `high_speed_baud = true` and use the high-speed formula.
 
 Common standard-speed BRG values at 64 MHz:
 
@@ -200,16 +201,22 @@ If the application uses multiple UARTs, call both handlers for each instance.
 
 ## Vectored Interrupt Wiring
 
-Define `UART_VECTORED_INTERRUPTS` before including `uartlib.h` to enable built-in
-wrapper ISRs for UART1 through UART5:
+Declare UART RX/TX vectors in the application and call the generic UART handlers:
 
 ```c
-#define UART_VECTORED_INTERRUPTS
-#include "uartlib.h"
+void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
+{
+  UART_HandleRxInterrupt(&console_uart);
+}
+
+void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
+{
+  UART_HandleTxInterrupt(&console_uart);
+}
 ```
 
-When vectored interrupts are enabled, `UART_Open()` registers each handle
-internally so the correct wrapper ISR can route events to the correct instance.
+All ISR declarations remain in application code. The library only provides
+`UART_HandleRxInterrupt()` and `UART_HandleTxInterrupt()` helper functions.
 
 ## printf Routing
 
@@ -239,15 +246,16 @@ printf("Hello from UART1\r\n");
 
 Use this checklist when adding the library to a non-UART project:
 
-1. Add `uartlib.h` and `uartlib.o` to the MPLAB X project.  Alternatively you can 
-   include the source and rebuild as part of each module (`uartlib.h` and `uartlib.c`).
+1. Add `uartlib.h` and `uartlib.o` to the MPLAB X project.  Alternatively, you can add 
+   the UARTLIB as a dependent library project. 
 2. Define TX and RX buffers with power-of-2 sizes.
 3. Create and fill one `uart_handle_t` for the desired UART peripheral.
 4. Configure TRIS and PPS in the application for that UART instance.
 5. Call `UART_Open()` during startup.
 6. Enable global interrupts in the application.
-7. Route RX and TX interrupts either through the generic handlers or the vectored wrappers.
-8. Call `UART_SelectPrintfTarget()` if the project wants to use `printf()` for debug output.
+7. Route RX and TX interrupts in application-owned ISRs using the generic handlers.
+8. For each UART instance, ensure its ISR passes the matching `uart_handle_t`.
+9. Call `UART_SelectPrintfTarget()` if the project wants to use `printf()` for debug output.
 
 ## Notes
 

@@ -37,6 +37,7 @@
 #pragma config WRTD = OFF               // Data EEPROM is not write protected
 #pragma config CP = OFF                 // Code is not protected
 
+#define _XTAL_FREQ 64000000
 void SYSTEM_Initialize(void);
 
 #endif /* CONFIG_H */

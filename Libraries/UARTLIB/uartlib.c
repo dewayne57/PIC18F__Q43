@@ -31,19 +31,12 @@
 
 static void UART_SetBaudRate(const uart_handle_t *uart); 
 
-static uart_handle_t *uart_instances[5] = { (uart_handle_t *)0 };
 static uart_handle_t *uart_printf_target = (uart_handle_t *)0;
 
 /// @brief Return true when value is a power of 2 and large enough for a ring buffer.
 static bool UART_IsPowerOfTwo(uint16_t value)
 {
     return ((value >= 2U) && ((value & (value - 1U)) == 0U));
-}
-
-/// @brief Convert UART port number to a 0-based array index.
-static uint8_t UART_PortIndex(uart_port_t port)
-{
-    return (uint8_t)((uint8_t)port - 1U);
 }
 
 /// @brief Return true if the port number is in the supported UART1-UART5 range.
@@ -803,7 +796,6 @@ bool UART_Open(uart_handle_t *uart)
     { volatile uint16_t i = 0xFFFFU; while (i-- != 0U) { } }
     UART_DiscardStartupRxByte(uart->port);
 
-    uart_instances[UART_PortIndex(uart->port)] = uart;
     UART_SetRxInterruptEnabled(uart->port, true);
     uart->initialized = true;
     return true;
@@ -812,8 +804,6 @@ bool UART_Open(uart_handle_t *uart)
 /// @brief Close one UART instance so the application can safely reconfigure and reopen it.
 void UART_Close(uart_handle_t *uart)
 {
-    uint8_t index;
-
     if (uart == (uart_handle_t *)0)
     {
         return;
@@ -843,12 +833,6 @@ void UART_Close(uart_handle_t *uart)
     UART_SetRxInterruptEnabled(uart->port, false);
     UART_SetTxInterruptEnabled(uart->port, false);
     UART_DisableHardware(uart->port);
-
-    index = UART_PortIndex(uart->port);
-    if (uart_instances[index] == uart)
-    {
-        uart_instances[index] = (uart_handle_t *)0;
-    }
 
     uart->tx_head = 0U;
     uart->tx_tail = 0U;
@@ -967,54 +951,3 @@ void putch(char data)
     }
 }
 
-#ifdef UART_VECTORED_INTERRUPTS
-void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
-{
-    UART_HandleRxInterrupt(uart_instances[0]);
-}
-
-void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
-{
-    UART_HandleTxInterrupt(uart_instances[0]);
-}
-
-void __interrupt(irq(IRQ_U2RX), low_priority) UART2_RX_ISR(void)
-{
-    UART_HandleRxInterrupt(uart_instances[1]);
-}
-
-void __interrupt(irq(IRQ_U2TX), low_priority) UART2_TX_ISR(void)
-{
-    UART_HandleTxInterrupt(uart_instances[1]);
-}
-
-void __interrupt(irq(IRQ_U3RX), low_priority) UART3_RX_ISR(void)
-{
-    UART_HandleRxInterrupt(uart_instances[2]);
-}
-
-void __interrupt(irq(IRQ_U3TX), low_priority) UART3_TX_ISR(void)
-{
-    UART_HandleTxInterrupt(uart_instances[2]);
-}
-
-void __interrupt(irq(IRQ_U4RX), low_priority) UART4_RX_ISR(void)
-{
-    UART_HandleRxInterrupt(uart_instances[3]);
-}
-
-void __interrupt(irq(IRQ_U4TX), low_priority) UART4_TX_ISR(void)
-{
-    UART_HandleTxInterrupt(uart_instances[3]);
-}
-
-void __interrupt(irq(IRQ_U5RX), low_priority) UART5_RX_ISR(void)
-{
-    UART_HandleRxInterrupt(uart_instances[4]);
-}
-
-void __interrupt(irq(IRQ_U5TX), low_priority) UART5_TX_ISR(void)
-{
-    UART_HandleTxInterrupt(uart_instances[4]);
-}
-#endif
