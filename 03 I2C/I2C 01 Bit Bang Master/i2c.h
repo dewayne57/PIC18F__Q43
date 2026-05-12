@@ -1,5 +1,5 @@
 /* *****************************************************************************************
- *   File Name: i2c_bitbang.h
+ *   File Name: i2c.h
  *   Description: Bit bang I2C master implementation for PIC18F47Q43.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-11
@@ -21,20 +21,27 @@
  *   RC3 - I2C SCK (Serial Clock)
  *   RC4 - I2C SDA (Serial Data)
  *   RB2 - External IOC interrupt input
+ * 
+ *   This example uses an MCP23017 I/O expander as the I2C slave device, with Port A connected
+ *   to a 8-bit dip switch, and port B connected to 8 LEDs.  Port A is configured as input with 
+ *   weak pull-ups enabled and interrupt on change.  If the user changes any of the switches, 
+ *   an interrupt is triggered.  The master will read the state of the MCP23017's GPIOA pins
+ *   and write that value (inverted) to GPIOB, which will update the LEDs to match the switch 
+ * states.
  ***************************************************************************************** */
 
-#ifndef I2C_BITBANG_H
-#define I2C_BITBANG_H
+#ifndef I2C_H
+#define I2C_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
-/// @brief I2C bit bang master handle structure to manage I2C state and configuration
+/// @brief I2C master handle structure to manage I2C state and configuration
 typedef struct {
     uint16_t clock_delay_us;    ///< Clock period delay in microseconds
     uint8_t retry_count;        ///< Number of retries for I2C operations
     bool initialized;           ///< Flag indicating if I2C interface is initialized
-} i2c_bitbang_handle_t;
+} i2c_handle_t;
 
 /// @brief I2C Return codes
 typedef enum {
@@ -45,54 +52,54 @@ typedef enum {
 } i2c_status_t;
 
 /// @brief Initialize the I2C bit bang master interface
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @param clock_delay_us Clock delay in microseconds (affects I2C bus speed)
 /// @return i2c_status_t indicating success or error
 /// @note RC3 is configured as SCK, RC4 is configured as SDA
 /// @note Both pins are configured as open-drain outputs (high-impedance when set)
-i2c_status_t I2C_Initialize(i2c_bitbang_handle_t *handle, uint16_t clock_delay_us);
+i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t clock_delay_us);
 
 /// @brief Deinitialize the I2C bit bang master interface
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Deinitialize(i2c_bitbang_handle_t *handle);
+i2c_status_t I2C_Deinitialize(i2c_handle_t *handle);
 
 /// @brief Generate I2C START condition
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Start(i2c_bitbang_handle_t *handle);
+i2c_status_t I2C_Start(i2c_handle_t *handle);
 
 /// @brief Generate I2C STOP condition
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Stop(i2c_bitbang_handle_t *handle);
+i2c_status_t I2C_Stop(i2c_handle_t *handle);
 
 /// @brief Generate I2C REPEATED START condition
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_RestartStart(i2c_bitbang_handle_t *handle);
+i2c_status_t I2C_RestartStart(i2c_handle_t *handle);
 
 /// @brief Send one byte on the I2C bus
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @param data Byte to send
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendByte(i2c_bitbang_handle_t *handle, uint8_t data);
+i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data);
 
 /// @brief Receive one byte from the I2C bus
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @param data Pointer to store received byte
 /// @param send_ack If true, send ACK; if false, send NACK
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveByte(i2c_bitbang_handle_t *handle, uint8_t *data, bool send_ack);
+i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack);
 
 /// @brief Check if SDA is held low by slave
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @return true if SDA is low, false if SDA is high
-bool I2C_IsSDALow(i2c_bitbang_handle_t *handle);
+bool I2C_IsSDALow(i2c_handle_t *handle);
 
 /// @brief Check if SCK is held low by slave
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @return true if SCK is low, false if SCK is high
-bool I2C_IsSCKLow(i2c_bitbang_handle_t *handle);
+bool I2C_IsSCKLow(i2c_handle_t *handle);
 
-#endif // I2C_BITBANG_H
+#endif // I2C_H

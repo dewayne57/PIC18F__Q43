@@ -59,7 +59,7 @@ void main(void)
     printf("I2C 01 Bit Bang Master\r\n");
 
     // Initialize I2C bit bang master with 10us clock delay (approximately 50kHz I2C bus)
-    i2c_bitbang_handle_t i2c_master;
+    i2c_handle_t i2c_master;
     if (I2C_Initialize(&i2c_master, 10) != I2C_SUCCESS)
     {
         printf("Error: Failed to initialize I2C\r\n");

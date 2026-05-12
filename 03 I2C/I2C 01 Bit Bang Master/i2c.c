@@ -1,5 +1,5 @@
 /* *****************************************************************************************
- *   File Name: i2c_bitbang.c
+ *   File Name: i2c.c
  *   Description: Bit bang I2C master implementation for PIC18F47Q43.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-11
@@ -28,7 +28,7 @@
 
 #include <xc.h>
 #include <stdio.h>
-#include "i2c_bitbang.h"
+#include "i2c.h"
 
 // Port C pin definitions for I2C
 #define I2C_SCK_PORT    PORTC
@@ -63,10 +63,10 @@ static void i2c_delay(uint16_t delay_us)
 }
 
 /// @brief Wait for SCK to go high (clock stretching)
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @param max_wait_ms Maximum time to wait in milliseconds
 /// @return i2c_status_t indicating success or timeout
-static i2c_status_t i2c_wait_sck_high(i2c_bitbang_handle_t *handle, uint16_t max_wait_ms)
+static i2c_status_t i2c_wait_sck_high(i2c_handle_t *handle, uint16_t max_wait_ms)
 {
     uint16_t wait_count = 0;
     uint16_t max_waits = max_wait_ms * 10; // Assuming ~100us per iteration
@@ -86,10 +86,10 @@ static i2c_status_t i2c_wait_sck_high(i2c_bitbang_handle_t *handle, uint16_t max
 }
 
 /// @brief Wait for SDA to go high
-/// @param handle Pointer to i2c_bitbang_handle_t structure
+/// @param handle Pointer to i2c_handle_t structure
 /// @param max_wait_ms Maximum time to wait in milliseconds
 /// @return i2c_status_t indicating success or timeout
-static i2c_status_t i2c_wait_sda_high(i2c_bitbang_handle_t *handle, uint16_t max_wait_ms)
+static i2c_status_t i2c_wait_sda_high(i2c_handle_t *handle, uint16_t max_wait_ms)
 {
     uint16_t wait_count = 0;
     uint16_t max_waits = max_wait_ms * 10;
@@ -108,7 +108,11 @@ static i2c_status_t i2c_wait_sda_high(i2c_bitbang_handle_t *handle, uint16_t max
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_Initialize(i2c_bitbang_handle_t *handle, uint16_t clock_delay_us)
+/// @brief Initialize the I2C bit bang master interface
+/// @param handle Pointer to i2c_handle_t structure
+/// @param clock_delay_us Clock delay in microseconds (affects I2C bus speed)
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t clock_delay_us)
 {
     if (handle == NULL)
     {
@@ -134,7 +138,10 @@ i2c_status_t I2C_Initialize(i2c_bitbang_handle_t *handle, uint16_t clock_delay_u
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_Deinitialize(i2c_bitbang_handle_t *handle)
+/// @brief Deinitialize the I2C bit bang master interface
+/// @param handle Pointer to i2c_handle_t structure
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_Deinitialize(i2c_handle_t *handle)
 {
     if (handle == NULL)
     {
@@ -150,7 +157,10 @@ i2c_status_t I2C_Deinitialize(i2c_bitbang_handle_t *handle)
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_Start(i2c_bitbang_handle_t *handle)
+/// @brief Generate I2C START condition
+/// @param handle Pointer to i2c_handle_t structure
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_Start(i2c_handle_t *handle)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -174,7 +184,10 @@ i2c_status_t I2C_Start(i2c_bitbang_handle_t *handle)
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_Stop(i2c_bitbang_handle_t *handle)
+/// @brief Generate I2C STOP condition
+/// @param handle Pointer to i2c_handle_t structure
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_Stop(i2c_handle_t *handle)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -198,7 +211,10 @@ i2c_status_t I2C_Stop(i2c_bitbang_handle_t *handle)
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_RestartStart(i2c_bitbang_handle_t *handle)
+/// @brief Generate I2C REPEATED START condition
+/// @param handle Pointer to i2c_handle_t structure
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_RestartStart(i2c_handle_t *handle)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -222,7 +238,11 @@ i2c_status_t I2C_RestartStart(i2c_bitbang_handle_t *handle)
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_SendByte(i2c_bitbang_handle_t *handle, uint8_t data)
+/// @brief Send one byte on the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param data Byte to send
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -294,7 +314,12 @@ i2c_status_t I2C_SendByte(i2c_bitbang_handle_t *handle, uint8_t data)
     return I2C_SUCCESS;
 }
 
-i2c_status_t I2C_ReceiveByte(i2c_bitbang_handle_t *handle, uint8_t *data, bool send_ack)
+/// @brief Receive one byte from the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param data Pointer to store received byte
+/// @param send_ack If true, send ACK; if false, send NACK
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
 {
     if ((handle == NULL) || (!handle->initialized) || (data == NULL))
     {
@@ -364,7 +389,10 @@ i2c_status_t I2C_ReceiveByte(i2c_bitbang_handle_t *handle, uint8_t *data, bool s
     return I2C_SUCCESS;
 }
 
-bool I2C_IsSDALow(i2c_bitbang_handle_t *handle)
+/// @brief Check if SDA is held low by slave
+/// @param handle Pointer to i2c_handle_t structure
+/// @return true if SDA is low, false if SDA is high
+bool I2C_IsSDALow(i2c_handle_t *handle)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -374,7 +402,10 @@ bool I2C_IsSDALow(i2c_bitbang_handle_t *handle)
     return (I2C_SDA_READ() == 0);
 }
 
-bool I2C_IsSCKLow(i2c_bitbang_handle_t *handle)
+/// @brief  Check if SCK is held low by slave   
+/// @param handle Pointer to i2c_handle_t structure
+/// @return true if SCK is low, false if SCK is high    
+bool I2C_IsSCKLow(i2c_handle_t *handle)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
