@@ -9,8 +9,7 @@
 #include <stdio.h>
 #include "config.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
-#include "i2c_bitbang.h"
-#include "extern_ioc.h"
+#include "i2c.h"
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
