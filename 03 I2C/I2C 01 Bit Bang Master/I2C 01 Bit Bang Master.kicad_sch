@@ -5787,7 +5787,7 @@
 		)
 		(uuid "2564aefc-6e67-423d-bf17-be08008a45c9")
 	)
-	(text "Note, the MCP23017 drives LEDs better by pulling the \nLED to ground.  Therefore, signals are inverted in \norder to \"turn on\" an LED."
+	(text "Note, the MCP23017 drives LEDs better by pulling the \nLED to ground.  "
 		(exclude_from_sim no)
 		(at 192.024 24.892 0)
 		(effects
@@ -5798,9 +5798,9 @@
 		)
 		(uuid "3dec8796-c2ed-4c32-bc31-e2a8d15ea3c2")
 	)
-	(text "This example circuit uses an I/O expander (MCP2317) connected via I2C interface with interrupt \non change enabled.  It could also be polled periodically for changes."
+	(text "This example circuit uses an I/O expander (MCP23017) connected via I2C interface with interrupt \non change enabled.  It could also be polled periodically for changes.\n\nAlso notice that the I2C lines (SCK and SDA) have external 4.7K pull-up resistors installed.  \nThis is because we are using a bit-bang interface with the normal I/O pins and weak pull-ups \nwill not be enough.  Later, in another module, we will switch to using the internal I2C \nperipheral module which provides adequate pull-ups and these resistors will be deleted."
 		(exclude_from_sim no)
-		(at 28.448 148.844 0)
+		(at 28.448 154.94 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5849,6 +5849,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "197a0561-3f9f-4e48-ac86-390811bb9e59")
+	)
+	(junction
+		(at 36.83 113.03)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "1a7555b5-af50-4d88-be2d-8de783fed3ed")
 	)
 	(junction
 		(at 177.8 101.6)
@@ -5903,6 +5909,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "554408c0-4f29-4355-bc07-5d3d855656f2")
+	)
+	(junction
+		(at 36.83 100.33)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "56d5846c-0057-4457-8299-24f8993631e1")
 	)
 	(junction
 		(at 104.14 123.19)
@@ -5987,6 +5999,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "cdb58d67-f8ad-4312-acb0-db67e2373f13")
+	)
+	(junction
+		(at 40.64 115.57)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d3005732-cc2f-44fd-8a91-2a85ed486e2e")
 	)
 	(junction
 		(at 246.38 53.34)
@@ -6614,6 +6632,16 @@
 	)
 	(wire
 		(pts
+			(xy 36.83 100.33) (xy 36.83 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2e221b1f-3a45-483e-9e3d-594ebf127e98")
+	)
+	(wire
+		(pts
 			(xy 156.21 82.55) (xy 156.21 78.74)
 		)
 		(stroke
@@ -6844,6 +6872,16 @@
 	)
 	(wire
 		(pts
+			(xy 40.64 115.57) (xy 58.42 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "44980ca9-a955-4296-a4da-0a2277ea5a09")
+	)
+	(wire
+		(pts
 			(xy 232.41 143.51) (xy 232.41 144.78)
 		)
 		(stroke
@@ -6871,6 +6909,16 @@
 			(type default)
 		)
 		(uuid "4a9ce685-a533-4f7e-9094-bb5d0c36769c")
+	)
+	(wire
+		(pts
+			(xy 36.83 110.49) (xy 36.83 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4abcee80-1354-4732-b109-9dc44aebdb03")
 	)
 	(wire
 		(pts
@@ -7064,7 +7112,7 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 113.03) (xy 58.42 113.03)
+			(xy 30.48 113.03) (xy 36.83 113.03)
 		)
 		(stroke
 			(width 0)
@@ -7121,6 +7169,16 @@
 			(type default)
 		)
 		(uuid "6de96bcc-8b19-4666-8850-36e7b0946f90")
+	)
+	(wire
+		(pts
+			(xy 40.64 110.49) (xy 40.64 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6e083fc0-91b2-4c52-b2d7-f4fef8bc7ad5")
 	)
 	(wire
 		(pts
@@ -7244,13 +7302,23 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 115.57) (xy 58.42 115.57)
+			(xy 30.48 115.57) (xy 40.64 115.57)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "8757923d-3220-4efc-98fc-834d73204236")
+	)
+	(wire
+		(pts
+			(xy 36.83 99.06) (xy 36.83 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8c4cd3c1-535a-4553-84da-be3d970599bc")
 	)
 	(wire
 		(pts
@@ -7372,6 +7440,16 @@
 		)
 		(uuid "aa2ae14b-fcfc-4bb7-9741-a68e925a0788")
 	)
+	(wire
+		(pts
+			(xy 36.83 113.03) (xy 58.42 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aaf2fc79-c3d9-4c0b-a88a-ca75d9eff9e1")
+	)
 	(bus
 		(pts
 			(xy 134.62 35.56) (xy 134.62 38.1)
@@ -7391,6 +7469,16 @@
 			(type default)
 		)
 		(uuid "ac51175c-64b0-490d-ba40-71efdc8f04c9")
+	)
+	(wire
+		(pts
+			(xy 40.64 100.33) (xy 36.83 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "acabbe0e-89c8-4639-acb7-bb15027a485c")
 	)
 	(wire
 		(pts
@@ -7811,6 +7899,16 @@
 			(type default)
 		)
 		(uuid "efac9bfd-4e5c-422c-ae5d-10d8fd1ae984")
+	)
+	(wire
+		(pts
+			(xy 40.64 102.87) (xy 40.64 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f1f14446-6ceb-4ca5-9429-33bfaf019fb6")
 	)
 	(wire
 		(pts
@@ -9354,6 +9452,87 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_US")
+		(at 36.83 106.68 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5c8959da-075c-4707-be41-0e6b1af3ad39")
+		(property "Reference" "R105"
+			(at 30.226 105.156 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7K"
+			(at 30.988 106.934 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 37.846 106.934 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 36.83 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, US symbol"
+			(at 36.83 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "a7295047-82ab-4f79-8ff2-f137f2166b5c")
+		)
+		(pin "1"
+			(uuid "06dd8cd1-b0f9-4286-a8e4-afe0f0435e12")
+		)
+		(instances
+			(project "I2C 01 Bit Bang Master"
+				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
+					(reference "R105")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 156.21 82.55 0)
 		(unit 1)
@@ -9823,6 +10002,84 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+5V")
+		(at 36.83 99.06 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "761ceb3c-77e9-4c49-84c2-8845c46ed6da")
+		(property "Reference" "#PWR0120"
+			(at 36.83 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+5V"
+			(at 36.83 93.98 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 36.83 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 36.83 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 36.83 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9edd854e-ab67-427a-a015-60b0de5fd2cf")
+		)
+		(instances
+			(project "I2C 01 Bit Bang Master"
+				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
+					(reference "#PWR0120")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:USB_A")
 		(at 236.22 119.38 0)
 		(mirror y)
@@ -10112,6 +10369,88 @@
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "U101")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_US")
+		(at 40.64 106.68 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "addebbd9-f249-4f33-9980-d494552cbac0")
+		(property "Reference" "R106"
+			(at 47.244 105.156 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7K"
+			(at 46.482 106.934 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 39.624 106.934 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 40.64 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, US symbol"
+			(at 40.64 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "cb79762f-94e8-4935-901f-f0d91590ec8e")
+		)
+		(pin "1"
+			(uuid "5015279f-a546-46df-8e11-6042e995c107")
+		)
+		(instances
+			(project "I2C 01 Bit Bang Master"
+				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
+					(reference "R106")
 					(unit 1)
 				)
 			)

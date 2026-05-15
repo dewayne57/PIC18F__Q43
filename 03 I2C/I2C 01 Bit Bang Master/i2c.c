@@ -28,6 +28,7 @@
 
 #include <xc.h>
 #include <stdio.h>
+#include "config.h"
 #include "i2c.h"
 
 // Port C pin definitions for I2C

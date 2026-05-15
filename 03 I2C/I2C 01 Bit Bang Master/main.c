@@ -24,6 +24,30 @@
 #include "config.h"
 #include "app.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
+#include "i2c_bitbang.h"
+#include "extern_ioc.h"
+
+static char console_tx_buffer[128];
+static char console_rx_buffer[128];
+
+uart_handle_t console_uart = {
+    .port = UART_PORT_1,
+    .high_speed_baud = false,
+    .baud_rate = 19200U,
+    .fosc = _XTAL_FREQ, // Replace with your actual peripheral clock frequency
+    .data_bits = 8U,
+    .parity = UART_PARITY_NONE,
+    .stop_bits = UART_STOP_BITS_1,
+    .flow_control = UART_FLOW_NONE,
+    .tx_buffer = console_tx_buffer,
+    .tx_buffer_size = sizeof(console_tx_buffer),
+    .rx_buffer = console_rx_buffer,
+    .rx_buffer_size = sizeof(console_rx_buffer),
+    .tx_head = 0U,
+    .tx_tail = 0U,
+    .rx_head = 0U,
+    .rx_tail = 0U,
+    .initialized = false};
 
 /// @brief Main application entry point.
 /// @param  None

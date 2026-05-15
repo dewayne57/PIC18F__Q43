@@ -70,14 +70,6 @@ void SYSTEM_Initialize(void)
     U1RXPPS = 0x09;
     PPS_Lock();
 
-    // Initialize external interrupt on change handler for RB2
-    ExternIoc_Initialize();
-
-    // Enable IOC on RB2 for both rising and falling edges
-    IOCBbits.IOCB2 = 1;
-    IOCCF = 0x00;
-    PIR0bits.IOCIF = 0;
-
     __delay_ms(100); // Short delay to allow hardware to stabilize before enabling interrupts.
 
     /* Re-enable interrupts now that hardware registers are stable. */
