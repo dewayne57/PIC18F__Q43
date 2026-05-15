@@ -38,7 +38,8 @@
 
 /// @brief I2C master handle structure to manage I2C state and configuration
 typedef struct {
-    uint16_t clock_delay_us;    ///< Clock period delay in microseconds
+    uint16_t speed_khz;         ///< Target I2C bus speed in kHz
+    uint16_t half_period_us;    ///< Derived half-period delay in microseconds
     uint8_t retry_count;        ///< Number of retries for I2C operations
     bool initialized;           ///< Flag indicating if I2C interface is initialized
 } i2c_handle_t;
@@ -53,11 +54,11 @@ typedef enum {
 
 /// @brief Initialize the I2C bit bang master interface
 /// @param handle Pointer to i2c_handle_t structure
-/// @param clock_delay_us Clock delay in microseconds (affects I2C bus speed)
+/// @param speed_khz Desired I2C bus speed in kHz (for example 100 or 1000)
 /// @return i2c_status_t indicating success or error
 /// @note RC3 is configured as SCK, RC4 is configured as SDA
 /// @note Both pins are configured as open-drain outputs (high-impedance when set)
-i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t clock_delay_us);
+i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz);
 
 /// @brief Deinitialize the I2C bit bang master interface
 /// @param handle Pointer to i2c_handle_t structure

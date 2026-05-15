@@ -110,11 +110,11 @@ static i2c_status_t i2c_wait_sda_high(i2c_handle_t *handle, uint16_t max_wait_ms
 
 /// @brief Initialize the I2C bit bang master interface
 /// @param handle Pointer to i2c_handle_t structure
-/// @param clock_delay_us Clock delay in microseconds (affects I2C bus speed)
+/// @param speed_khz Desired I2C bus speed in kHz
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t clock_delay_us)
+i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz)
 {
-    if (handle == NULL)
+    if ((handle == NULL) || (speed_khz == 0U))
     {
         return I2C_ERROR_NOT_INITIALIZED;
     }
@@ -127,8 +127,17 @@ i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t clock_delay_us)
     I2C_SCK_HIGH();  // Release SCK to high state
     I2C_SDA_HIGH();  // Release SDA to high state
 
+    // Derive half-period from requested bus speed: T(us) = 1000 / f(kHz)
+    // Clamp to at least 1us so high requested speeds still produce a delay.
+    uint16_t half_period_us = (uint16_t)(500U / speed_khz);
+    if (half_period_us == 0U)
+    {
+        half_period_us = 1U;
+    }
+
     // Store configuration
-    handle->clock_delay_us = clock_delay_us;
+    handle->speed_khz = speed_khz;
+    handle->half_period_us = half_period_us;
     handle->retry_count = 3;
     handle->initialized = true;
 
@@ -169,17 +178,17 @@ i2c_status_t I2C_Start(i2c_handle_t *handle)
 
     // Ensure both lines are high initially
     I2C_SDA_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
     I2C_SCK_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // START condition: SDA goes low while SCK is high
     I2C_SDA_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Then pull SCK low
     I2C_SCK_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     return I2C_SUCCESS;
 }
@@ -198,15 +207,15 @@ i2c_status_t I2C_Stop(i2c_handle_t *handle)
     // First ensure SDA is low and SCK is low
     I2C_SDA_LOW();
     I2C_SCK_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Release SCK first
     I2C_SCK_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Then release SDA (STOP condition)
     I2C_SDA_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     return I2C_SUCCESS;
 }
@@ -223,17 +232,17 @@ i2c_status_t I2C_RestartStart(i2c_handle_t *handle)
 
     // Repeated START: SDA goes low while SCK is high
     I2C_SDA_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
     I2C_SCK_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // START condition: SDA goes low while SCK is high
     I2C_SDA_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Then pull SCK low
     I2C_SCK_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     return I2C_SUCCESS;
 }
@@ -265,11 +274,11 @@ i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data)
             I2C_SDA_LOW();
         }
 
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
 
         // Clock pulse: SCK goes high then low
         I2C_SCK_HIGH();
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
 
         // Check for clock stretching
         i2c_status_t status = i2c_wait_sck_high(handle, 100);
@@ -278,18 +287,18 @@ i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data)
             return status;
         }
 
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
         I2C_SCK_LOW();
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
     }
 
     // Release SDA and wait for slave ACK
     I2C_SDA_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Clock pulse for ACK bit
     I2C_SCK_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Check for clock stretching
     i2c_status_t status = i2c_wait_sck_high(handle, 100);
@@ -301,9 +310,9 @@ i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data)
     // Read ACK bit (SDA should be low)
     uint8_t ack_bit = I2C_SDA_READ();
 
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
     I2C_SCK_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Return NAK if slave did not pull SDA low
     if (ack_bit != 0)
@@ -330,14 +339,14 @@ i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
 
     // Release SDA and SCK for master to receive
     I2C_SDA_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Receive 8 bits, MSB first
     for (uint8_t bit = 0; bit < 8; bit++)
     {
         // Clock pulse: SCK goes high
         I2C_SCK_HIGH();
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
 
         // Check for clock stretching
         i2c_status_t status = i2c_wait_sck_high(handle, 100);
@@ -350,9 +359,9 @@ i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
         uint8_t bit_value = I2C_SDA_READ();
         received_byte = (received_byte << 1) | bit_value;
 
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
         I2C_SCK_LOW();
-        i2c_delay(handle->clock_delay_us);
+        i2c_delay(handle->half_period_us);
     }
 
     // Send ACK or NACK
@@ -365,11 +374,11 @@ i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
         I2C_SDA_HIGH(); // Send NACK (release SDA high)
     }
 
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Clock pulse for ACK/NACK bit
     I2C_SCK_HIGH();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Check for clock stretching
     i2c_status_t status = i2c_wait_sck_high(handle, 100);
@@ -378,9 +387,9 @@ i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
         return status;
     }
 
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
     I2C_SCK_LOW();
-    i2c_delay(handle->clock_delay_us);
+    i2c_delay(handle->half_period_us);
 
     // Release SDA
     I2C_SDA_HIGH();

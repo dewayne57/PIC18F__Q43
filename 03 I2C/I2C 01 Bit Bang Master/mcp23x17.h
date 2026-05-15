@@ -27,137 +27,22 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-    /*
-     * The MCP23x17 can operate in either banked registers or sequential
-     * register addresses.  This is set by the configuration register, and
-     * defaults to sequential addressing when powered on or after a reset.
-     *
-     * To change the code to operate in banked mode, define the symbol
-     * MCP23X17_BANKED.
-     */
-#ifdef MCP23X17_BANKED
+/*
+ * The MCP23x17 can operate in either banked registers or sequential
+ * register addresses.  This is set by the configuration register, and
+ * defaults to sequential addressing when powered on or after a reset.
+ * The registers are addressed differently in each mode, so the register 
+ * definitions are provided for both modes.
+ */
 
-    /*
-     * Controls the direction of data I/O.  Each bit corresponds to one pin of the
-     * device I/O port. If a bit is high, the I/O pin is input.  When clear, the
-     * pin is output. The pin values are represented in decimal as the value of
-     * the pin when set to 1.
-     */
-#define IODIRA 0X00
-#define IODIRB 0x10
-
-    /*
-     * Defines the input polarity of the port pins.  Each bit in this register
-     * corresponds to the pin in the port.  When the bit is clear, the
-     * corresponding pin will represent the current value of the pin.  When set
-     * the value of the pin is inverted (1 -> 0, and 0 -> 1).
-     */
-#define IPOLA 0x01
-#define IPOLB 0x11
-
-    /*
-     * Controls the interrupt-on-change mode for the I/O port.  Each bit in the
-     * register corresponds to a bit in the port.  If clear, the pin does not
-     * generate an interrupt when its value changes.  If set, a change detected
-     * on the pin generates an interrupt based on the additional settings of the
-     * DEFVAL and INTCON registers. If this is set, these additional registers
-     * must be configured.
-     */
-#define GPINTENA 0x02
-#define GPINTENB 0x12
-
-    /*
-     * Establishes the default value for pin comparisons on a port when the
-     * interrupt-on-change feature is enabled.  If interrupt-on-change is
-     * enabled, and the INTCON bit is also set, then the definition of "changed"
-     * means the ports I/O bit value is different from the default value in this
-     * register.  If the associated INTCON bit is clear, then the definition of
-     * "changed" means the value is different from it's previous value.
-     */
-#define DEFVALA 0x03
-#define DEFVALB 0x13
-
-    /*
-     * The INTCON register controls how the associated pin value is compared for
-     * the interrupt-on-change feature. If a bit is set, the corresponding I/O
-     * pin is compared against the associated bit in the DEFVAL register. If a
-     * bit value is clear, the corresponding I/O pin is compared against the
-     * previous value.
-     */
-#define INTCONA 0x04
-#define INTCONB 0x14
-
-    /*
-     * The configuration register controls the operation of the MCP23x17 device.
-     * This register appears at different addresses based on the power-on-reset
-     * state and the banked configuration.  Additionally, there are two addresses
-     * assigned to the same register in both modes.  This is denoted as a low
-     * (_L) address and a high (_H) address.  If you refer to the register by
-     * it's generic symbol, then the first address is used.
-     *
-     * Because these symbols define the register locations when in banked mode,
-     * and it is essential to set these bits in the IOCON register after power
-     * on reset (which is at a different address), there is a symbolic definition
-     * of its address after POR as well (_POR).
-     */
-#define IOCON 0x05
-#define IOCON_POR 0x0A
-#define IOCON_L 0x05
-#define IOCON_H 0x15
-
-    /*
-     * The GPPU register controls the pull-up resistors for the port pins. If a
-     * bit is set and the corresponding pin is configured as an input, the
-     * corresponding port pin is internally pulled up with a 100 k? resistor.
-     */
-#define GPPUA 0x06
-#define GPPUB 0x16
-
-    /*
-     * The INTF register reflects the interrupt condition on the port pins of
-     * any pin that is enabled for interrupts via the GPINTEN register. A 1 bit
-     * indicates that the associated pin caused the interrupt.
-     *
-     * This register is 'read-only'. Writes to this register will be ignored.
-     */
-#define INTFA 0x07
-#define INTFB 0x17
-
-    /*
-     * The INTCAP register captures the GPIO port value at the time the interrupt
-     * occurred. The register is 'read-only' and is updated only when an interrupt
-     * occurs. The register will remain unchanged until the interrupt is cleared
-     * via a read of INTCAP or GPIO register.
-     */
-#define INTCAPA 0x08
-#define INTCAPB 0x18
-
-    /*
-     * The GPIO register reflects the value on the port.  Reading from this
-     * register reads the port. Writing to this register modifies the Output
-     * Latch (OLAT) register.
-     */
-#define GPIOA 0x09
-#define GPIOB 0x19
-
-    /*
-     * The OLAT register provides access to the output latches. A read from this
-     * register results in a read of the OLAT and not the port itself. A write
-     * to this register modifies the output latches that modifies the pins
-     * configured as outputs.
-     */
-#define OLATA 0x0A
-#define OLATB 0x1A
-
-#else
 /*
  * Controls the direction of data I/O.  Each bit corresponds to one pin of the
  * device I/O port. If a bit is high, the I/O pin is input.  When clear, the
  * pin is output. The pin values are represented in decimal as the value of
  * the pin when set to 1.
  */
-#define IODIRA 0X00
-#define IODIRB 0x01
+#define BANKED_IODIRA 0X00
+#define BANKED_IODIRB 0x10
 
 /*
  * Defines the input polarity of the port pins.  Each bit in this register
@@ -165,8 +50,8 @@ extern "C"
  * corresponding pin will represent the current value of the pin.  When set
  * the value of the pin is inverted (1 -> 0, and 0 -> 1).
  */
-#define IPOLA 0x02
-#define IPOLB 0x03
+#define BANKED_IPOLA 0x01
+#define BANKED_IPOLB 0x11
 
 /*
  * Controls the interrupt-on-change mode for the I/O port.  Each bit in the
@@ -176,8 +61,8 @@ extern "C"
  * DEFVAL and INTCON registers. If this is set, these additional registers
  * must be configured.
  */
-#define GPINTENA 0x04
-#define GPINTENB 0x05
+#define BANKED_GPINTENA 0x02
+#define BANKED_GPINTENB 0x12
 
 /*
  * Establishes the default value for pin comparisons on a port when the
@@ -187,8 +72,8 @@ extern "C"
  * register.  If the associated INTCON bit is clear, then the definition of
  * "changed" means the value is different from it's previous value.
  */
-#define DEFVALA 0x06
-#define DEFVALB 0x07
+#define BANKED_DEFVALA 0x03
+#define BANKED_DEFVALB 0x13
 
 /*
  * The INTCON register controls how the associated pin value is compared for
@@ -197,8 +82,9 @@ extern "C"
  * bit value is clear, the corresponding I/O pin is compared against the
  * previous value.
  */
-#define INTCONA 0x08
-#define INTCONB 0x09
+#define BANKED_INTCONA 0x04
+#define BANKED_INTCONB 0x14
+
 /*
  * The configuration register controls the operation of the MCP23x17 device.
  * This register appears at different addresses based on the power-on-reset
@@ -206,18 +92,24 @@ extern "C"
  * assigned to the same register in both modes.  This is denoted as a low
  * (_L) address and a high (_H) address.  If you refer to the register by
  * it's generic symbol, then the first address is used.
+ *
+ * When the MCP23x17 powers on or is reset, the register addressing defaults
+ * to sequential mode, so the configuration register is at address 0x0A.  If
+ * the BANK bit in the configuration register is set, then the register
+ * addressing changes to banked mode, and the configuration register is at
+ * address 0x15.
  */
-#define IOCON 0x0A
-#define IOCON_L 0x0A
-#define IOCON_H 0x0B
+#define BANKED_IOCON 0x05
+#define BANKED_IOCON_L 0x05
+#define BANKED_IOCON_H 0x15
 
 /*
  * The GPPU register controls the pull-up resistors for the port pins. If a
  * bit is set and the corresponding pin is configured as an input, the
  * corresponding port pin is internally pulled up with a 100 k? resistor.
  */
-#define GPPUA 0x0C
-#define GPPUB 0x0D
+#define BANKED_GPPUA 0x06
+#define BANKED_GPPUB 0x16
 
 /*
  * The INTF register reflects the interrupt condition on the port pins of
@@ -226,8 +118,8 @@ extern "C"
  *
  * This register is 'read-only'. Writes to this register will be ignored.
  */
-#define INTFA 0x0E
-#define INTFB 0x0F
+#define BANKED_INTFA 0x07
+#define BANKED_INTFB 0x17
 
 /*
  * The INTCAP register captures the GPIO port value at the time the interrupt
@@ -235,16 +127,16 @@ extern "C"
  * occurs. The register will remain unchanged until the interrupt is cleared
  * via a read of INTCAP or GPIO register.
  */
-#define INTCAPA 0x10
-#define INTCAPB 0x11
+#define BANKED_INTCAPA 0x08
+#define BANKED_INTCAPB 0x18
 
 /*
  * The GPIO register reflects the value on the port.  Reading from this
  * register reads the port. Writing to this register modifies the Output
  * Latch (OLAT) register.
  */
-#define GPIOA 0x12
-#define GPIOB 0x13
+#define BANKED_GPIOA 0x09
+#define BANKED_GPIOB 0x19
 
 /*
  * The OLAT register provides access to the output latches. A read from this
@@ -252,18 +144,122 @@ extern "C"
  * to this register modifies the output latches that modifies the pins
  * configured as outputs.
  */
-#define OLATA 0x14
-#define OLATB 0x15
-#endif
+#define BANKED_OLATA 0x0A
+#define BANKED_OLATB 0x1A
 
-    /*
-     * I/O Direction registers.
-     *
-     * Controls the direction of data I/O.  Each bit corresponds to one pin of the
-     * device I/O port. If a bit is high, the I/O pin is input.  When clear, the
-     * pin is output. The pin values are represented in decimal as the value of
-     * the pin when set to 1.
-     */
+/*
+ * Controls the direction of data I/O.  Each bit corresponds to one pin of the
+ * device I/O port. If a bit is high, the I/O pin is input.  When clear, the
+ * pin is output. The pin values are represented in decimal as the value of
+ * the pin when set to 1.
+ */
+#define SEQ_IODIRA 0X00
+#define SEQ_IODIRB 0x01
+
+/*
+ * Defines the input polarity of the port pins.  Each bit in this register
+ * corresponds to the pin in the port.  When the bit is clear, the
+ * corresponding pin will represent the current value of the pin.  When set
+ * the value of the pin is inverted (1 -> 0, and 0 -> 1).
+ */
+#define SEQ_IPOLA 0x02
+#define SEQ_IPOLB 0x03
+
+/*
+ * Controls the interrupt-on-change mode for the I/O port.  Each bit in the
+ * register corresponds to a bit in the port.  If clear, the pin does not
+ * generate an interrupt when its value changes.  If set, a change detected
+ * on the pin generates an interrupt based on the additional settings of the
+ * DEFVAL and INTCON registers. If this is set, these additional registers
+ * must be configured.
+ */
+#define SEQ_GPINTENA 0x04
+#define SEQ_GPINTENB 0x05
+
+/*
+ * Establishes the default value for pin comparisons on a port when the
+ * interrupt-on-change feature is enabled.  If interrupt-on-change is
+ * enabled, and the INTCON bit is also set, then the definition of "changed"
+ * means the ports I/O bit value is different from the default value in this
+ * register.  If the associated INTCON bit is clear, then the definition of
+ * "changed" means the value is different from it's previous value.
+ */
+#define SEQ_DEFVALA 0x06
+#define SEQ_DEFVALB 0x07
+
+/*
+ * The INTCON register controls how the associated pin value is compared for
+ * the interrupt-on-change feature. If a bit is set, the corresponding I/O
+ * pin is compared against the associated bit in the DEFVAL register. If a
+ * bit value is clear, the corresponding I/O pin is compared against the
+ * previous value.
+ */
+#define SEQ_INTCONA 0x08
+#define SEQ_INTCONB 0x09
+/*
+ * The configuration register controls the operation of the MCP23x17 device.
+ * This register appears at different addresses based on the power-on-reset
+ * state and the banked configuration.  Additionally, there are two addresses
+ * assigned to the same register in both modes.  This is denoted as a low
+ * (_L) address and a high (_H) address.  If you refer to the register by
+ * it's generic symbol, then the first address is used.
+ */
+#define SEQ_IOCON 0x0A
+#define SEQ_IOCON_L 0x0A
+#define SEQ_IOCON_H 0x0B
+
+/*
+ * The GPPU register controls the pull-up resistors for the port pins. If a
+ * bit is set and the corresponding pin is configured as an input, the
+ * corresponding port pin is internally pulled up with a 100 k? resistor.
+ */
+#define SEQ_GPPUA 0x0C
+#define SEQ_GPPUB 0x0D
+
+/*
+ * The INTF register reflects the interrupt condition on the port pins of
+ * any pin that is enabled for interrupts via the GPINTEN register. A 1 bit
+ * indicates that the associated pin caused the interrupt.
+ *
+ * This register is 'read-only'. Writes to this register will be ignored.
+ */
+#define SEQ_INTFA 0x0E
+#define SEQ_INTFB 0x0F
+
+/*
+ * The INTCAP register captures the GPIO port value at the time the interrupt
+ * occurred. The register is 'read-only' and is updated only when an interrupt
+ * occurs. The register will remain unchanged until the interrupt is cleared
+ * via a read of INTCAP or GPIO register.
+ */
+#define SEQ_INTCAPA 0x10
+#define SEQ_INTCAPB 0x11
+
+/*
+ * The GPIO register reflects the value on the port.  Reading from this
+ * register reads the port. Writing to this register modifies the Output
+ * Latch (OLAT) register.
+ */
+#define SEQ_GPIOA 0x12
+#define SEQ_GPIOB 0x13
+
+/*
+ * The OLAT register provides access to the output latches. A read from this
+ * register results in a read of the OLAT and not the port itself. A write
+ * to this register modifies the output latches that modifies the pins
+ * configured as outputs.
+ */
+#define SEQ_OLATA 0x14
+#define SEQ_OLATB 0x15
+
+/*
+ * I/O Direction registers.
+ *
+ * Controls the direction of data I/O.  Each bit corresponds to one pin of the
+ * device I/O port. If a bit is high, the I/O pin is input.  When clear, the
+ * pin is output. The pin values are represented in decimal as the value of
+ * the pin when set to 1.
+ */
 #define IO7 128
 #define IO6 64
 #define IO5 32
@@ -273,14 +269,14 @@ extern "C"
 #define IO1 2
 #define IO0 1
 
-    /*
-     * Input Polarity Registers.
-     *
-     * Defines the input polarity of the port pins.  Each bit in this register
-     * corresponds to the pin in the port.  When the bit is clear, the
-     * corresponding pin will represent the current value of the pin.  When set
-     * the value of the pin is inverted (1 -> 0, and 0 -> 1).
-     */
+/*
+ * Input Polarity Registers.
+ *
+ * Defines the input polarity of the port pins.  Each bit in this register
+ * corresponds to the pin in the port.  When the bit is clear, the
+ * corresponding pin will represent the current value of the pin.  When set
+ * the value of the pin is inverted (1 -> 0, and 0 -> 1).
+ */
 #define IP7 128
 #define IP6 64
 #define IP5 32
@@ -290,16 +286,16 @@ extern "C"
 #define IP1 2
 #define IP0 1
 
-    /*
-     * Interrupt-on-change control registers.
-     *
-     * Controls the interrupt-on-change mode for the I/O port.  Each bit in the
-     * register corresponds to a bit in the port.  If clear, the pin does not
-     * generate an interrupt when its value changes.  If set, a change detected
-     * on the pin generates an interrupt based on the additional settings of the
-     * DEFVAL and INTCON registers. If this is set, these additional registers
-     * must be configured.
-     */
+/*
+ * Interrupt-on-change control registers.
+ *
+ * Controls the interrupt-on-change mode for the I/O port.  Each bit in the
+ * register corresponds to a bit in the port.  If clear, the pin does not
+ * generate an interrupt when its value changes.  If set, a change detected
+ * on the pin generates an interrupt based on the additional settings of the
+ * DEFVAL and INTCON registers. If this is set, these additional registers
+ * must be configured.
+ */
 #define GPINT7 128
 #define GPINT6 64
 #define GPINT5 32
@@ -309,16 +305,16 @@ extern "C"
 #define GPINT1 2
 #define GPINT0 1
 
-    /*
-     * Default compare register for interrupt-on-change.
-     *
-     * Establishes the default value for pin comparisons on a port when the
-     * interrupt-on-change feature is enabled.  If interrupt-on-change is
-     * enabled, and the INTCON bit is also set, then the definition of "changed"
-     * means the ports I/O bit value is different from the default value in this
-     * register.  If the associated INTCON bit is clear, then the definition of
-     * "changed" means the value is different from it's previous value.
-     */
+/*
+ * Default compare register for interrupt-on-change.
+ *
+ * Establishes the default value for pin comparisons on a port when the
+ * interrupt-on-change feature is enabled.  If interrupt-on-change is
+ * enabled, and the INTCON bit is also set, then the definition of "changed"
+ * means the ports I/O bit value is different from the default value in this
+ * register.  If the associated INTCON bit is clear, then the definition of
+ * "changed" means the value is different from it's previous value.
+ */
 #define DEF7 128
 #define DEF6 64
 #define DEF5 32
@@ -328,15 +324,15 @@ extern "C"
 #define DEF1 2
 #define DEF0 1
 
-    /*
-     * Interrupt Control Registers
-     *
-     * The INTCON register controls how the associated pin value is compared for
-     * the interrupt-on-change feature. If a bit is set, the corresponding I/O
-     * pin is compared against the associated bit in the DEFVAL register. If a
-     * bit value is clear, the corresponding I/O pin is compared against the
-     * previous value.
-     */
+/*
+ * Interrupt Control Registers
+ *
+ * The INTCON register controls how the associated pin value is compared for
+ * the interrupt-on-change feature. If a bit is set, the corresponding I/O
+ * pin is compared against the associated bit in the DEFVAL register. If a
+ * bit value is clear, the corresponding I/O pin is compared against the
+ * previous value.
+ */
 #define IOC7 128
 #define IOC6 64
 #define IOC5 32
@@ -346,28 +342,32 @@ extern "C"
 #define IOC1 2
 #define IOC0 1
 
-    /*
-     * Configuration control register.
-     *
-     * BANK - If 1, the registers are separated into banks.  Define the symbol
-     *        MCP23X17_BANKED if banked support is desired.  Defaults to
-     *        sequential.
-     * MIRROR - If 1, the two interrupt output pins are connected and an interrupt
-     *        generated from either port will activate both pins.  If 0, the
-     *        interrupt pins are split and assigned to each port.
-     * SEQOP - If 1, the register address pointer is not incremented by 1 after
-     *        each read or write operation.  If 0, the register address is
-     *        incremented by 1 after each read or write operation to a register.
-     * DISSLW - If 1, slew rate control for the SDA pint is disabled.  If 0,
-     *        slew rate control is enabled.
-     * HAEN   - If 1, the address pins are enabled, and if 0, the address pins
-     *        are disabled.  This only applies to the MCP23S17 (SPI version)
-     *        and the MCP23017 (I2C version) address pins are always enabled.
-     * ODR    - If 1, the interrupt output pin is configured as an open-drain
-     *        output.  If 0, the pin is configured as totem-pole drive.
-     * INTPOL - If 1, the interrupt output is assumed to be active when HIGH.
-     *        If 0, the interrupt output is assumed to be active when LOW.
-     */
+/*
+ * Configuration control register.
+ *
+ * BANK ----- If 1, the registers are separated into banks.  When in banked 
+ *            mode, use the register definitions with the "BANKED_" prefix.  
+ *            If 0, the registers are in sequential mode and use the "SEQ_" 
+ *            prefix definitions.  When the MCP23x17 powers on or is reset, 
+ *            the register addressing defaults to sequential mode.
+ * MIRROR --- If 1, the two interrupt output pins are connected and an 
+ *            interrupt generated from either port will activate both pins.
+ *            If 0, the interrupt pins are not connected and can be used to 
+ *            differentiate interrupts.  
+ * SEQOP ---- If 1, the register address pointer is not incremented by 1 
+ *            after each read or write operation.  If 0, the register 
+ *            address is incremented by 1 after each read or write 
+ *            operation to a register.
+ * DISSLW --- If 1, slew rate control for the SDA pint is disabled.  If 0,
+ *            slew rate control is enabled.
+ * HAEN ----- If 1, the address pins are enabled, and if 0, the address pins
+ *            are disabled.  This only applies to the MCP23S17 (SPI version)
+ *            and the MCP23017 (I2C version) address pins are always enabled.
+ * ODR ------ If 1, the interrupt output pin is configured as an open-drain
+ *            output.  If 0, the pin is configured as totem-pole drive.
+ * INTPOL --- If 1, the interrupt output is assumed to be active when HIGH.
+ *            If 0, the interrupt output is assumed to be active when LOW.
+ */
 #define BANK 128
 #define MIRROR 64
 #define SEQOP 32
@@ -376,13 +376,13 @@ extern "C"
 #define ODR 4
 #define INTPOL 2
 
-    /*
-     * Pull-Up Configuration Register
-     *
-     * These pins correspond to the port input pins and control if pull-up
-     * resistors are active or not.  If the pin is defined as an output, this
-     * setting has no effect.
-     */
+/*
+ * Pull-Up Configuration Register
+ *
+ * These pins correspond to the port input pins and control if pull-up
+ * resistors are active or not.  If the pin is defined as an output, this
+ * setting has no effect.
+ */
 #define PU7 128
 #define PU6 64
 #define PU5 32
@@ -392,16 +392,16 @@ extern "C"
 #define PU1 2
 #define PU0 1
 
-    /*
-     * Interrupt Flag Register
-     *
-     * This register is read-only, and writes to it are ignored.  These bits are
-     * set (1) when the associated pin has generated an interrupt because it was
-     * changed.  If unset (0), then no change has been observed on the pin.
-     *
-     * Note, to clear the interrup flag, either read the INTCAP register or the
-     * GPIO port.
-     */
+/*
+ * Interrupt Flag Register
+ *
+ * This register is read-only, and writes to it are ignored.  These bits are
+ * set (1) when the associated pin has generated an interrupt because it was
+ * changed.  If unset (0), then no change has been observed on the pin.
+ *
+ * Note, to clear the interrup flag, either read the INTCAP register or the
+ * GPIO port.
+ */
 #define INT7 128
 #define INT6 64
 #define INT5 32
@@ -411,13 +411,13 @@ extern "C"
 #define INT1 2
 #define INT0 1
 
-    /*
-     * Interrupt Capture Register
-     *
-     * These bits correspond to the port pins and are set when an interrupt has
-     * been generated (captured).  They are only cleared by reading this port
-     * or reading the port via the GPIO register.
-     */
+/*
+ * Interrupt Capture Register
+ *
+ * These bits correspond to the port pins and are set when an interrupt has
+ * been generated (captured).  They are only cleared by reading this port
+ * or reading the port via the GPIO register.
+ */
 #define ICP7 128
 #define ICP6 64
 #define ICP5 32
@@ -427,11 +427,11 @@ extern "C"
 #define ICP1 2
 #define ICP0 1
 
-    /*
-     * Port Register
-     *
-     * Each bit in this register corresponds to the pin of the port.
-     */
+/*
+ * Port Register
+ *
+ * Each bit in this register corresponds to the pin of the port.
+ */
 #define GP7 128
 #define GP6 64
 #define GP5 32
@@ -441,11 +441,11 @@ extern "C"
 #define GP1 2
 #define GP0 1
 
-    /*
-     * Output Latch Register
-     *
-     * These bits correspond to the bits of the output latch register.
-     */
+/*
+ * Output Latch Register
+ *
+ * These bits correspond to the bits of the output latch register.
+ */
 #define OL7 128
 #define OL6 64
 #define OL5 32
@@ -455,22 +455,27 @@ extern "C"
 #define OL1 2
 #define OL0 1
 
-    /*
-     * The definition of the control byte that is used to address the MCP23x17
-     * and define the operation as a register read or register write.
-     *
-     * The initial value is used to initialize the control structure by setting
-     * the value. The address is then set in the control byte using the "address"
-     * fields of the "bits" structure.  If the operation is a read, then set the
-     * value of the "read" bit to 1, otherwise 0 for a write.
-     *
-     * For example,
-     * control.value = CONTROL_INIT_VALUE;
-     * control.bits.address = 3;
-     * control.bits.read = 0;
-     */
+/*
+ * The definition of the control byte that is used to address the MCP23x17
+ * and define the operation as a register read or register write.
+ *
+ * The initial value is used to initialize the control structure by setting
+ * the value. The address is then set in the control byte using the "address"
+ * fields of the "bits" structure.  If the operation is a read, then set the
+ * value of the "read" bit to 1, otherwise 0 for a write.
+ *
+ * For example,
+ * control.value = CONTROL_INIT_VALUE;
+ * control.bits.address = 3;
+ * control.bits.read = 0;
+ */
 #define CONTROL_INIT_VALUE 0x40
 
+    typedef struct
+    {
+        uint8_t address;  ///< 3-bit address of the device (0-7)
+        uint8_t read : 1; ///< Read (1) or Write (0)
+    } mcp23x17_control_t;
     union
     {
         struct
