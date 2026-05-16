@@ -68,11 +68,13 @@ uart_handle_t console_uart = {
     .initialized = false};
 
 i2c_handle_t i2c_master;
+uint8_t i2c_buffer[16]; // Buffer for I2C read/write operations
 
 /// @brief ISR for UART1 Transmit, UART1 Receive, and External IOC on RB2
 /// @param  None
 /// @return None
-void __interrupt() ISR(void)
+void __interrupt(irq(0x07), low_priority) ISR(void)
+void __interrupt(irq(0x07), low_priority) ISR(void)
 {
     // Handle UART1 Receive Interrupt
     if ((PIE4bits.U1RXIE != 0U) && (PIR4bits.U1RXIF != 0U))
@@ -122,6 +124,14 @@ void Extern_HandleInterrupt(void)
 ///       bit bang master interface. It also prints status messages to the console.
 void APP_Initialize(void)
 {
+    /*
+     * Configure RB0 as UART1 TX and RB1 as UART1 RX
+     */
+    TRISBbits.TRISB0 = 0;   // RB0 is output (UART1 TX)
+    ANSELBbits.ANSELB0 = 0; // RB0 is digital
+    TRISBbits.TRISB1 = 1;   // RB1 is input (UART1 RX)
+    ANSELBbits.ANSELB1 = 0; // RB1 is digital
+
     if (!UART_Open(&console_uart))
     {
         while (1)
@@ -132,14 +142,6 @@ void APP_Initialize(void)
     UART_SelectPrintfTarget(&console_uart);
 
     printf("I2C 01 Bit Bang Master\r\n");
-
-    /*
-     * Configure RB0 as UART1 TX and RB1 as UART1 RX
-     */
-    TRISBbits.TRISB0 = 0;   // RB0 is output (UART1 TX)
-    ANSELBbits.ANSELB0 = 0; // RB0 is digital
-    TRISBbits.TRISB1 = 1;   // RB1 is input (UART1 RX)
-    ANSELBbits.ANSELB1 = 0; // RB1 is digital
 
     /*
      * Configure RB2 as an external interrupt (INT0).  We will use this
