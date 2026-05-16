@@ -82,16 +82,35 @@ i2c_status_t I2C_RestartStart(i2c_handle_t *handle);
 
 /// @brief Send one byte on the I2C bus
 /// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
 /// @param data Byte to send
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data);
+i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t address, uint8_t data);
+
+/// @brief Send multiple bytes on the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
+/// @param data Pointer to the data buffer to send
+/// @param length Number of bytes to send
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length);
 
 /// @brief Receive one byte from the I2C bus
 /// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address    
 /// @param data Pointer to store received byte
 /// @param send_ack If true, send ACK; if false, send NACK
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack);
+i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t address, uint8_t *data, bool send_ack);
+
+/// @brief Receive multiple bytes from the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
+/// @param data Pointer to the buffer to store received bytes
+/// @param length Number of bytes to receive
+/// @param send_ack If true, send ACK after each byte; if false, send NACK after each byte
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_ReceiveBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length, bool send_ack);
 
 /// @brief Check if SDA is held low by slave
 /// @param handle Pointer to i2c_handle_t structure

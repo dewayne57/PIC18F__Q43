@@ -109,6 +109,130 @@ static i2c_status_t i2c_wait_sda_high(i2c_handle_t *handle, uint16_t max_wait_ms
     return I2C_SUCCESS;
 }
 
+/// @brief Send one raw byte on the I2C bus and read ACK/NAK
+/// @param handle Pointer to i2c_handle_t structure
+/// @param data Byte to send
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_send_raw_byte(i2c_handle_t *handle, uint8_t data)
+{
+    // Send 8 bits, MSB first
+    for (uint8_t bit = 0; bit < 8; bit++)
+    {
+        uint8_t bit_value = (data >> (7 - bit)) & 1U;
+
+        if (bit_value != 0U)
+        {
+            I2C_SDA_HIGH();
+        }
+        else
+        {
+            I2C_SDA_LOW();
+        }
+
+        i2c_delay(handle->half_period_us);
+
+        I2C_SCK_HIGH();
+        i2c_delay(handle->half_period_us);
+
+        i2c_status_t status = i2c_wait_sck_high(handle, 100);
+        if (status != I2C_SUCCESS)
+        {
+            return status;
+        }
+
+        i2c_delay(handle->half_period_us);
+        I2C_SCK_LOW();
+        i2c_delay(handle->half_period_us);
+    }
+
+    // ACK cycle from slave
+    I2C_SDA_HIGH();
+    i2c_delay(handle->half_period_us);
+
+    I2C_SCK_HIGH();
+    i2c_delay(handle->half_period_us);
+
+    i2c_status_t status = i2c_wait_sck_high(handle, 100);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    uint8_t ack_bit = I2C_SDA_READ();
+
+    i2c_delay(handle->half_period_us);
+    I2C_SCK_LOW();
+    i2c_delay(handle->half_period_us);
+
+    if (ack_bit != 0U)
+    {
+        return I2C_ERROR_NAK;
+    }
+
+    return I2C_SUCCESS;
+}
+
+/// @brief Receive one raw byte from the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param data Pointer to store received byte
+/// @param send_ack If true, send ACK; if false, send NACK
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_receive_raw_byte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
+{
+    uint8_t received_byte = 0U;
+
+    I2C_SDA_HIGH();
+    i2c_delay(handle->half_period_us);
+
+    for (uint8_t bit = 0; bit < 8; bit++)
+    {
+        I2C_SCK_HIGH();
+        i2c_delay(handle->half_period_us);
+
+        i2c_status_t status = i2c_wait_sck_high(handle, 100);
+        if (status != I2C_SUCCESS)
+        {
+            return status;
+        }
+
+        received_byte <<= 1;
+        received_byte |= I2C_SDA_READ();
+
+        i2c_delay(handle->half_period_us);
+        I2C_SCK_LOW();
+        i2c_delay(handle->half_period_us);
+    }
+
+    if (send_ack)
+    {
+        I2C_SDA_LOW();
+    }
+    else
+    {
+        I2C_SDA_HIGH();
+    }
+
+    i2c_delay(handle->half_period_us);
+    I2C_SCK_HIGH();
+    i2c_delay(handle->half_period_us);
+
+    i2c_status_t status = i2c_wait_sck_high(handle, 100);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    i2c_delay(handle->half_period_us);
+    I2C_SCK_LOW();
+    i2c_delay(handle->half_period_us);
+
+    I2C_SDA_HIGH();
+
+    *data = received_byte;
+
+    return I2C_SUCCESS;
+}
+
 /// @brief Initialize the I2C bit bang master interface
 /// @param handle Pointer to i2c_handle_t structure
 /// @param speed_khz Desired I2C bus speed in kHz
@@ -250,153 +374,153 @@ i2c_status_t I2C_RestartStart(i2c_handle_t *handle)
 
 /// @brief Send one byte on the I2C bus
 /// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
 /// @param data Byte to send
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t data)
+i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t address, uint8_t data)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
         return I2C_ERROR_NOT_INITIALIZED;
     }
 
-    // Send 8 bits, MSB first
-    for (uint8_t bit = 0; bit < 8; bit++)
-    {
-        // Determine bit value (MSB first)
-        uint8_t bit_value = (data >> (7 - bit)) & 1;
-
-        // Set SDA based on bit value
-        if (bit_value)
-        {
-            I2C_SDA_HIGH();
-        }
-        else
-        {
-            I2C_SDA_LOW();
-        }
-
-        i2c_delay(handle->half_period_us);
-
-        // Clock pulse: SCK goes high then low
-        I2C_SCK_HIGH();
-        i2c_delay(handle->half_period_us);
-
-        // Check for clock stretching
-        i2c_status_t status = i2c_wait_sck_high(handle, 100);
-        if (status != I2C_SUCCESS)
-        {
-            return status;
-        }
-
-        i2c_delay(handle->half_period_us);
-        I2C_SCK_LOW();
-        i2c_delay(handle->half_period_us);
-    }
-
-    // Release SDA and wait for slave ACK
-    I2C_SDA_HIGH();
-    i2c_delay(handle->half_period_us);
-
-    // Clock pulse for ACK bit
-    I2C_SCK_HIGH();
-    i2c_delay(handle->half_period_us);
-
-    // Check for clock stretching
-    i2c_status_t status = i2c_wait_sck_high(handle, 100);
+    i2c_status_t status = I2C_Start(handle);
     if (status != I2C_SUCCESS)
     {
         return status;
     }
 
-    // Read ACK bit (SDA should be low)
-    uint8_t ack_bit = I2C_SDA_READ();
-
-    i2c_delay(handle->half_period_us);
-    I2C_SCK_LOW();
-    i2c_delay(handle->half_period_us);
-
-    // Return NAK if slave did not pull SDA low
-    if (ack_bit != 0)
+    status = i2c_send_raw_byte(handle, address & 0xFEU);
+    if (status != I2C_SUCCESS)
     {
-        return I2C_ERROR_NAK;
+        (void)I2C_Stop(handle);
+        return status;
     }
 
-    return I2C_SUCCESS;
+    status = i2c_send_raw_byte(handle, data);
+    if (status != I2C_SUCCESS)
+    {
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    return I2C_Stop(handle);
+}
+
+/// @brief Send multiple bytes on the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
+ /// @param data Pointer to the data buffer to send
+ /// @param length Number of bytes to send
+ /// @return i2c_status_t indicating success or error
+i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length)
+{
+    if ((handle == NULL) || (!handle->initialized) || (data == NULL) || (length == 0U))
+    {
+        return I2C_ERROR_NOT_INITIALIZED;
+    }
+
+    i2c_status_t status = I2C_Start(handle);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    status = i2c_send_raw_byte(handle, address & 0xFEU);
+    if (status != I2C_SUCCESS)
+    {
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    for (uint16_t i = 0; i < length; i++)
+    {
+        status = i2c_send_raw_byte(handle, data[i]);
+        if (status != I2C_SUCCESS)
+        {
+            (void)I2C_Stop(handle);
+            return status;
+        }
+    }
+
+    return I2C_Stop(handle);
 }
 
 /// @brief Receive one byte from the I2C bus
 /// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
 /// @param data Pointer to store received byte
 /// @param send_ack If true, send ACK; if false, send NACK
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t *data, bool send_ack)
+i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t address, uint8_t *data, bool send_ack)
 {
     if ((handle == NULL) || (!handle->initialized) || (data == NULL))
     {
         return I2C_ERROR_NOT_INITIALIZED;
     }
 
-    uint8_t received_byte = 0;
-
-    // Release SDA and SCK for master to receive
-    I2C_SDA_HIGH();
-    i2c_delay(handle->half_period_us);
-
-    // Receive 8 bits, MSB first
-    for (uint8_t bit = 0; bit < 8; bit++)
-    {
-        // Clock pulse: SCK goes high
-        I2C_SCK_HIGH();
-        i2c_delay(handle->half_period_us);
-
-        // Check for clock stretching
-        i2c_status_t status = i2c_wait_sck_high(handle, 100);
-        if (status != I2C_SUCCESS)
-        {
-            return status;
-        }
-
-        // Read bit value
-        uint8_t bit_value = I2C_SDA_READ();
-        received_byte = (received_byte << 1) | bit_value;
-
-        i2c_delay(handle->half_period_us);
-        I2C_SCK_LOW();
-        i2c_delay(handle->half_period_us);
-    }
-
-    // Send ACK or NACK
-    if (send_ack)
-    {
-        I2C_SDA_LOW();  // Send ACK (pull SDA low)
-    }
-    else
-    {
-        I2C_SDA_HIGH(); // Send NACK (release SDA high)
-    }
-
-    i2c_delay(handle->half_period_us);
-
-    // Clock pulse for ACK/NACK bit
-    I2C_SCK_HIGH();
-    i2c_delay(handle->half_period_us);
-
-    // Check for clock stretching
-    i2c_status_t status = i2c_wait_sck_high(handle, 100);
+    i2c_status_t status = I2C_Start(handle);
     if (status != I2C_SUCCESS)
     {
         return status;
     }
 
-    i2c_delay(handle->half_period_us);
-    I2C_SCK_LOW();
-    i2c_delay(handle->half_period_us);
+    status = i2c_send_raw_byte(handle, address | 0x01U);
+    if (status != I2C_SUCCESS)
+    {
+        (void)I2C_Stop(handle);
+        return status;
+    }
 
-    // Release SDA
-    I2C_SDA_HIGH();
+    status = i2c_receive_raw_byte(handle, data, send_ack);
+    if (status != I2C_SUCCESS)
+    {
+        (void)I2C_Stop(handle);
+        return status;
+    }
 
-    *data = received_byte;
-    return I2C_SUCCESS;
+    return I2C_Stop(handle);
+}
+
+/// @brief Receive multiple bytes from the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address
+/// @param data Pointer to the buffer to store received bytes
+/// @param length Number of bytes to receive
+/// @param send_ack If true, send ACK after each byte; if false, send NACK after each byte
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_ReceiveBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length, bool send_ack)
+{
+    if ((handle == NULL) || (!handle->initialized) || (data == NULL) || (length == 0U))
+    {
+        return I2C_ERROR_NOT_INITIALIZED;
+    }
+
+    i2c_status_t status = I2C_Start(handle);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    status = i2c_send_raw_byte(handle, address | 0x01U);
+    if (status != I2C_SUCCESS)
+    {
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    for (uint16_t i = 0; i < length; i++)
+    {
+        bool ack = send_ack && (i < (length - 1U));
+        status = i2c_receive_raw_byte(handle, &data[i], ack);
+        if (status != I2C_SUCCESS)
+        {
+            (void)I2C_Stop(handle);
+            return status;
+        }
+    }
+
+    return I2C_Stop(handle);
 }
 
 /// @brief Check if SDA is held low by slave

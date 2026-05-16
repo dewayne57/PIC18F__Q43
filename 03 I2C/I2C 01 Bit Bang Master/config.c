@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include "config.h"
 #include "../../Libraries/PPSLIB/pps.h"
-#include "extern_ioc.h"
 
 /// @brief Initialize system-level hardware used by the UART demonstration.
 /// @param None

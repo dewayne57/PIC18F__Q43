@@ -45,9 +45,10 @@
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
 
-// MCP23017 I2C address (assuming A2, A1, A0 = 0)
-const uint8_t MCP23017_ADDR = 0x20; // (0100 000) << 1 = 0x40, then >> 1 for 7-bit addressing
-
+/*
+ * Define the UART handle for the console. This will be used for debug output via UART1.
+ * The handle is initialized with the appropriate settings for UART1, including baud rate,  
+ */
 uart_handle_t console_uart = {
     .port = UART_PORT_1,
     .high_speed_baud = false,
@@ -67,13 +68,17 @@ uart_handle_t console_uart = {
     .rx_tail = 0U,
     .initialized = false};
 
+/// @brief I2C master handle for the bit bang implementation. This will be initialized 
+/// in the APP_Initialize function
 i2c_handle_t i2c_master;
+
+/// @brief Buffer for I2C read/write operations. This buffer can be used for temporary 
+/// storage of data
 uint8_t i2c_buffer[16]; // Buffer for I2C read/write operations
 
 /// @brief ISR for UART1 Transmit, UART1 Receive, and External IOC on RB2
 /// @param  None
 /// @return None
-void __interrupt(irq(0x07), low_priority) ISR(void)
 void __interrupt(irq(0x07), low_priority) ISR(void)
 {
     // Handle UART1 Receive Interrupt
@@ -87,12 +92,6 @@ void __interrupt(irq(0x07), low_priority) ISR(void)
     {
         UART_HandleTxInterrupt(&console_uart);
     }
-
-    // Handle External IOC Interrupt on RB2
-    if (PIR0bits.IOCIF != 0)
-    {
-        ExternIoc_HandleInterrupt();
-    }
 }
 
 /// @brief Handle external interrupt on RB2 to read MCP23017 port A and copy to MCP23017 port B
@@ -100,21 +99,67 @@ void __interrupt(irq(0x07), low_priority) ISR(void)
 /// @return None
 /// @note This function reads the MCP23017 port A register and writes the value to MCP23017
 ///       port B
-void Extern_HandleInterrupt(void)
+void __interrupt(irq(0x08), low_priority) Extern_ISR(void)
 {
     uint8_t mcp_port_a_value = 0x00;
+    uint8_t reg_addr = BANKED_GPIOA;
 
-    // Read MCP23017 Port A GPIO register (SEQ_GPIOA = 0x12)
-    i2c_status_t status = I2C_Read(&i2c_master, MCP23017_ADDR, SEQ_GPIOA, &mcp_port_a_value, 1);
+    // Select GPIOA register, then read one byte from the slave.
+    i2c_status_t status = I2C_SendBytes(&i2c_master, MCP23017_ADDR, &reg_addr, 1);
+    if (status == I2C_SUCCESS)
+    {
+        status = I2C_ReceiveByte(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, false);
+    }
 
     if (status == I2C_SUCCESS)
     {
-        // Write MCP23017 Port A value to MCP23017 Port B OLAT register (SEQ_OLATB = 0x0D)
-        status = I2C_Write(&i2c_master, MCP23017_ADDR, SEQ_OLATB, &mcp_port_a_value, 1);
+        // Write MCP23017 Port A value to MCP23017 Port B OLAT register.
+        uint8_t write_buf[2] = {BANKED_OLATB, mcp_port_a_value};
+        status = I2C_SendBytes(&i2c_master, MCP23017_ADDR, write_buf, 2);
     }
 
     // Clear the interrupt flag
     PIR0bits.IOCIF = 0;
+}
+
+/// @brief Initialize the MCP23017 I/O expander.
+/// The MCP23017 is configured in banked mode, meaning that all the port A 
+/// registers are in one bank and all the port B registers are in another bank.  
+/// This allows for easier management of the ports.  In this example, we configure
+/// port A as inputs with pull-ups enabled and interrupt on change enabled, and port B  
+/// as outputs.  The function writes to the appropriate registers to achieve this 
+/// configuration.
+/// @param handle Pointer to i2c_handle_t structure
+/// @return i2c_status_t indicating success or error
+static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
+{
+    // Set IODIRA to 0xFF (all inputs) and enable pull-ups on Port A
+    i2c_buffer[0] = SEQ_IODIRA;  // Register address for I/O direction of Port A
+    i2c_buffer[1] = 0xFF;        // IODIRA: all pins as inputs
+    i2c_buffer[2] = 0x00;        // IPOLA: Non-inverted input polarity on Port A
+    i2c_buffer[3] = 0xFF;        // GPINTENA: enable interrupt on change for all Port A pins
+    i2c_buffer[4] = 0x00;        // DEFVALA: Not used since we are not using interrupt \
+                                    compare, but set to 0 for clarity
+    i2c_buffer[5] = 0x00;        // INTCONA: Compare against previous value for interrupt \
+                                    on change, not DEFVALA
+    i2c_buffer[6] = 0x82;        // IOCON: banked mode enabled, sequential operation \
+                                    enabled, active-high interrupts
+    i2c_status_t status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 7);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    // Set IODIRB to 0x00 (all outputs)
+    i2c_buffer[0] = SEQ_IODIRB;  // Register address
+    i2c_buffer[1] = 0x00;        // IODIRB: all pins as outputs
+    status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 2);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    return I2C_SUCCESS;
 }
 
 /// @brief Initialize the application.
@@ -144,23 +189,19 @@ void APP_Initialize(void)
     printf("I2C 01 Bit Bang Master\r\n");
 
     /*
-     * Configure RB2 as an external interrupt (INT0).  We will use this
-     * interrupt to detect changes on the input pins of the MCP23017 I/O expander.
-     * When a change is detected on the input pins, the MCP23017 will trigger an interrupt
-     * on RB2, which we will handle in the ExternIoc_HandleInterrupt function.  This
-     * allows us to respond to changes on the input pins without needing to continuously
-     * poll them in the main loop, improving efficiency and responsiveness.
+     * Configure RB2 as an IOC input. We use this interrupt to detect
+     * changes signaled by the MCP23017 INT pin.
      */
     TRISBbits.TRISB2 = 1;   // RB2 is input
     ANSELBbits.ANSELB2 = 0; // RB2 is digital
     WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
 
-    // Configure INT0 interrupt
-    // INTEDG = 0: Interrupt on falling edge
-    // IOCIF flag is cleared when reading PORTB in the interrupt handler
-    INTCONbits.INTEDG = 0; // Falling edge trigger for INT0 on RB2
-    INTCONbits.IOCIE = 1;  // Enable IOC interrupt
-    INTCONbits.IOCIF = 0;  // Clear the IOC interrupt flag
+    // Configure IOC interrupt for falling edge on RB2.
+    IOCBPbits.IOCBP2 = 0;
+    IOCBNbits.IOCBN2 = 1;
+    IOCBFbits.IOCBF2 = 0;
+    PIE0bits.IOCIE = 1;
+    PIR0bits.IOCIF = 0;
 
     // Initialize I2C bit bang master for 100kHz bus speed
     if (I2C_Initialize(&i2c_master, 100) != I2C_SUCCESS)
@@ -171,5 +212,16 @@ void APP_Initialize(void)
             // Halt here if I2C initialization fails
         }
     }
+
+    printf("Initializing MCP23017 I/O expander\r\n");
+    if (MCP23017_Initialize(&i2c_master) != I2C_SUCCESS)
+    {
+        printf("Error: Failed to initialize MCP23017\r\n");
+        while (1)
+        {
+            // Halt here if MCP23017 initialization fails
+        }
+    }
     printf("I2C initialized successfully\r\n");
 }
+

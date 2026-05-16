@@ -50,6 +50,18 @@
 #pragma config CP = OFF               // Code is not protected
 
 #define _XTAL_FREQ 64000000UL         // Define the system clock frequency for delay functions
+/*
+ * Define the MCP23017 I2C address. 
+ * 
+ * Most i2c examples expect to "or" the read/write bit to the address, shifting it  
+ * left by 1 to make room for the R/W bit.  This means that the data sheet may call 
+ * for an address of x'40' for example, but the code has to use x'20' to account for
+ * the 1-bit left shift.  I dont particularly care for this convention because it 
+ * does not match what is generally documented in data sheets, so I will define the 
+ * address in 8-bit format and let the i2c library simply set the low-order bit 
+ * appropriately for read/write operations.
+ */
+#define MCP23017_ADDR 0x40
 
 /// @brief Initialize the system, including clock settings, pin configurations for I2C and external IOC,
 /// and any other necessary hardware setup for the I2C bit bang demonstration project.  This function 
