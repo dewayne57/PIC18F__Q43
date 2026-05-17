@@ -6,17 +6,21 @@ Version 4.0 HI-TECH Software Intermediate Code
 [u S2403 `S2404 1 `uc 1 ]
 [n S2403 . bits value ]
 "52 app.c
-[c E17331 1 2 3 4 5 .. ]
-[n E17331 . UART_PORT_1 UART_PORT_2 UART_PORT_3 UART_PORT_4 UART_PORT_5  ]
-[c E17338 0 1 2 .. ]
-[n E17338 . UART_PARITY_NONE UART_PARITY_ODD UART_PARITY_EVEN  ]
-[c E17343 0 1 2 .. ]
-[n E17343 . UART_STOP_BITS_1 UART_STOP_BITS_1_5 UART_STOP_BITS_2  ]
-[c E17348 0 1 2 .. ]
-[n E17348 . UART_FLOW_NONE UART_FLOW_XON_XOFF UART_FLOW_RTS_CTS  ]
-"98 ./../../Libraries/UARTLIB/uartlib.h
-[s S2405 `ul 1 `ul 1 `us 1 `us 1 `E17331 1 `a 1 `uc 1 `E17338 1 `E17343 1 `E17348 1 `*uc 1 `*uc 1 `a 1 `Vus 1 `Vus 1 `Vus 1 `Vus 1 ]
-[n S2405 . fosc baud_rate tx_buffer_size rx_buffer_size port high_speed_baud data_bits parity stop_bits flow_control tx_buffer rx_buffer initialized tx_head tx_tail rx_head rx_tail ]
+[c E17335 1 2 3 4 5 .. ]
+[n E17335 . UART_PORT_1 UART_PORT_2 UART_PORT_3 UART_PORT_4 UART_PORT_5  ]
+[c E17342 0 1 2 .. ]
+[n E17342 . UART_PARITY_NONE UART_PARITY_ODD UART_PARITY_EVEN  ]
+[c E17347 0 1 2 .. ]
+[n E17347 . UART_STOP_BITS_1 UART_STOP_BITS_1_5 UART_STOP_BITS_2  ]
+[c E17352 0 1 2 .. ]
+[n E17352 . UART_FLOW_NONE UART_FLOW_XON_XOFF UART_FLOW_RTS_CTS  ]
+[c E17357 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 .. ]
+[n E17357 . UART_PPS_PIN_NONE UART_PPS_PIN_RA0 UART_PPS_PIN_RA1 UART_PPS_PIN_RA2 UART_PPS_PIN_RA3 UART_PPS_PIN_RA4 UART_PPS_PIN_RA5 UART_PPS_PIN_RA6 UART_PPS_PIN_RA7 UART_PPS_PIN_RB0 UART_PPS_PIN_RB1 UART_PPS_PIN_RB2 UART_PPS_PIN_RB3 UART_PPS_PIN_RB4 UART_PPS_PIN_RB5 UART_PPS_PIN_RB6 UART_PPS_PIN_RB7 UART_PPS_PIN_RC0 UART_PPS_PIN_RC1 UART_PPS_PIN_RC2 UART_PPS_PIN_RC3 UART_PPS_PIN_RC4 UART_PPS_PIN_RC5 UART_PPS_PIN_RC6 UART_PPS_PIN_RC7 UART_PPS_PIN_RD0 UART_PPS_PIN_RD1 UART_PPS_PIN_RD2 UART_PPS_PIN_RD3 UART_PPS_PIN_RD4 UART_PPS_PIN_RD5 UART_PPS_PIN_RD6 UART_PPS_PIN_RD7 UART_PPS_PIN_RE0 UART_PPS_PIN_RE1 UART_PPS_PIN_RE2 UART_PPS_PIN_RE3  ]
+[c E17331 0 1 .. ]
+[n E17331 . UART_ISR_FLAT UART_ISR_VECTORED  ]
+"159 ./../../Libraries/UARTLIB/uartlib.h
+[s S2405 `ul 1 `ul 1 `us 1 `us 1 `E17335 1 `a 1 `uc 1 `E17342 1 `E17347 1 `E17352 1 `E17357 1 `E17357 1 `E17357 1 `E17357 1 `E17331 1 `*uc 1 `*uc 1 `a 1 `Vus 1 `Vus 1 `Vus 1 `Vus 1 `uc -> 40 `i ]
+[n S2405 . fosc baud_rate tx_buffer_size rx_buffer_size port high_speed_baud data_bits parity stop_bits flow_control tx_pin rx_pin rts_pin cts_pin isr_mode tx_buffer rx_buffer initialized tx_head tx_tail rx_head rx_tail status_message ]
 "40 ./i2c.h
 [s S2401 `us 1 `us 1 `uc 1 `a 1 ]
 [n S2401 . speed_khz half_period_us retry_count initialized ]
@@ -38,12 +42,12 @@ Version 4.0 HI-TECH Software Intermediate Code
 [n S2231 . . ]
 "47408
 [v _PIR4bits `VS2231 ~T0 @X0 0 e@1202 ]
-"188 ./../../Libraries/UARTLIB/uartlib.h
+"275 ./../../Libraries/UARTLIB/uartlib.h
 [v _UART_HandleRxInterrupt `(v ~T0 @X0 0 ef1`*S2405 ]
-"198
+"285
 [v _UART_HandleTxInterrupt `(v ~T0 @X0 0 ef1`*S2405 ]
 [t T2 __interrupt irq ( 8 ) low_priority ]
-"108 app.c
+"113 app.c
 [c E17278 0 1 2 3 .. ]
 [n E17278 . I2C_SUCCESS I2C_ERROR_TIMEOUT I2C_ERROR_NAK I2C_ERROR_NOT_INITIALIZED  ]
 "96 ./i2c.h
@@ -58,7 +62,9 @@ Version 4.0 HI-TECH Software Intermediate Code
 [n S2223 . . ]
 "47188
 [v _PIR0bits `VS2223 ~T0 @X0 0 e@1198 ]
-"48393
+"117 C:\Program Files\Microchip\xc8\v3.10\pic\include\c99/stdio.h
+[v _printf `(i ~T0 @X0 0 ev`*Cuc ]
+"48393 C:\Program Files\Microchip\MPLABX\v6.30\packs\Microchip\PIC18F-Q_DFP\1.28.451\xc8\pic\include\proc/pic18f47q43.h
 [s S2268 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
 [n S2268 . TRISB0 TRISB1 TRISB2 TRISB3 TRISB4 TRISB5 TRISB6 TRISB7 ]
 "48392
@@ -74,13 +80,7 @@ Version 4.0 HI-TECH Software Intermediate Code
 [n S1899 . . ]
 "40022
 [v _ANSELBbits `VS1899 ~T0 @X0 0 e@1032 ]
-"135 ./../../Libraries/UARTLIB/uartlib.h
-[v _UART_Open `(a ~T0 @X0 0 ef1`*S2405 ]
-"208
-[v _UART_SelectPrintfTarget `(v ~T0 @X0 0 ef1`*S2405 ]
-"117 C:\Program Files\Microchip\xc8\v3.10\pic\include\c99/stdio.h
-[v _printf `(i ~T0 @X0 0 ev`*Cuc ]
-"40073 C:\Program Files\Microchip\MPLABX\v6.30\packs\Microchip\PIC18F-Q_DFP\1.28.451\xc8\pic\include\proc/pic18f47q43.h
+"40073
 [s S1902 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
 [n S1902 . WPUB0 WPUB1 WPUB2 WPUB3 WPUB4 WPUB5 WPUB6 WPUB7 ]
 "40072
@@ -1873,12 +1873,17 @@ Version 4.0 HI-TECH Software Intermediate Code
 -> -> 19200 `ui `ul
 -> -> # _console_tx_buffer `ui `us
 -> -> # _console_rx_buffer `ui `us
-. `E17331 0
+. `E17335 0
 -> -> 0 `i `a
 -> -> 8 `ui `uc
-. `E17338 0
-. `E17343 0
-. `E17348 0
+. `E17342 0
+. `E17347 0
+. `E17352 0
+. `E17357 9
+. `E17357 10
+. `E17357 0
+. `E17357 0
+. `E17331 0
 &U _console_tx_buffer
 &U _console_rx_buffer
 -> -> 0 `i `a
@@ -1889,237 +1894,211 @@ Version 4.0 HI-TECH Software Intermediate Code
 ..
 ..
 ]
-"73
+"78
 [v _i2c_master `S2401 ~T0 @X0 1 e ]
-"77
+"82
 [v _i2c_buffer `uc ~T0 @X0 -> 16 `i e ]
 [v $root$_ISR `(v ~T0 @X0 0 e ]
-"82
+"87
 [v _ISR `(v ~T1 @X0 1 ef ]
-"83
+"88
 {
 [e :U _ISR ]
 [f ]
-"85
+"90
 [e $ ! && != -> . . _PIE4bits 0 0 `ui -> 0 `ui != -> . . _PIR4bits 0 0 `ui -> 0 `ui 2407  ]
-"86
+"91
 {
-"87
+"92
 [e ( _UART_HandleRxInterrupt (1 &U _console_uart ]
-"88
+"93
 }
 [e :U 2407 ]
-"91
+"96
 [e $ ! && != -> . . _PIE4bits 0 1 `ui -> 0 `ui != -> . . _PIR4bits 0 1 `ui -> 0 `ui 2408  ]
-"92
+"97
 {
-"93
+"98
 [e ( _UART_HandleTxInterrupt (1 &U _console_uart ]
-"94
+"99
 }
 [e :U 2408 ]
-"95
+"100
 [e :UE 2406 ]
 }
 [v $root$_Extern_ISR `(v ~T0 @X0 0 e ]
-"102
+"107
 [v _Extern_ISR `(v ~T2 @X0 1 ef ]
-"103
+"108
 {
 [e :U _Extern_ISR ]
 [f ]
-"104
+"109
 [v _mcp_port_a_value `uc ~T0 @X0 1 a ]
 [e = _mcp_port_a_value -> -> 0 `i `uc ]
-"105
+"110
 [v _reg_addr `uc ~T0 @X0 1 a ]
 [e = _reg_addr -> -> 9 `i `uc ]
-"108
+"113
 [v _status `E17278 ~T0 @X0 1 a ]
 [e = _status ( _I2C_SendBytes (4 , , , &U _i2c_master -> -> 64 `i `uc &U _reg_addr -> -> 1 `i `us ]
-"109
-[e $ ! == -> _status `ui -> . `E17278 0 `ui 2410  ]
-"110
-{
-"111
-[e = _status ( _I2C_ReceiveByte (4 , , , &U _i2c_master -> -> 64 `i `uc &U _mcp_port_a_value -> -> 0 `i `a ]
-"112
-}
-[e :U 2410 ]
 "114
-[e $ ! == -> _status `ui -> . `E17278 0 `ui 2411  ]
+[e $ ! == -> _status `ui -> . `E17278 0 `ui 2410  ]
 "115
 {
-[v F17402 `uc ~T0 @X0 -> 2 `i s ]
-[i F17402
-:U ..
+"116
+[e = _status ( _I2C_ReceiveByte (4 , , , &U _i2c_master -> -> 64 `i `uc &U _mcp_port_a_value -> -> 0 `i `a ]
 "117
+}
+[e :U 2410 ]
+"119
+[e $ ! == -> _status `ui -> . `E17278 0 `ui 2411  ]
+"120
+{
+[v F17456 `uc ~T0 @X0 -> 2 `i s ]
+[i F17456
+:U ..
+"122
 -> -> 0 `i `uc
 -> -> 0 `i `uc
 ..
 ]
 [v _write_buf `uc ~T0 @X0 -> 2 `i a ]
-[e = _write_buf F17402 ]
+[e = _write_buf F17456 ]
 [e ; = *U + &U _write_buf * -> -> -> 0 `i `ui `ux -> -> # *U &U _write_buf `ui `ux -> -> 26 `i `uc = *U + &U _write_buf * -> -> -> 1 `i `ui `ux -> -> # *U &U _write_buf `ui `ux _mcp_port_a_value ]
-"118
+"123
 [e = _status ( _I2C_SendBytes (4 , , , &U _i2c_master -> -> 64 `i `uc &U _write_buf -> -> 2 `i `us ]
-"119
+"124
 }
 [e :U 2411 ]
-"122
+"127
 [e = . . _PIR0bits 0 7 -> -> 0 `i `uc ]
-"123
+"128
 [e :UE 2409 ]
 }
-"134
+"139
 [v _MCP23017_Initialize `(E17278 ~T0 @X0 1 sf1`*S2401 ]
-"135
+"140
 {
 [e :U _MCP23017_Initialize ]
-"134
-[v _handle `*S2401 ~T0 @X0 1 r1 ]
-"135
-[f ]
-"137
-[e = *U + &U _i2c_buffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
-"138
-[e = *U + &U _i2c_buffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 255 `i `uc ]
 "139
-[e = *U + &U _i2c_buffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
+[v _handle `*S2401 ~T0 @X0 1 r1 ]
 "140
-[e = *U + &U _i2c_buffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 255 `i `uc ]
-"141
-[e = *U + &U _i2c_buffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
+[f ]
+"142
+[e = *U + &U _i2c_buffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
 "143
-[e = *U + &U _i2c_buffer * -> -> -> 5 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
+[e = *U + &U _i2c_buffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 255 `i `uc ]
+"144
+[e = *U + &U _i2c_buffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
 "145
+[e = *U + &U _i2c_buffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 255 `i `uc ]
+"146
+[e = *U + &U _i2c_buffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
+"148
+[e = *U + &U _i2c_buffer * -> -> -> 5 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
+"150
 [e = *U + &U _i2c_buffer * -> -> -> 6 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 130 `i `uc ]
-"147
+"152
 [v _status `E17278 ~T0 @X0 1 a ]
 [e = _status ( _I2C_SendBytes (4 , , , _handle -> -> 64 `i `uc &U _i2c_buffer -> -> 7 `i `us ]
-"148
+"153
 [e $ ! != -> _status `ui -> . `E17278 0 `ui 2413  ]
-"149
+"154
 {
-"150
+"155
 [e ) _status ]
 [e $UE 2412  ]
-"151
+"156
 }
 [e :U 2413 ]
-"154
-[e = *U + &U _i2c_buffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 1 `i `uc ]
-"155
-[e = *U + &U _i2c_buffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
-"156
-[e = _status ( _I2C_SendBytes (4 , , , _handle -> -> 64 `i `uc &U _i2c_buffer -> -> 2 `i `us ]
-"157
-[e $ ! != -> _status `ui -> . `E17278 0 `ui 2414  ]
-"158
-{
 "159
+[e = *U + &U _i2c_buffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 1 `i `uc ]
+"160
+[e = *U + &U _i2c_buffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _i2c_buffer `ui `ux -> -> 0 `i `uc ]
+"161
+[e = _status ( _I2C_SendBytes (4 , , , _handle -> -> 64 `i `uc &U _i2c_buffer -> -> 2 `i `us ]
+"162
+[e $ ! != -> _status `ui -> . `E17278 0 `ui 2414  ]
+"163
+{
+"164
 [e ) _status ]
 [e $UE 2412  ]
-"160
+"165
 }
 [e :U 2414 ]
-"162
+"167
 [e ) . `E17278 0 ]
 [e $UE 2412  ]
-"163
+"168
 [e :UE 2412 ]
 }
-"170
+"175
 [v _APP_Initialize `(v ~T0 @X0 1 ef ]
-"171
+"176
 {
 [e :U _APP_Initialize ]
 [f ]
-"175
-[e = . . _TRISBbits 0 0 -> -> 0 `i `uc ]
-"176
-[e = . . _ANSELBbits 0 0 -> -> 0 `i `uc ]
 "177
-[e = . . _TRISBbits 0 1 -> -> 1 `i `uc ]
-"178
-[e = . . _ANSELBbits 0 1 -> -> 0 `i `uc ]
-"180
-[e $ ! ! != -> ( _UART_Open (1 &U _console_uart `i -> 0 `i 2416  ]
-"181
-{
-"182
-[e :U 2418 ]
+[e ( _printf :s 1C ]
 "183
-{
+[e = . . _TRISBbits 0 2 -> -> 1 `i `uc ]
+"184
+[e = . . _ANSELBbits 0 2 -> -> 0 `i `uc ]
 "185
+[e = . . _WPUBbits 0 2 -> -> 1 `i `uc ]
+"188
+[e = . . _IOCBPbits 0 2 -> -> 0 `i `uc ]
+"189
+[e = . . _IOCBNbits 0 2 -> -> 1 `i `uc ]
+"190
+[e = . . _IOCBFbits 0 2 -> -> 0 `i `uc ]
+"191
+[e = . . _PIE0bits 0 7 -> -> 1 `i `uc ]
+"192
+[e = . . _PIR0bits 0 7 -> -> 0 `i `uc ]
+"195
+[e $ ! != -> ( _I2C_Initialize (2 , &U _i2c_master -> -> 100 `i `us `ui -> . `E17278 0 `ui 2416  ]
+"196
+{
+"197
+[e ( _printf :s 2C ]
+"198
+[e :U 2418 ]
+"199
+{
+"201
 }
 [e :U 2417 ]
 [e $U 2418  ]
 [e :U 2419 ]
-"186
+"202
 }
 [e :U 2416 ]
-"187
-[e ( _UART_SelectPrintfTarget (1 &U _console_uart ]
-"189
-[e ( _printf :s 1C ]
-"195
-[e = . . _TRISBbits 0 2 -> -> 1 `i `uc ]
-"196
-[e = . . _ANSELBbits 0 2 -> -> 0 `i `uc ]
-"197
-[e = . . _WPUBbits 0 2 -> -> 1 `i `uc ]
-"200
-[e = . . _IOCBPbits 0 2 -> -> 0 `i `uc ]
-"201
-[e = . . _IOCBNbits 0 2 -> -> 1 `i `uc ]
-"202
-[e = . . _IOCBFbits 0 2 -> -> 0 `i `uc ]
-"203
-[e = . . _PIE0bits 0 7 -> -> 1 `i `uc ]
 "204
-[e = . . _PIR0bits 0 7 -> -> 0 `i `uc ]
+[e ( _printf :s 3C ]
+"205
+[e $ ! != -> ( _MCP23017_Initialize (1 &U _i2c_master `ui -> . `E17278 0 `ui 2420  ]
+"206
+{
 "207
-[e $ ! != -> ( _I2C_Initialize (2 , &U _i2c_master -> -> 100 `i `us `ui -> . `E17278 0 `ui 2420  ]
+[e ( _printf :s 4C ]
 "208
-{
-"209
-[e ( _printf :s 2C ]
-"210
 [e :U 2422 ]
-"211
+"209
 {
-"213
+"211
 }
 [e :U 2421 ]
 [e $U 2422  ]
 [e :U 2423 ]
-"214
+"212
 }
 [e :U 2420 ]
-"216
-[e ( _printf :s 3C ]
-"217
-[e $ ! != -> ( _MCP23017_Initialize (1 &U _i2c_master `ui -> . `E17278 0 `ui 2424  ]
-"218
-{
-"219
-[e ( _printf :s 4C ]
-"220
-[e :U 2426 ]
-"221
-{
-"223
-}
-[e :U 2425 ]
-[e $U 2426  ]
-[e :U 2427 ]
-"224
-}
-[e :U 2424 ]
-"225
+"213
 [e ( _printf :s 5C ]
-"226
+"214
 [e :UE 2415 ]
 }
 [p f _printf 8388608 ]

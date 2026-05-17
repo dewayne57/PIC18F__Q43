@@ -47,12 +47,6 @@ void SYSTEM_Initialize(void)
     PMD6bits.I2C1MD = 0; // I2C1 module enabled
     PMD6bits.U1MD = 0;   // UART 1 enabled
 
-    // UART1 pin setup: RB0 = TX1, RB1 = RX1
-    TRISBbits.TRISB0 = 0;
-    TRISBbits.TRISB1 = 1;
-    ANSELBbits.ANSELB0 = 0;
-    ANSELBbits.ANSELB1 = 0;
-
     // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (configured as open-drain outputs)
     TRISCbits.TRISC3 = 1;  // RC3 initially high-impedance
     TRISCbits.TRISC4 = 1;  // RC4 initially high-impedance
@@ -63,13 +57,6 @@ void SYSTEM_Initialize(void)
     TRISBbits.TRISB2 = 1;   // RB2 is input
     ANSELBbits.ANSELB2 = 0; // RB2 is digital
     WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
-
-    PPS_Unlock();
-    RB0PPS = 0x20;
-    U1RXPPS = 0x09;
-    PPS_Lock();
-
-    __delay_ms(100); // Short delay to allow hardware to stabilize before enabling interrupts.
 
     /* Re-enable interrupts now that hardware registers are stable. */
     INTCON0bits.GIEH = 1;

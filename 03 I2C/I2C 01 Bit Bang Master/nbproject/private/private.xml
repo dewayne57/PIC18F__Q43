@@ -3,9 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/app.c</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/main.c</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/config.c</file>
-            <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/config.h</file>
+            <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/i2c.h</file>
+            <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/uartlib.c</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/03%20I2C/I2C%2001%20Bit%20Bang%20Master/i2c.c</file>
         </group>
     </open-files>

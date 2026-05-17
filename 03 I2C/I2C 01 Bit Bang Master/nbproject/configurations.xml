@@ -7,6 +7,7 @@
       <itemPath>config.h</itemPath>
       <itemPath>i2c.h</itemPath>
       <itemPath>app.h</itemPath>
+      <itemPath>uartlib.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -24,6 +25,7 @@
       <itemPath>main.c</itemPath>
       <itemPath>i2c.c</itemPath>
       <itemPath>app.c</itemPath>
+      <itemPath>uartlib.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -65,23 +67,6 @@
                             FL="dist/default/production/PPSLIB.a"
                             PD="dist/default/production/PPSLIB.a"
                             DD="dist/default/debug/PPSLIB.a">
-              </makeArtifact>
-            </linkerLibProjectItem>
-            <linkerLibProjectItem>
-              <makeArtifact PL="../../Libraries/UARTLIB"
-                            CT="3"
-                            CN="default"
-                            AC="true"
-                            BL="true"
-                            WD="../../Libraries/UARTLIB"
-                            BC="${MAKE}  -f Makefile CONF=default"
-                            DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
-                            CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"
-                            OP="dist/default/production/UARTLIB.a"
-                            DOP="dist/default/debug/UARTLIB.a"
-                            FL="dist/default/production/UARTLIB.a"
-                            PD="dist/default/production/UARTLIB.a"
-                            DD="dist/default/debug/UARTLIB.a">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

@@ -22,7 +22,7 @@ demonstration projects.
 | File | Purpose |
 |------|---------|
 | `uartlib.h` | Public API, enums, and the `uart_handle_t` instance structure |
-| `uartlib.c` | Implementation, generic interrupt handlers, and `putch()` support |
+| `uartlib.c` | Implementation, auto ISR support (flat/vectored), and `putch()` support |
 
 ## Design Summary
 
@@ -35,6 +35,14 @@ the handle fields, then call `UART_Open()` to reinitialize the UART.
 - The handle selects UART1, UART2, UART3, UART4, or UART5 through `port`.
 - TX and RX buffer storage is supplied by the application through pointers in the handle.
 - The same source files can manage multiple UART peripherals in one project.
+- The library performs all pin initialization for TRIS, ADCON, and PPS based on 
+  the selected pin values in the uart handle structure. 
+- The library provides weak interrupt handlers for both flat (legacy) and
+  vectored interrupt systems.
+- By default, no UART ISR wiring is required in application code.
+- If an application overrides a library ISR, it should call
+  `UART_HandleRxInterrupt()` and/or `UART_HandleTxInterrupt()` for the affected
+  UART handle.
 
 ## Important Limitation
 
@@ -59,6 +67,14 @@ UART2 through UART5 are supported for the common TX/RX ring-buffer use case with
    The buffer sizes must be a power of 2 and at least 2 bytes in length, such as 
    2, 4, 8, 16, 32, 64, 128, 256, etc.
 
+## Build and Target Note
+
+- This library uses compile-time preprocessor checks from `xc.h` and the selected device pack.
+- Those checks are resolved when `uartlib.c` is compiled, not at link time.
+- If `uartlib.c` is compiled as part of each project, it is automatically rebuilt for that project's target device and options.
+- If you link a prebuilt `uartlib.o`, it is only valid for the device/configuration it was built for.
+- For prebuilt-object workflows, keep one object variant per compatible target configuration.
+
 ## Example Handle Setup
 
 ```c
@@ -82,7 +98,12 @@ static uart_handle_t console_uart = {
   .tx_tail = 0U,
   .rx_head = 0U,
   .rx_tail = 0U,
-  .initialized = false
+  .initialized = false,
+  .tx_pin = UART_PPS_PIN_RB0, // TX output pin (set to UART_PPS_PIN_NONE for RX-only)
+  .rx_pin = UART_PPS_PIN_RB1, // RX input pin (set to UART_PPS_PIN_NONE for TX-only)
+  .rts_pin = UART_PPS_PIN_NONE, // RTS output pin (set if using hardware flow control)
+  .cts_pin = UART_PPS_PIN_NONE, // CTS input pin (set if using hardware flow control)
+  .isr_mode = UART_ISR_FLAT, // One ISR for all UARTs (calls handlers for all open handles in flat mode)
 };
 ```
 
@@ -91,23 +112,6 @@ static uart_handle_t console_uart = {
 - `tx_buffer_size` and `rx_buffer_size` must be powers of 2.
 - One slot in each ring buffer is always reserved to distinguish full from empty.
 - The buffers are owned by the application, not by the library.
-
-## Pin Setup
-
-The library is pin-agnostic. Configure TRIS and PPS for the selected UART in the
-application before calling `UART_Open()`.
-
-Example for UART1 on RB0/RB1:
-
-```c
-TRISBbits.TRISB0 = 0;
-TRISBbits.TRISB1 = 1;
-
-PPS_Unlock();
-RB0PPS = 0x20;
-U1RXPPS = 0x09;
-PPS_Lock();
-```
 
 ## Initialisation
 
@@ -184,40 +188,6 @@ if (UART_RxAvailable(&console_uart) > 0U)
 If the UART handle is closed, `UART_ReadChar()` returns `false` and
 `UART_RxAvailable()` returns `0`.
 
-## Flat Interrupt Wiring
-
-In flat interrupt mode, call the generic handlers with the correct handle for
-each UART instance you use:
-
-```c
-void __interrupt() ISR(void)
-{
-  UART_HandleRxInterrupt(&console_uart);
-  UART_HandleTxInterrupt(&console_uart);
-}
-```
-
-If the application uses multiple UARTs, call both handlers for each instance.
-
-## Vectored Interrupt Wiring
-
-Declare UART RX/TX vectors in the application and call the generic UART handlers:
-
-```c
-void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
-{
-  UART_HandleRxInterrupt(&console_uart);
-}
-
-void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
-{
-  UART_HandleTxInterrupt(&console_uart);
-}
-```
-
-All ISR declarations remain in application code. The library only provides
-`UART_HandleRxInterrupt()` and `UART_HandleTxInterrupt()` helper functions.
-
 ## printf Routing
 
 The XC8 runtime provides one global `putch()` hook, so only one UART can be the
@@ -250,12 +220,10 @@ Use this checklist when adding the library to a non-UART project:
    the UARTLIB as a dependent library project. 
 2. Define TX and RX buffers with power-of-2 sizes.
 3. Create and fill one `uart_handle_t` for the desired UART peripheral.
-4. Configure TRIS and PPS in the application for that UART instance.
+4. Select `isr_mode` in each handle (`UART_ISR_FLAT` or `UART_ISR_VECTORED`).
 5. Call `UART_Open()` during startup.
 6. Enable global interrupts in the application.
-7. Route RX and TX interrupts in application-owned ISRs using the generic handlers.
-8. For each UART instance, ensure its ISR passes the matching `uart_handle_t`.
-9. Call `UART_SelectPrintfTarget()` if the project wants to use `printf()` for debug output.
+7. Call `UART_SelectPrintfTarget()` if the project wants to use `printf()` for debug output.
 
 ## Notes
 
@@ -264,3 +232,67 @@ Use this checklist when adding the library to a non-UART project:
   filling the receive buffer.
 - Send/receive calls on a closed UART are ignored safely: `UART_WriteChar()` and
   `UART_ReadChar()` return `false`, and `UART_RxAvailable()` returns `0`.
+
+## Pin Configuration Flexibility
+
+- TX and RX pins can each be set to `UART_PPS_PIN_NONE` independently. You may configure:
+  - TX only (write-only UART)
+  - RX only (read-only UART)
+  - Both TX and RX (full-duplex UART)
+- At least one of TX or RX must be present (not both required).
+- RTS and CTS pins are only required if hardware flow control (`UART_FLOW_RTS_CTS`) is enabled. Otherwise, they may be set to `UART_PPS_PIN_NONE`.
+- The library will automatically skip PPS/TRIS/ANSEL configuration for any pin set to `UART_PPS_PIN_NONE`.
+- This allows for no-flow-control, read-only, write-only, or full UART configurations as needed.
+
+**Example configurations:**
+
+- Full UART: TX and RX set, RTS/CTS set (if using hardware flow control)
+- Write-only: TX set, RX = `UART_PPS_PIN_NONE`
+- Read-only: RX set, TX = `UART_PPS_PIN_NONE`
+- No flow control: RTS/CTS = `UART_PPS_PIN_NONE`
+
+See `uartlib.h` for valid pin enum values and further details.
+
+Manual pin setup is not required if you set the pin fields in uart_handle_t and use UART_Open().
+The library will configure PPS, TRIS, and ANSEL for any pin that is not UART_PPS_PIN_NONE.
+
+## Interrupt Mode (Flat or Vectored)
+
+The library can manage interrupt service routines (ISRs) for you. Set the `isr_mode` field in your `uart_handle_t` to select between flat or vectored interrupt handling:
+
+- `UART_ISR_FLAT`: One ISR for all UARTs (calls handlers for all open handles in flat mode)
+- `UART_ISR_VECTORED`: One ISR per UART vector (calls handler for that UART only)
+
+When you call `UART_Open()`, the library registers your handle and enables the appropriate ISR(s) only for UARTs with open handles.
+
+**Default behavior:** you do not need to write your own UART ISR.
+
+**Flat (legacy) note:** if your project uses one application ISR that must also service non-UART interrupt sources, then the application ISR must dispatch UART handling too (either by calling the library UART ISR path or by calling a UART-only helper function).
+
+### Flat Interrupt Example
+
+```c
+// No user ISR needed. The library provides UARTLIB_FlatISR().
+// Just set isr_mode = UART_ISR_FLAT in your handle.
+```
+
+### Flat Interrupt With Other Sources
+
+```c
+void __interrupt() ISR(void)
+{
+  // Handle non-UART interrupt sources here.
+  // ...
+
+  // Then service UART interrupt sources through the UART library handlers.
+  UART_HandleRxInterrupt(&console_uart);
+  UART_HandleTxInterrupt(&console_uart);
+}
+```
+
+### Vectored Interrupt Example
+
+```c
+// No user ISR needed. The library provides UARTLIB_U1RX_ISR(), UARTLIB_U1TX_ISR(), etc.
+// Just set isr_mode = UART_ISR_VECTORED in your handle.
+```

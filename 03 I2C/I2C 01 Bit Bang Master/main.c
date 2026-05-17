@@ -38,6 +38,11 @@ uart_handle_t console_uart = {
     .parity = UART_PARITY_NONE,
     .stop_bits = UART_STOP_BITS_1,
     .flow_control = UART_FLOW_NONE,
+     .tx_pin = UART_PPS_PIN_RB0,
+     .rx_pin = UART_PPS_PIN_RB1,
+     .rts_pin = UART_PPS_PIN_NONE,
+     .cts_pin = UART_PPS_PIN_NONE,
+     .isr_mode = UART_ISR_VECTORED,
     .tx_buffer = console_tx_buffer,
     .tx_buffer_size = sizeof(console_tx_buffer),
     .rx_buffer = console_rx_buffer,
@@ -62,9 +67,6 @@ void main(void)
 {
      // Initialize the system and UART debug channel.
      SYSTEM_Initialize();
-     APP_Initialize();
-     I2C_Initialize(&i2c_master, 100); // Initialize I2C master at 100 kHz
-
      if (!UART_Open(&console_uart))
      {
           while (1)
@@ -73,6 +75,9 @@ void main(void)
           }
      }
      UART_SelectPrintfTarget(&console_uart);
+
+     APP_Initialize();
+     I2C_Initialize(&i2c_master, 100); // Initialize I2C master at 100 kHz
 
      printf("IOC 02 Vectored\r\n");
 

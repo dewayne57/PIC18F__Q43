@@ -58,6 +58,11 @@ uart_handle_t console_uart = {
     .parity = UART_PARITY_NONE,
     .stop_bits = UART_STOP_BITS_1,
     .flow_control = UART_FLOW_NONE,
+    .tx_pin = UART_PPS_PIN_RB0,
+    .rx_pin = UART_PPS_PIN_RB1,
+    .rts_pin = UART_PPS_PIN_NONE,
+    .cts_pin = UART_PPS_PIN_NONE,
+    .isr_mode = UART_ISR_FLAT,
     .tx_buffer = console_tx_buffer,
     .tx_buffer_size = sizeof(console_tx_buffer),
     .rx_buffer = console_rx_buffer,
@@ -169,23 +174,6 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
 ///       bit bang master interface. It also prints status messages to the console.
 void APP_Initialize(void)
 {
-    /*
-     * Configure RB0 as UART1 TX and RB1 as UART1 RX
-     */
-    TRISBbits.TRISB0 = 0;   // RB0 is output (UART1 TX)
-    ANSELBbits.ANSELB0 = 0; // RB0 is digital
-    TRISBbits.TRISB1 = 1;   // RB1 is input (UART1 RX)
-    ANSELBbits.ANSELB1 = 0; // RB1 is digital
-
-    if (!UART_Open(&console_uart))
-    {
-        while (1)
-        {
-            // Halt here if UART initialization fails.
-        }
-    }
-    UART_SelectPrintfTarget(&console_uart);
-
     printf("I2C 01 Bit Bang Master\r\n");
 
     /*

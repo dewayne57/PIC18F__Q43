@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "config.h"
-#include "uartlib.h"
+#include "../../Libraries/UARTLIB/uartlib.h"
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
@@ -36,6 +36,11 @@ uart_handle_t console_uart = {
     .parity = UART_PARITY_NONE,
     .stop_bits = UART_STOP_BITS_1,
     .flow_control = UART_FLOW_NONE,
+     .tx_pin = UART_PPS_PIN_RB0,
+     .rx_pin = UART_PPS_PIN_RB1,
+     .rts_pin = UART_PPS_PIN_NONE,
+     .cts_pin = UART_PPS_PIN_NONE,
+     .isr_mode = UART_ISR_FLAT,
     .tx_buffer = console_tx_buffer,
     .tx_buffer_size = sizeof(console_tx_buffer),
     .rx_buffer = console_rx_buffer,

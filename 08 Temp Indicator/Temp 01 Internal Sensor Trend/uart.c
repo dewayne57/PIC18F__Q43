@@ -29,12 +29,22 @@ static char g_uart1_tx_buffer[UARTLIB_TX_BUFFER_SIZE];
 
 static uart_handle_t g_uart1 = {
     .port = UART_PORT_1,
-    .brg_value = (uint16_t)UARTLIB_DEBUG_BRG_VALUE,
+    .fosc = _XTAL_FREQ,
+    .baud_rate = UARTLIB_DEBUG_BAUD,
     .high_speed_baud = (UARTLIB_DEBUG_HIGH_SPEED != 0U),
     .data_bits = 8U,
     .parity = UART_PARITY_NONE,
     .stop_bits = UART_STOP_BITS_1,
     .flow_control = UART_FLOW_NONE,
+    .tx_pin = UART_PPS_PIN_RB0,
+    .rx_pin = UART_PPS_PIN_RB1,
+    .rts_pin = UART_PPS_PIN_NONE,
+    .cts_pin = UART_PPS_PIN_NONE,
+#if UART1_VECTORED_INTERRUPTS
+    .isr_mode = UART_ISR_VECTORED,
+#else
+    .isr_mode = UART_ISR_FLAT,
+#endif
     .tx_buffer = g_uart1_tx_buffer,
     .tx_buffer_size = UARTLIB_TX_BUFFER_SIZE,
     .rx_buffer = g_uart1_tx_buffer,
@@ -46,26 +56,8 @@ static uart_handle_t g_uart1 = {
     .initialized = false
 };
 
-static void UART1_ConfigurePPS(void)
-{
-    TRISBbits.TRISB0 = 0U;
-    TRISBbits.TRISB1 = 1U;
-
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCKbits.PPSLOCKED = 0U;
-
-    RB0PPS = 0x20;
-    U1RXPPS = 0x09;
-
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCKbits.PPSLOCKED = 1U;
-}
-
 void UART1_Initialize(void)
 {
-    UART1_ConfigurePPS();
     (void)UART_Open(&g_uart1);
     UART_SelectPrintfTarget(&g_uart1);
 }
