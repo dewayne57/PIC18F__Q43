@@ -123,3 +123,8 @@ IOC_Single-backups
 *.lck
 IOC_Vectored-backups
 I2C 01 Bit Bang Master-backups
+/03 I2C/I2C 01 Bit Bang Master/*.p1
+/03 I2C/I2C 01 Bit Bang Master/*.d
+*.d
+*.p1
+*.kicad_prl
