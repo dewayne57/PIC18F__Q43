@@ -43,15 +43,23 @@
 #define I2C_SDA_BIT     4
 
 // Macro to set pin low (driven)
-#define I2C_SCK_LOW()   do { I2C_SCK_TRIS &= ~(1 << I2C_SCK_BIT); I2C_SCK_LAT &= ~(1 << I2C_SCK_BIT); } while(0)
-#define I2C_SCK_HIGH()  do { I2C_SCK_TRIS |= (1 << I2C_SCK_BIT); } while(0)
+#define I2C_SCK_LOW()   do { I2C_SCK_LAT &= ~(1 << I2C_SCK_BIT); I2C_SCK_TRIS &= ~(1 << I2C_SCK_BIT); } while(0)
+#define I2C_SCK_HIGH()  do { I2C_SCK_LAT |= (1 << I2C_SCK_BIT); I2C_SCK_TRIS &= ~(1 << I2C_SCK_BIT); } while(0)
 
-#define I2C_SDA_LOW()   do { I2C_SDA_TRIS &= ~(1 << I2C_SDA_BIT); I2C_SDA_LAT &= ~(1 << I2C_SDA_BIT); } while(0)
-#define I2C_SDA_HIGH()  do { I2C_SDA_TRIS |= (1 << I2C_SDA_BIT); } while(0)
+#define I2C_SDA_LOW()   do { I2C_SDA_LAT &= ~(1 << I2C_SDA_BIT); I2C_SDA_TRIS &= ~(1 << I2C_SDA_BIT); } while(0)
+#define I2C_SDA_HIGH()  do { I2C_SDA_LAT |= (1 << I2C_SDA_BIT); I2C_SDA_TRIS &= ~(1 << I2C_SDA_BIT); } while(0)
 
 // Check pin state (1 = high, 0 = low)
 #define I2C_SCK_READ()  ((I2C_SCK_PORT >> I2C_SCK_BIT) & 1)
 #define I2C_SDA_READ()  ((I2C_SDA_PORT >> I2C_SDA_BIT) & 1)
+
+static void i2c_diag_mark(uint8_t code)
+{
+    LATDbits.LATD0 = (code & 0x01U) ? 0U : 1U;
+    LATDbits.LATD1 = (code & 0x02U) ? 0U : 1U;
+    LATDbits.LATD2 = (code & 0x04U) ? 0U : 1U;
+    LATDbits.LATD3 = (code & 0x08U) ? 0U : 1U;
+}
 
 /// @brief Delay helper function
 /// @param delay_us Delay time in microseconds
@@ -80,6 +88,7 @@ static i2c_status_t i2c_wait_sck_high(i2c_handle_t *handle, uint16_t max_wait_ms
 
     if (I2C_SCK_READ() == 0)
     {
+        i2c_diag_mark(0x0CU);
         return I2C_ERROR_TIMEOUT;
     }
 
@@ -115,6 +124,8 @@ static i2c_status_t i2c_wait_sda_high(i2c_handle_t *handle, uint16_t max_wait_ms
 /// @return i2c_status_t indicating success or error
 static i2c_status_t i2c_send_raw_byte(i2c_handle_t *handle, uint8_t data)
 {
+    i2c_diag_mark(0x03U);
+
     // Send 8 bits, MSB first
     for (uint8_t bit = 0; bit < 8; bit++)
     {
@@ -166,8 +177,11 @@ static i2c_status_t i2c_send_raw_byte(i2c_handle_t *handle, uint8_t data)
 
     if (ack_bit != 0U)
     {
+        i2c_diag_mark(0x0DU);
         return I2C_ERROR_NAK;
     }
+
+    i2c_diag_mark(0x04U);
 
     return I2C_SUCCESS;
 }
@@ -244,13 +258,17 @@ i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz)
         return I2C_ERROR_NOT_INITIALIZED;
     }
 
-    // Configure RC3 and RC4 as digital pins
+    // Configure RC3 and RC4 as digital open-drain outputs
     ANSELCbits.ANSELC3 = 0;
     ANSELCbits.ANSELC4 = 0;
+    ODCONCbits.ODCC3 = 1;
+    ODCONCbits.ODCC4 = 1;
+    I2C_SCK_LOW();
+    I2C_SDA_HIGH();
 
-    // Configure RC3 (SCK) and RC4 (SDA) as open-drain outputs (initially released)
-    I2C_SCK_HIGH();  // Release SCK to high state
-    I2C_SDA_HIGH();  // Release SDA to high state
+    // Release both lines high before any transaction.
+    I2C_SCK_HIGH();
+    I2C_SDA_HIGH();
 
     // Derive half-period from requested bus speed: T(us) = 1000 / f(kHz)
     // Clamp to at least 1us so high requested speeds still produce a delay.
@@ -268,6 +286,7 @@ i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz)
 
     // Wait for bus to settle
     i2c_delay(100);
+    i2c_diag_mark(0x01U);
 
     return I2C_SUCCESS;
 }
@@ -302,6 +321,7 @@ i2c_status_t I2C_Start(i2c_handle_t *handle)
     }
 
     // Ensure both lines are high initially
+    i2c_diag_mark(0x02U);
     I2C_SDA_HIGH();
     i2c_delay(handle->half_period_us);
     I2C_SCK_HIGH();
@@ -314,6 +334,8 @@ i2c_status_t I2C_Start(i2c_handle_t *handle)
     // Then pull SCK low
     I2C_SCK_LOW();
     i2c_delay(handle->half_period_us);
+
+    i2c_diag_mark(0x05U);
 
     return I2C_SUCCESS;
 }
@@ -390,16 +412,26 @@ i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t address, uint8_t data)
         return status;
     }
 
+    i2c_diag_mark(0x06U);
     status = i2c_send_raw_byte(handle, address & 0xFEU);
     if (status != I2C_SUCCESS)
     {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
         (void)I2C_Stop(handle);
         return status;
     }
 
+    i2c_diag_mark(0x07U);
     status = i2c_send_raw_byte(handle, data);
     if (status != I2C_SUCCESS)
     {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x09U);
+        }
         (void)I2C_Stop(handle);
         return status;
     }
@@ -426,23 +458,63 @@ i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data,
         return status;
     }
 
+    i2c_diag_mark(0x06U);
     status = i2c_send_raw_byte(handle, address & 0xFEU);
     if (status != I2C_SUCCESS)
     {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
         (void)I2C_Stop(handle);
         return status;
     }
 
     for (uint16_t i = 0; i < length; i++)
     {
+        i2c_diag_mark(0x07U);
         status = i2c_send_raw_byte(handle, data[i]);
         if (status != I2C_SUCCESS)
         {
+            if (status == I2C_ERROR_NAK)
+            {
+                i2c_diag_mark(0x09U);
+            }
             (void)I2C_Stop(handle);
             return status;
         }
     }
 
+    return I2C_Stop(handle);
+}
+
+i2c_status_t I2C_ProbeAddress(i2c_handle_t *handle, uint8_t address)
+{
+    if ((handle == NULL) || (!handle->initialized))
+    {
+        return I2C_ERROR_NOT_INITIALIZED;
+    }
+
+    i2c_status_t status = I2C_Start(handle);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    i2c_diag_mark(0x06U);
+    status = i2c_send_raw_byte(handle, address & 0xFEU);
+    if (status != I2C_SUCCESS)
+    {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
+
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    i2c_diag_mark(0x04U);
     return I2C_Stop(handle);
 }
 
@@ -465,9 +537,14 @@ i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t address, uint8_t *dat
         return status;
     }
 
+    i2c_diag_mark(0x06U);
     status = i2c_send_raw_byte(handle, address | 0x01U);
     if (status != I2C_SUCCESS)
     {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
         (void)I2C_Stop(handle);
         return status;
     }
@@ -502,9 +579,14 @@ i2c_status_t I2C_ReceiveBytes(i2c_handle_t *handle, uint8_t address, uint8_t *da
         return status;
     }
 
+    i2c_diag_mark(0x06U);
     status = i2c_send_raw_byte(handle, address | 0x01U);
     if (status != I2C_SUCCESS)
     {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
         (void)I2C_Stop(handle);
         return status;
     }

@@ -26,6 +26,14 @@
 #include "../../Libraries/UARTLIB/uartlib.h"
 #include "i2c.h"
 
+static void main_diag_set(uint8_t code)
+{
+     LATDbits.LATD0 = (code & 0x01U) ? 0U : 1U;
+     LATDbits.LATD1 = (code & 0x02U) ? 0U : 1U;
+     LATDbits.LATD2 = (code & 0x04U) ? 0U : 1U;
+     LATDbits.LATD3 = (code & 0x08U) ? 0U : 1U;
+}
+
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
 
@@ -67,19 +75,20 @@ void main(void)
 {
      // Initialize the system and UART debug channel.
      SYSTEM_Initialize();
-     if (!UART_Open(&console_uart))
-     {
-          while (1)
-          {
-               // Halt here if UART initialization fails.
-          }
-     }
-     UART_SelectPrintfTarget(&console_uart);
+     main_diag_set(0x01U);
 
+//     if (!UART_Open(&console_uart))
+//     {
+//          main_diag_set(0x0EU);
+//     }
+//     else
+//     {
+//          main_diag_set(0x02U);
+//          UART_SelectPrintfTarget(&console_uart);
+//     }
+
+     main_diag_set(0x03U);
      APP_Initialize();
-     I2C_Initialize(&i2c_master, 100); // Initialize I2C master at 100 kHz
-
-     printf("IOC 02 Vectored\r\n");
 
      while (1)
      {

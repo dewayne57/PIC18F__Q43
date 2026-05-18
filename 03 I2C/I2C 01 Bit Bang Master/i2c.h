@@ -95,6 +95,12 @@ i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t address, uint8_t data);
 /// @return i2c_status_t indicating success or error
 i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length);
 
+/// @brief Probe whether a slave acknowledges its address on the I2C bus
+/// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address byte with R/W bit clear in bit 0
+/// @return i2c_status_t indicating ACK, NAK, or timeout
+i2c_status_t I2C_ProbeAddress(i2c_handle_t *handle, uint8_t address);
+
 /// @brief Receive one byte from the I2C bus
 /// @param handle Pointer to i2c_handle_t structure
 /// @param address I2C slave address    

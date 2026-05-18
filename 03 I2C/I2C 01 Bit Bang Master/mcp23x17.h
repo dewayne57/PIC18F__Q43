@@ -153,8 +153,8 @@ extern "C"
  * pin is output. The pin values are represented in decimal as the value of
  * the pin when set to 1.
  */
-#define SEQ_IODIRA 0X00
-#define SEQ_IODIRB 0x01
+#define IODIRA 0X00
+#define IODIRB 0x01
 
 /*
  * Defines the input polarity of the port pins.  Each bit in this register
@@ -162,8 +162,8 @@ extern "C"
  * corresponding pin will represent the current value of the pin.  When set
  * the value of the pin is inverted (1 -> 0, and 0 -> 1).
  */
-#define SEQ_IPOLA 0x02
-#define SEQ_IPOLB 0x03
+#define IPOLA 0x02
+#define IPOLB 0x03
 
 /*
  * Controls the interrupt-on-change mode for the I/O port.  Each bit in the
@@ -173,8 +173,8 @@ extern "C"
  * DEFVAL and INTCON registers. If this is set, these additional registers
  * must be configured.
  */
-#define SEQ_GPINTENA 0x04
-#define SEQ_GPINTENB 0x05
+#define GPINTENA 0x04
+#define GPINTENB 0x05
 
 /*
  * Establishes the default value for pin comparisons on a port when the
@@ -184,8 +184,8 @@ extern "C"
  * register.  If the associated INTCON bit is clear, then the definition of
  * "changed" means the value is different from it's previous value.
  */
-#define SEQ_DEFVALA 0x06
-#define SEQ_DEFVALB 0x07
+#define DEFVALA 0x06
+#define DEFVALB 0x07
 
 /*
  * The INTCON register controls how the associated pin value is compared for
@@ -194,8 +194,8 @@ extern "C"
  * bit value is clear, the corresponding I/O pin is compared against the
  * previous value.
  */
-#define SEQ_INTCONA 0x08
-#define SEQ_INTCONB 0x09
+#define INTCONA 0x08
+#define INTCONB 0x09
 /*
  * The configuration register controls the operation of the MCP23x17 device.
  * This register appears at different addresses based on the power-on-reset
@@ -204,17 +204,17 @@ extern "C"
  * (_L) address and a high (_H) address.  If you refer to the register by
  * it's generic symbol, then the first address is used.
  */
-#define SEQ_IOCON 0x0A
-#define SEQ_IOCON_L 0x0A
-#define SEQ_IOCON_H 0x0B
+#define IOCON 0x0A
+#define IOCON_L 0x0A
+#define IOCON_H 0x0B
 
 /*
  * The GPPU register controls the pull-up resistors for the port pins. If a
  * bit is set and the corresponding pin is configured as an input, the
  * corresponding port pin is internally pulled up with a 100 k? resistor.
  */
-#define SEQ_GPPUA 0x0C
-#define SEQ_GPPUB 0x0D
+#define GPPUA 0x0C
+#define GPPUB 0x0D
 
 /*
  * The INTF register reflects the interrupt condition on the port pins of
@@ -223,8 +223,8 @@ extern "C"
  *
  * This register is 'read-only'. Writes to this register will be ignored.
  */
-#define SEQ_INTFA 0x0E
-#define SEQ_INTFB 0x0F
+#define INTFA 0x0E
+#define INTFB 0x0F
 
 /*
  * The INTCAP register captures the GPIO port value at the time the interrupt
@@ -232,16 +232,16 @@ extern "C"
  * occurs. The register will remain unchanged until the interrupt is cleared
  * via a read of INTCAP or GPIO register.
  */
-#define SEQ_INTCAPA 0x10
-#define SEQ_INTCAPB 0x11
+#define INTCAPA 0x10
+#define INTCAPB 0x11
 
 /*
  * The GPIO register reflects the value on the port.  Reading from this
  * register reads the port. Writing to this register modifies the Output
  * Latch (OLAT) register.
  */
-#define SEQ_GPIOA 0x12
-#define SEQ_GPIOB 0x13
+#define GPIOA 0x12
+#define GPIOB 0x13
 
 /*
  * The OLAT register provides access to the output latches. A read from this
@@ -249,8 +249,8 @@ extern "C"
  * to this register modifies the output latches that modifies the pins
  * configured as outputs.
  */
-#define SEQ_OLATA 0x14
-#define SEQ_OLATB 0x15
+#define OLATA 0x14
+#define OLATB 0x15
 
 /*
  * I/O Direction registers.
@@ -346,9 +346,9 @@ extern "C"
  * Configuration control register.
  *
  * BANK ----- If 1, the registers are separated into banks.  When in banked 
- *            mode, use the register definitions with the "BANKED_" prefix.  
- *            If 0, the registers are in sequential mode and use the "SEQ_" 
- *            prefix definitions.  When the MCP23x17 powers on or is reset, 
+ *            mode, use the register definitions with the "BANKED_" prefix.
+ *            If 0, use the non-banked register names (without a prefix).
+ *            When the MCP23x17 powers on or is reset,
  *            the register addressing defaults to sequential mode.
  * MIRROR --- If 1, the two interrupt output pins are connected and an 
  *            interrupt generated from either port will activate both pins.

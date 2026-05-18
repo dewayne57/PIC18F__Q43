@@ -44,16 +44,24 @@ void SYSTEM_Initialize(void)
      * Enable all peripheral modules that are required
      */
     PMD0bits.SYSCMD = 0; // System clock network enabled
-    PMD6bits.I2C1MD = 0; // I2C1 module enabled
+    PMD6bits.I2C1MD = 1; // I2C1 module disabled; RC3/RC4 are driven by software bit-bang
     PMD6bits.U1MD = 0;   // UART 1 enabled
 
-    // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (configured as open-drain outputs)
-    TRISCbits.TRISC3 = 1;  // RC3 initially high-impedance
-    TRISCbits.TRISC4 = 1;  // RC4 initially high-impedance
+   // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (configured as open-drain outputs)
+   TRISCbits.TRISC3 = 0;  // RC3 output
+   TRISCbits.TRISC4 = 0;  // RC4 output
+   LATCbits.LATC3 = 1;    // RC3 released high through pull-up
+   LATCbits.LATC4 = 1;    // RC4 released high through pull-up
     ANSELCbits.ANSELC3 = 0;
     ANSELCbits.ANSELC4 = 0;
+    ODCONCbits.ODCC3 = 1;  // RC3 open-drain
+    ODCONCbits.ODCC4 = 1;  // RC4 open-drain
 
-    // External IOC on RB2 for interrupt input
+   // Port D diagnostic LEDs (active low)
+   TRISD = 0x00;   // All Port D pins output
+   LATD = 0xFF;    // All diagnostic LEDs off
+
+   // External IOC on RB2 for interrupt input
     TRISBbits.TRISB2 = 1;   // RB2 is input
     ANSELBbits.ANSELB2 = 0; // RB2 is digital
     WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2

@@ -42,44 +42,35 @@
 #include "mcp23x17.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 
-static char console_tx_buffer[128];
-static char console_rx_buffer[128];
+extern uart_handle_t console_uart;
+extern i2c_handle_t i2c_master;
+extern uint8_t i2c_buffer[16];
 
-/*
- * Define the UART handle for the console. This will be used for debug output via UART1.
- * The handle is initialized with the appropriate settings for UART1, including baud rate,  
- */
-uart_handle_t console_uart = {
-    .port = UART_PORT_1,
-    .high_speed_baud = false,
-    .baud_rate = 19200U,
-    .fosc = _XTAL_FREQ, // Replace with your actual peripheral clock frequency
-    .data_bits = 8U,
-    .parity = UART_PARITY_NONE,
-    .stop_bits = UART_STOP_BITS_1,
-    .flow_control = UART_FLOW_NONE,
-    .tx_pin = UART_PPS_PIN_RB0,
-    .rx_pin = UART_PPS_PIN_RB1,
-    .rts_pin = UART_PPS_PIN_NONE,
-    .cts_pin = UART_PPS_PIN_NONE,
-    .isr_mode = UART_ISR_FLAT,
-    .tx_buffer = console_tx_buffer,
-    .tx_buffer_size = sizeof(console_tx_buffer),
-    .rx_buffer = console_rx_buffer,
-    .rx_buffer_size = sizeof(console_rx_buffer),
-    .tx_head = 0U,
-    .tx_tail = 0U,
-    .rx_head = 0U,
-    .rx_tail = 0U,
-    .initialized = false};
+static void diag_led_set(uint8_t code)
+{
+    LATDbits.LATD0 = (code & 0x01U) ? 0U : 1U;
+    LATDbits.LATD1 = (code & 0x02U) ? 0U : 1U;
+    LATDbits.LATD2 = (code & 0x04U) ? 0U : 1U;
+    LATDbits.LATD3 = (code & 0x08U) ? 0U : 1U;
+}
 
-/// @brief I2C master handle for the bit bang implementation. This will be initialized 
-/// in the APP_Initialize function
-i2c_handle_t i2c_master;
+static void diag_show_address_index(uint8_t address_index)
+{
+    diag_led_set((uint8_t)(0x08U | (address_index & 0x07U)));
+}
 
-/// @brief Buffer for I2C read/write operations. This buffer can be used for temporary 
-/// storage of data
-uint8_t i2c_buffer[16]; // Buffer for I2C read/write operations
+static void diag_scan_mcp23017_addresses(i2c_handle_t *handle)
+{
+    for (uint8_t address_index = 0; address_index < 8U; address_index++)
+    {
+        uint8_t probe_address = (uint8_t)(0x40U | (address_index << 1));
+        if (I2C_ProbeAddress(handle, probe_address) == I2C_SUCCESS)
+        {
+            diag_show_address_index(address_index);
+            return;
+        }
+    }
+}
 
 /// @brief ISR for UART1 Transmit, UART1 Receive, and External IOC on RB2
 /// @param  None
@@ -128,43 +119,61 @@ void __interrupt(irq(0x08), low_priority) Extern_ISR(void)
 }
 
 /// @brief Initialize the MCP23017 I/O expander.
-/// The MCP23017 is configured in banked mode, meaning that all the port A 
-/// registers are in one bank and all the port B registers are in another bank.  
-/// This allows for easier management of the ports.  In this example, we configure
-/// port A as inputs with pull-ups enabled and interrupt on change enabled, and port B  
-/// as outputs.  The function writes to the appropriate registers to achieve this 
-/// configuration.
+/// The MCP23017 is configured in banked addressing mode so Port A registers are
+/// contiguous within one block and Port B registers are contiguous within another.
 /// @param handle Pointer to i2c_handle_t structure
 /// @return i2c_status_t indicating success or error
 static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
 {
-    // Set IODIRA to 0xFF (all inputs) and enable pull-ups on Port A
-    i2c_buffer[0] = SEQ_IODIRA;  // Register address for I/O direction of Port A
-    i2c_buffer[1] = 0xFF;        // IODIRA: all pins as inputs
-    i2c_buffer[2] = 0x00;        // IPOLA: Non-inverted input polarity on Port A
-    i2c_buffer[3] = 0xFF;        // GPINTENA: enable interrupt on change for all Port A pins
-    i2c_buffer[4] = 0x00;        // DEFVALA: Not used since we are not using interrupt \
-                                    compare, but set to 0 for clarity
-    i2c_buffer[5] = 0x00;        // INTCONA: Compare against previous value for interrupt \
-                                    on change, not DEFVALA
-    i2c_buffer[6] = 0x82;        // IOCON: banked mode enabled, sequential operation \
-                                    enabled, active-high interrupts
-    i2c_status_t status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 7);
-    if (status != I2C_SUCCESS)
-    {
-        return status;
-    }
+    i2c_status_t status;
 
-    // Set IODIRB to 0x00 (all outputs)
-    i2c_buffer[0] = SEQ_IODIRB;  // Register address
-    i2c_buffer[1] = 0x00;        // IODIRB: all pins as outputs
+    // Enter banked mode (BANK=1) while keeping address auto-increment enabled (SEQOP=0).
+    // ODR=0 keeps INT in push-pull output mode.
+    i2c_buffer[0] = IOCON;
+    i2c_buffer[1] = 0x80;
     status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 2);
     if (status != I2C_SUCCESS)
     {
         return status;
     }
 
-    return I2C_SUCCESS;
+    // Configure Port A in one contiguous banked transfer.
+    i2c_buffer[0] = BANKED_IODIRA;
+        i2c_buffer[1] = 0xFF; // IODIRA: inputs
+        i2c_buffer[2] = 0x00; // IPOLA
+        i2c_buffer[3] = 0xFF; // GPINTENA
+        i2c_buffer[4] = 0x00; // DEFVALA
+        i2c_buffer[5] = 0x00; // INTCONA
+        i2c_buffer[6] = 0x80; // IOCON
+        i2c_buffer[7] = 0xFF; // GPPUA
+        i2c_buffer[8] = 0x00; // INTFA (write ignored)
+        i2c_buffer[9] = 0x00; // INTCAPA (write ignored)
+        i2c_buffer[10] = 0x00; // GPIOA
+    status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 11);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    // Configure Port B in one contiguous banked transfer.
+    i2c_buffer[0] = BANKED_IODIRB;
+        i2c_buffer[1] = 0x00; // IODIRB: outputs
+        i2c_buffer[2] = 0x00; // IPOLB
+        i2c_buffer[3] = 0x00; // GPINTENB
+        i2c_buffer[4] = 0x00; // DEFVALB
+        i2c_buffer[5] = 0x00; // INTCONB
+        i2c_buffer[6] = 0x80; // IOCON
+        i2c_buffer[7] = 0x00; // GPPUB
+        i2c_buffer[8] = 0x00; // INTFB (write ignored)
+        i2c_buffer[9] = 0x00; // INTCAPB (write ignored)
+        i2c_buffer[10] = 0x00; // GPIOB
+        status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 11);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    return status;
 }
 
 /// @brief Initialize the application.
@@ -175,6 +184,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
 void APP_Initialize(void)
 {
     printf("I2C 01 Bit Bang Master\r\n");
+    diag_led_set(0x01U);
 
     /*
      * Configure RB2 as an IOC input. We use this interrupt to detect
@@ -188,7 +198,7 @@ void APP_Initialize(void)
     IOCBPbits.IOCBP2 = 0;
     IOCBNbits.IOCBN2 = 1;
     IOCBFbits.IOCBF2 = 0;
-    PIE0bits.IOCIE = 1;
+    PIE0bits.IOCIE = 0;
     PIR0bits.IOCIF = 0;
 
     // Initialize I2C bit bang master for 100kHz bus speed
@@ -202,14 +212,21 @@ void APP_Initialize(void)
     }
 
     printf("Initializing MCP23017 I/O expander\r\n");
+    diag_led_set(0x03U);
     if (MCP23017_Initialize(&i2c_master) != I2C_SUCCESS)
     {
+        diag_scan_mcp23017_addresses(&i2c_master);
         printf("Error: Failed to initialize MCP23017\r\n");
         while (1)
         {
             // Halt here if MCP23017 initialization fails
         }
     }
+
+    PIR0bits.IOCIF = 0;
+    PIE0bits.IOCIE = 1;
+
+    diag_led_set(0x0FU);
     printf("I2C initialized successfully\r\n");
 }
 
