@@ -41,7 +41,7 @@ uart_handle_t console_uart = {
      .rx_pin = UART_PPS_PIN_RB1,
      .rts_pin = UART_PPS_PIN_NONE,
      .cts_pin = UART_PPS_PIN_NONE,
-     .isr_mode = UART_ISR_FLAT,
+     .isr_mode = UART_ISR_VECTORED,
     .tx_buffer = console_tx_buffer,
     .tx_buffer_size = sizeof(console_tx_buffer),
     .rx_buffer = console_rx_buffer,
@@ -64,9 +64,10 @@ uint8_t i2c_buffer[16]; // Buffer for I2C read/write operations
 ///       The main loop remains responsive, allowing for I2C master operations and UART communication.
 void main(void)
 {
+     char rx_char;
+
      SYSTEM_Initialize();
 
-     /*
      if (!UART_Open(&console_uart))
      {
           while (1)
@@ -75,13 +76,19 @@ void main(void)
      }
 
      UART_SelectPrintfTarget(&console_uart);
-     */
     
      APP_Initialize();
 
      while (1)
      {
-          // Main loop
-          // Add your application code here
+          APP_Service();
+
+          while (UART_RxAvailable(&console_uart) > 0U)
+          {
+               if (UART_ReadChar(&console_uart, &rx_char))
+               {
+                    (void)UART_WriteChar(&console_uart, rx_char);
+               }
+          }
      }
 }

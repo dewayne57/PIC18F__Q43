@@ -23,5 +23,6 @@
 #define APP_H
 
 void APP_Initialize(void); 
+void APP_Service(void);
 
 #endif

@@ -9,6 +9,7 @@
             <sourceEncoding>ISO-8859-1</sourceEncoding>
             <make-dep-projects>
                 <make-dep-project>../../Libraries/PPSLIB</make-dep-project>
+                <make-dep-project>../../Libraries/UARTLIB</make-dep-project>
             </make-dep-projects>
             <sourceRootList>
                 <sourceRootElem>.</sourceRootElem>

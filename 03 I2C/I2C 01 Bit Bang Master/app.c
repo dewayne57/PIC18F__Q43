@@ -46,17 +46,28 @@ extern uart_handle_t console_uart;
 extern i2c_handle_t i2c_master;
 extern uint8_t i2c_buffer[16];
 
-/// @brief ISR for UART1 Transmit, UART1 Receive, and external INT1 on RB2
+static volatile uint8_t s_last_porta_value = 0x00U;
+static volatile uint8_t s_pending_porta_value = 0x00U;
+static volatile bool s_porta_value_valid = false;
+static volatile bool s_porta_report_pending = false;
+
+/// @brief UART1 RX ISR (vectored)
 /// @param  None
 /// @return None
-void __interrupt(irq(0x07), low_priority) ISR(void)
+void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
 {
     // Handle UART1 Receive Interrupt
     if ((PIE4bits.U1RXIE != 0U) && (PIR4bits.U1RXIF != 0U))
     {
         UART_HandleRxInterrupt(&console_uart);
     }
+}
 
+/// @brief UART1 TX ISR (vectored)
+/// @param  None
+/// @return None
+void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
+{
     // Handle UART1 Transmit Interrupt
     if ((PIE4bits.U1TXIE != 0U) && (PIR4bits.U1TXIF != 0U))
     {
@@ -69,7 +80,7 @@ void __interrupt(irq(0x07), low_priority) ISR(void)
 /// @return None
 /// @note This function reads the MCP23017 port A register and writes the value to MCP23017
 ///       port B
-void __interrupt(irq(0x08), low_priority) Extern_ISR(void)
+void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 {
     uint8_t mcp_port_a_value = 0x00;
     uint8_t reg_addr = BANKED_GPIOA;
@@ -83,6 +94,14 @@ void __interrupt(irq(0x08), low_priority) Extern_ISR(void)
 
     if (status == I2C_SUCCESS)
     {
+        if ((!s_porta_value_valid) || (mcp_port_a_value != s_last_porta_value))
+        {
+            s_last_porta_value = mcp_port_a_value;
+            s_porta_value_valid = true;
+            s_pending_porta_value = mcp_port_a_value;
+            s_porta_report_pending = true;
+        }
+
         // Write MCP23017 Port A value to MCP23017 Port B OLAT register.
         uint8_t write_buf[2] = {BANKED_OLATB, ~mcp_port_a_value};
         status = I2C_SendBytes(&i2c_master, MCP23017_ADDR, write_buf, 2);
@@ -197,6 +216,11 @@ void APP_Initialize(void)
     }
     if (status == I2C_SUCCESS)
     {
+        s_last_porta_value = mcp_port_a_value;
+        s_porta_value_valid = true;
+        s_pending_porta_value = mcp_port_a_value;
+        s_porta_report_pending = true;
+
         uint8_t write_buf[2] = {BANKED_OLATB, (uint8_t)(~mcp_port_a_value)};
         (void)I2C_SendBytes(&i2c_master, MCP23017_ADDR, write_buf, 2U);
     }
@@ -206,5 +230,25 @@ void APP_Initialize(void)
     PIE6bits.INT1IE = 1;
 
     printf("I2C initialized successfully\r\n");
+}
+
+void APP_Service(void)
+{
+    uint8_t porta_value = 0x00U;
+    bool report_now = false;
+
+    PIE6bits.INT1IE = 0;
+    if (s_porta_report_pending)
+    {
+        porta_value = s_pending_porta_value;
+        s_porta_report_pending = false;
+        report_now = true;
+    }
+    PIE6bits.INT1IE = 1;
+
+    if (report_now)
+    {
+        printf("Config is now %02X\r\n", porta_value);
+    }
 }
 
