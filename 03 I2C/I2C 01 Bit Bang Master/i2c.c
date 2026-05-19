@@ -27,7 +27,6 @@
  ***************************************************************************************** */
 
 #include <xc.h>
-#include <stdio.h>
 #include "config.h"
 #include "i2c.h"
 
@@ -42,12 +41,14 @@
 #define I2C_SDA_TRIS    TRISC
 #define I2C_SDA_BIT     4
 
-// Macro to set pin low (driven)
+// Open-drain bit-bang control:
+// LOW  -> output low (TRIS=0, LAT=0)
+// HIGH -> release line (TRIS=1, external pull-up drives high)
 #define I2C_SCK_LOW()   do { I2C_SCK_LAT &= ~(1 << I2C_SCK_BIT); I2C_SCK_TRIS &= ~(1 << I2C_SCK_BIT); } while(0)
-#define I2C_SCK_HIGH()  do { I2C_SCK_LAT |= (1 << I2C_SCK_BIT); I2C_SCK_TRIS &= ~(1 << I2C_SCK_BIT); } while(0)
+#define I2C_SCK_HIGH()  do { I2C_SCK_TRIS |=  (1 << I2C_SCK_BIT); } while(0)
 
 #define I2C_SDA_LOW()   do { I2C_SDA_LAT &= ~(1 << I2C_SDA_BIT); I2C_SDA_TRIS &= ~(1 << I2C_SDA_BIT); } while(0)
-#define I2C_SDA_HIGH()  do { I2C_SDA_LAT |= (1 << I2C_SDA_BIT); I2C_SDA_TRIS &= ~(1 << I2C_SDA_BIT); } while(0)
+#define I2C_SDA_HIGH()  do { I2C_SDA_TRIS |=  (1 << I2C_SDA_BIT); } while(0)
 
 // Check pin state (1 = high, 0 = low)
 #define I2C_SCK_READ()  ((I2C_SCK_PORT >> I2C_SCK_BIT) & 1)
@@ -55,10 +56,7 @@
 
 static void i2c_diag_mark(uint8_t code)
 {
-    LATDbits.LATD0 = (code & 0x01U) ? 0U : 1U;
-    LATDbits.LATD1 = (code & 0x02U) ? 0U : 1U;
-    LATDbits.LATD2 = (code & 0x04U) ? 0U : 1U;
-    LATDbits.LATD3 = (code & 0x08U) ? 0U : 1U;
+    (void)code;
 }
 
 /// @brief Delay helper function
@@ -595,6 +593,82 @@ i2c_status_t I2C_ReceiveBytes(i2c_handle_t *handle, uint8_t address, uint8_t *da
     {
         bool ack = send_ack && (i < (length - 1U));
         status = i2c_receive_raw_byte(handle, &data[i], ack);
+        if (status != I2C_SUCCESS)
+        {
+            (void)I2C_Stop(handle);
+            return status;
+        }
+    }
+
+    return I2C_Stop(handle);
+}
+
+i2c_status_t I2C_WriteRead(i2c_handle_t *handle, uint8_t address, uint8_t *write_data, uint16_t write_length, uint8_t *read_data, uint16_t read_length)
+{
+    if ((handle == NULL) || (!handle->initialized) || (write_data == NULL) || (read_data == NULL))
+    {
+        return I2C_ERROR_NOT_INITIALIZED;
+    }
+
+    i2c_status_t status = I2C_Start(handle);
+    if (status != I2C_SUCCESS)
+    {
+        return status;
+    }
+
+    // Send write address byte
+    i2c_diag_mark(0x06U);
+    status = i2c_send_raw_byte(handle, address & 0xFEU);
+    if (status != I2C_SUCCESS)
+    {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    // Send write data
+    for (uint16_t i = 0; i < write_length; i++)
+    {
+        status = i2c_send_raw_byte(handle, write_data[i]);
+        if (status != I2C_SUCCESS)
+        {
+            if (status == I2C_ERROR_NAK)
+            {
+                i2c_diag_mark(0x09U);
+            }
+            (void)I2C_Stop(handle);
+            return status;
+        }
+    }
+
+    // REPEATED START (SDA goes high while SCL is high, then SCL goes low)
+    status = I2C_RestartStart(handle);
+    if (status != I2C_SUCCESS)
+    {
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    // Send read address byte (with R/W bit set)
+    status = i2c_send_raw_byte(handle, address | 0x01U);
+    if (status != I2C_SUCCESS)
+    {
+        if (status == I2C_ERROR_NAK)
+        {
+            i2c_diag_mark(0x08U);
+        }
+        (void)I2C_Stop(handle);
+        return status;
+    }
+
+    // Receive read data
+    for (uint16_t i = 0; i < read_length; i++)
+    {
+        bool send_ack = (i < (read_length - 1U));
+        status = i2c_receive_raw_byte(handle, &read_data[i], send_ack);
         if (status != I2C_SUCCESS)
         {
             (void)I2C_Stop(handle);

@@ -20,19 +20,10 @@
  ***************************************************************************************** */
 
 #include <xc.h>
-#include <stdio.h>
 #include "config.h"
 #include "app.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 #include "i2c.h"
-
-static void main_diag_set(uint8_t code)
-{
-     LATDbits.LATD0 = (code & 0x01U) ? 0U : 1U;
-     LATDbits.LATD1 = (code & 0x02U) ? 0U : 1U;
-     LATDbits.LATD2 = (code & 0x04U) ? 0U : 1U;
-     LATDbits.LATD3 = (code & 0x08U) ? 0U : 1U;
-}
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
@@ -50,7 +41,7 @@ uart_handle_t console_uart = {
      .rx_pin = UART_PPS_PIN_RB1,
      .rts_pin = UART_PPS_PIN_NONE,
      .cts_pin = UART_PPS_PIN_NONE,
-     .isr_mode = UART_ISR_VECTORED,
+     .isr_mode = UART_ISR_FLAT,
     .tx_buffer = console_tx_buffer,
     .tx_buffer_size = sizeof(console_tx_buffer),
     .rx_buffer = console_rx_buffer,
@@ -67,27 +58,25 @@ uint8_t i2c_buffer[16]; // Buffer for I2C read/write operations
 /// @brief Main application entry point.
 /// @param  None
 /// @return None
-/// @note This application initializes the system, UART1 for debug output, and I2C bit bang master,
+/// @note This application initializes the system, UART1 console output, and I2C bit bang master,
 ///       then enters an infinite loop. The I2C master is available for I2C transactions via the
 ///       i2c_master handle. External interrupt on RB2 is monitored for external events.
 ///       The main loop remains responsive, allowing for I2C master operations and UART communication.
 void main(void)
 {
-     // Initialize the system and UART debug channel.
      SYSTEM_Initialize();
-     main_diag_set(0x01U);
 
-//     if (!UART_Open(&console_uart))
-//     {
-//          main_diag_set(0x0EU);
-//     }
-//     else
-//     {
-//          main_diag_set(0x02U);
-//          UART_SelectPrintfTarget(&console_uart);
-//     }
+     /*
+     if (!UART_Open(&console_uart))
+     {
+          while (1)
+          {
+          }
+     }
 
-     main_diag_set(0x03U);
+     UART_SelectPrintfTarget(&console_uart);
+     */
+    
      APP_Initialize();
 
      while (1)

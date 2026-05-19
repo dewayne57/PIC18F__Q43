@@ -101,6 +101,16 @@ i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data,
 /// @return i2c_status_t indicating ACK, NAK, or timeout
 i2c_status_t I2C_ProbeAddress(i2c_handle_t *handle, uint8_t address);
 
+/// @brief Send write data then read data using repeated START (no STOP between)
+/// @param handle Pointer to i2c_handle_t structure
+/// @param address I2C slave address (R/W bit will be set by the function)
+/// @param write_data Pointer to data to write (typically register address)
+/// @param write_length Number of bytes to write
+/// @param read_data Pointer to buffer for read data
+/// @param read_length Number of bytes to read
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_WriteRead(i2c_handle_t *handle, uint8_t address, uint8_t *write_data, uint16_t write_length, uint8_t *read_data, uint16_t read_length);
+
 /// @brief Receive one byte from the I2C bus
 /// @param handle Pointer to i2c_handle_t structure
 /// @param address I2C slave address    

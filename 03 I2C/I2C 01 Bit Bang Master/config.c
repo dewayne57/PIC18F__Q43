@@ -7,7 +7,7 @@
  *   Configure Port B pins for use by UART 1 as follows: 
  *   RB0 - TX1 (output)
  *   RB1 - RX1 (input)
- *   RB2 - External IOC interrupt input
+ *   RB2 - External INT1 interrupt input
  * 
  *   Configure Port C pins for I2C bit bang master as follows:
  *   RC3 - I2C SCK (Serial Clock) - open-drain output
@@ -47,24 +47,28 @@ void SYSTEM_Initialize(void)
     PMD6bits.I2C1MD = 1; // I2C1 module disabled; RC3/RC4 are driven by software bit-bang
     PMD6bits.U1MD = 0;   // UART 1 enabled
 
-   // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (configured as open-drain outputs)
-   TRISCbits.TRISC3 = 0;  // RC3 output
-   TRISCbits.TRISC4 = 0;  // RC4 output
-   LATCbits.LATC3 = 1;    // RC3 released high through pull-up
-   LATCbits.LATC4 = 1;    // RC4 released high through pull-up
+   // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (open-drain, released high at idle)
+   LATCbits.LATC3 = 0;
+   LATCbits.LATC4 = 0;
+   TRISCbits.TRISC3 = 1;  // RC3 released
+   TRISCbits.TRISC4 = 1;  // RC4 released
     ANSELCbits.ANSELC3 = 0;
     ANSELCbits.ANSELC4 = 0;
     ODCONCbits.ODCC3 = 1;  // RC3 open-drain
     ODCONCbits.ODCC4 = 1;  // RC4 open-drain
 
-   // Port D diagnostic LEDs (active low)
-   TRISD = 0x00;   // All Port D pins output
-   LATD = 0xFF;    // All diagnostic LEDs off
+      // External INT1 on RB2 for interrupt input
+      TRISBbits.TRISB2 = 1;   // RB2 is input
+      ANSELBbits.ANSELB2 = 0; // RB2 is digital
+      WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
 
-   // External IOC on RB2 for interrupt input
-    TRISBbits.TRISB2 = 1;   // RB2 is input
-    ANSELBbits.ANSELB2 = 0; // RB2 is digital
-    WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
+      PPS_Unlock();
+      INT1PPS = 0x0AU;        // INT1 input <- RB2
+      PPS_Lock();
+
+      INTCON0bits.INT1EDG = 1; // Rising edge triggers INT1
+      PIR6bits.INT1IF = 0;     // Clear any pending INT1 flag
+      PIE6bits.INT1IE = 0;     // Enable INT1 after MCP23017 is initialized
 
     /* Re-enable interrupts now that hardware registers are stable. */
     INTCON0bits.GIEH = 1;
