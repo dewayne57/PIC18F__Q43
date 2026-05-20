@@ -38,7 +38,7 @@ This project implements an I2C master using the PIC18F47Q43 hardware I2C1 module
 - `main.c`: system startup, UART open/select, superloop, and echo test path.
 - `config.h`: config bits and system constants.
 - `config.c`: oscillator, port setup, PPS routing (I2C1SCL/SDA + INT1), and interrupt configuration.
-- `i2c.c`/`i2c.h`: hardware I2C1 module driver (polling, 7-bit host mode).
+- `i2c.c`/`i2c.h`: hardware I2C1 module driver (interrupt-driven, 7-bit host mode; the API takes 8-bit write-form addresses).
 - `app.c`/`app.h`: MCP23017 initialization, INT1 ISR behavior, and UART status reporting.
 - `mcp23x17.h`: MCP23017 register definitions.
 - `../../Libraries/UARTLIB`: shared UART driver used by this project.
@@ -46,7 +46,8 @@ This project implements an I2C master using the PIC18F47Q43 hardware I2C1 module
 ## I2C1 Module Configuration
 - Clock source: MFINTOSC (`I2C1CLK = 0b00011`)
 - Bus rate: fixed 100 kHz standard mode for this example
-- Mode: 7-bit host (`I2C1CON0bits.MODE = 0b000`)
+- Mode: 7-bit host (`I2C1CON0bits.MODE = 0b100`)
+- Addressing: callers pass the 8-bit write-form address; the driver toggles the low-order bit for read/write transfers.
 - Address buffer: hardware-managed (`I2C1CON2bits.ABD = 0`)
 - SDA hold time: 300 ns (`I2C1CON2bits.SDAHT = 0b01`)
 

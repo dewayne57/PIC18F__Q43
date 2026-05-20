@@ -36,11 +36,17 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/// @brief I2C master handle structure to manage I2C state and configuration
+/// @brief I2C master handle structure to manage I2C state, configuration, and app-owned buffers.
 typedef struct {
     uint16_t speed_khz;         ///< Target I2C bus speed in kHz
     uint8_t retry_count;        ///< Number of retries for I2C operations
     bool initialized;           ///< Flag indicating if I2C interface is initialized
+    const uint8_t *tx_buffer;   ///< Application-owned transmit buffer
+    uint16_t tx_buffer_size;    ///< Maximum transmit buffer size in bytes
+    volatile uint16_t tx_pos;   ///< Current transmit position within tx_buffer
+    uint8_t *rx_buffer;         ///< Application-owned receive buffer
+    uint16_t rx_buffer_size;    ///< Maximum receive buffer size in bytes
+    volatile uint16_t rx_pos;   ///< Current receive position within rx_buffer
 } i2c_handle_t;
 
 /// @brief I2C Return codes
@@ -48,7 +54,9 @@ typedef enum {
     I2C_SUCCESS = 0,            ///< Operation successful
     I2C_ERROR_TIMEOUT = 1,      ///< Bus timeout (slave holding clock low or module hung)
     I2C_ERROR_NAK = 2,          ///< No acknowledge received from slave
-    I2C_ERROR_NOT_INITIALIZED = 3 ///< I2C interface not initialized
+    I2C_ERROR_NOT_INITIALIZED = 3, ///< I2C interface not initialized
+    I2C_BUSY = 4,               ///< I2C bus is busy
+    I2C_ERROR_ILLEGAL_STATE = 5 ///< Illegal state for the requested operation
 } i2c_status_t;
 
 /// @brief Initialize the I2C1 hardware module master interface
@@ -58,20 +66,18 @@ typedef enum {
 /// @note RC3 is configured as SCL via PPS, RC4 is configured as SDA via PPS
 i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz);
 
-/// @brief Write data to an I2C slave (handles start/stop automatically)
+/// @brief Write the configured transmit buffer to the selected I2C slave
 /// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address (7-bit, left-aligned)
-/// @param data Pointer to the data buffer to send
-/// @param length Number of bytes to send
+/// @param device_address 8-bit I2C device address in write form; the driver toggles the low bit as needed
+/// @param length Number of bytes to send from the configured transmit buffer
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Write(i2c_handle_t *handle, uint8_t address, const uint8_t *data, uint16_t length);
+i2c_status_t I2C_Write(i2c_handle_t *handle, uint8_t device_address, uint16_t length);
 
-/// @brief Read data from an I2C slave (handles start/stop automatically)
+/// @brief Read into the configured receive buffer from the selected I2C slave
 /// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address (7-bit, left-aligned)
-/// @param data Pointer to the buffer to store received bytes
-/// @param length Number of bytes to receive
+/// @param device_address 8-bit I2C device address in write form; the driver toggles the low bit as needed
+/// @param length Number of bytes to receive into the configured receive buffer
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Read(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length);
+i2c_status_t I2C_Read(i2c_handle_t *handle, uint8_t device_address, uint16_t length);
 
 #endif // I2C_H

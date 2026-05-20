@@ -44,18 +44,10 @@ void SYSTEM_Initialize(void)
      * Enable peripheral modules that are required.
      */
     PMD0bits.SYSCMD = 0; // System clock network enabled
+    PMD0bits.CLKRMD = 0;   // Clock Reference enabled
     PMD6bits.I2C1MD = 0; // I2C1 module enabled
     PMD6bits.U1MD   = 0; // UART1 enabled
-
-    // I2C1 pin setup: RC3 = SCL, RC4 = SDA (open-drain with 2x internal pull-up)
-    TRISCbits.TRISC3 = 1;   // RC3 as input (released high at idle)
-    TRISCbits.TRISC4 = 1;   // RC4 as input (released high at idle)
-    ANSELCbits.ANSELC3 = 0; // RC3 digital
-    ANSELCbits.ANSELC4 = 0; // RC4 digital
-    ODCONCbits.ODCC3 = 1;   // RC3 open-drain
-    ODCONCbits.ODCC4 = 1;   // RC4 open-drain
-    RC3I2Cbits.I2CPU = 0b10; // RC3 (SCL): 2x internal I2C pull-up (no external resistor needed)
-    RC4I2Cbits.I2CPU = 0b10; // RC4 (SDA): 2x internal I2C pull-up (no external resistor needed)
+    __delay_ms(10); // Short delay to allow modules to stabilize after power-up
 
     // Port D diagnostic LEDs are active-low outputs.
     TRISDbits.TRISD0 = 0;
@@ -73,14 +65,6 @@ void SYSTEM_Initialize(void)
     WPUBbits.WPUB2 = 0;     // Weak pull-up disabled on RB2
 
     PPS_Unlock();
-    // Route I2C1 SCL output to RC3 (PPS output code 0x37 = I2C1SCL)
-    RC3PPS = 0x37;
-    // Route I2C1 SDA output to RC4 (PPS output code 0x38 = I2C1SDA)
-    RC4PPS = 0x38;
-    // Map I2C1 SCL input from RC3 (RC3 PPS address: port C=0b10, pin3=0b011 -> 0x13)
-    I2C1SCLPPS = 0x13;
-    // Map I2C1 SDA input from RC4 (RC4 PPS address: port C=0b10, pin4=0b100 -> 0x14)
-    I2C1SDAPPS = 0x14;
     // INT1 input <- RB2 (port B=0b01, pin2=0b010 -> 0x0A)
     INT1PPS = 0x0A;
     PPS_Lock();

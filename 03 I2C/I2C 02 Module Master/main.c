@@ -27,6 +27,7 @@
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
+uint8_t i2c_buffer[16];
 
 uart_handle_t console_uart = {
     .port = UART_PORT_1,
@@ -52,8 +53,16 @@ uart_handle_t console_uart = {
     .rx_tail = 0U,
     .initialized = false};
 
-i2c_handle_t i2c_master;
-uint8_t i2c_buffer[16];
+i2c_handle_t i2c_master = {
+     .speed_khz = 100U,
+     .retry_count = 3U,
+     .initialized = false,
+     .tx_buffer = i2c_buffer,
+     .tx_buffer_size = sizeof(i2c_buffer),
+     .tx_pos = 0U,
+     .rx_buffer = i2c_buffer,
+     .rx_buffer_size = sizeof(i2c_buffer),
+     .rx_pos = 0U};
 
 /// @brief Main application entry point.
 /// @param  None

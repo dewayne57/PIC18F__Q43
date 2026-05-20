@@ -53,13 +53,9 @@
 /*
  * Define the MCP23017 I2C address.
  *
- * Most i2c examples expect to "or" the read/write bit to the address, shifting it
- * left by 1 to make room for the R/W bit.  This means that the data sheet may call
- * for an address of x'40' for example, but the code has to use x'20' to account for
- * the 1-bit left shift.  I dont particularly care for this convention because it
- * does not match what is generally documented in data sheets, so I will define the
- * address in 8-bit format and let the i2c library simply set the low-order bit
- * appropriately for read/write operations.
+ * The application uses the 8-bit address form typically shown in the data sheet for
+ * a write transaction.  The I2C driver clears or sets the low-order bit internally
+ * for write and read transfers, respectively.
  */
 #define MCP23017_ADDR 0x40
 

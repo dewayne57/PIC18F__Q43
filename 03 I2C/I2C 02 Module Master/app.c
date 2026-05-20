@@ -63,6 +63,16 @@ static volatile bool s_porta_value_valid = false;
 static volatile bool s_porta_report_pending = false;
 static volatile bool s_porta_update_pending = false;
 
+static i2c_status_t MCP23017_Write(i2c_handle_t *handle, uint8_t device_address, uint16_t length)
+{
+    return I2C_Write(handle, device_address, length);
+}
+
+static i2c_status_t MCP23017_Read(i2c_handle_t *handle, uint8_t device_address, uint16_t length)
+{
+    return I2C_Read(handle, device_address, length);
+}
+
 /// @brief UART1 RX ISR (vectored)
 /// @param  None
 /// @return None
@@ -113,7 +123,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
     // INTPOL=1 makes INT active high; ODR=0 keeps INT in push-pull output mode.
     i2c_buffer[0] = IOCON;
     i2c_buffer[1] = 0x82;
-    status = I2C_Write(handle, MCP23017_ADDR, i2c_buffer, 2);
+    status = MCP23017_Write(handle, MCP23017_ADDR, 2U);
     if (status != I2C_SUCCESS)
     {
         return status;
@@ -131,7 +141,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
         i2c_buffer[8] = 0x00; // INTFA (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPA (write ignored)
         i2c_buffer[10] = 0x00; // GPIOA
-    status = I2C_Write(handle, MCP23017_ADDR, i2c_buffer, 11);
+        status = MCP23017_Write(handle, MCP23017_ADDR, 11U);
     if (status != I2C_SUCCESS)
     {
         return status;
@@ -149,7 +159,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
         i2c_buffer[8] = 0x00; // INTFB (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPB (write ignored)
         i2c_buffer[10] = 0x00; // GPIOB
-        status = I2C_Write(handle, MCP23017_ADDR, i2c_buffer, 11);
+        status = MCP23017_Write(handle, MCP23017_ADDR, 11U);
     if (status != I2C_SUCCESS)
     {
         return status;
@@ -167,6 +177,7 @@ void APP_Initialize(void)
 {
     LATDbits.LATD0 = 0U;
     printf("I2C 02 Module Master\r\n");
+    __delay_ms(500);
 
     /*
      * Configure RB2 as the INT1 input. The MCP23017 INT pin is active high,
@@ -180,6 +191,7 @@ void APP_Initialize(void)
     if (I2C_Initialize(&i2c_master, 100) != I2C_SUCCESS)
     {
         printf("Error: Failed to initialize I2C\r\n");
+        __delay_ms(500);
         LATDbits.LATD3 = 0U;
         while (1)
         {
@@ -187,10 +199,18 @@ void APP_Initialize(void)
         }
     }
 
+    i2c_master.tx_buffer = i2c_buffer;
+    i2c_master.tx_buffer_size = sizeof(i2c_buffer);
+    i2c_master.rx_buffer = i2c_buffer;
+    i2c_master.rx_buffer_size = sizeof(i2c_buffer);
+
     printf("Initializing MCP23017 I/O expander\r\n");
-    if (MCP23017_Initialize(&i2c_master) != I2C_SUCCESS)
+    __delay_ms(500);
+    i2c_status_t mcp_init_status = MCP23017_Initialize(&i2c_master);
+    if (mcp_init_status != I2C_SUCCESS)
     {
-        printf("Error: Failed to initialize MCP23017\r\n");
+        printf("Error: Failed to initialize MCP23017 (status=%u)\r\n", (unsigned)mcp_init_status);
+        __delay_ms(500);
         LATDbits.LATD3 = 0U;
         while (1)
         {
@@ -200,11 +220,16 @@ void APP_Initialize(void)
 
     // Initial transfer so OLATB reflects GPIOA before the first external interrupt.
     uint8_t mcp_port_a_value = 0x00U;
-    uint8_t reg_addr = BANKED_GPIOA;
-    i2c_status_t status = I2C_Write(&i2c_master, MCP23017_ADDR, &reg_addr, 1U);
+    i2c_status_t status;
+    i2c_buffer[0] = BANKED_GPIOA;
+    status = MCP23017_Write(&i2c_master, MCP23017_ADDR, 1U);
     if (status == I2C_SUCCESS)
     {
-        status = I2C_Read(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, 1U);
+        status = MCP23017_Read(&i2c_master, MCP23017_ADDR, 1U);
+        if (status == I2C_SUCCESS)
+        {
+            mcp_port_a_value = i2c_buffer[0];
+        }
     }
     if (status == I2C_SUCCESS)
     {
@@ -213,8 +238,9 @@ void APP_Initialize(void)
         s_pending_porta_value = mcp_port_a_value;
         s_porta_report_pending = true;
 
-        uint8_t write_buf[2] = {BANKED_OLATB, (uint8_t)(~mcp_port_a_value)};
-        (void)I2C_Write(&i2c_master, MCP23017_ADDR, write_buf, 2U);
+        i2c_buffer[0] = BANKED_OLATB;
+        i2c_buffer[1] = (uint8_t)(~mcp_port_a_value);
+        (void)MCP23017_Write(&i2c_master, MCP23017_ADDR, 2U);
     }
 
     // Enable external INT1 only after MCP23017 setup is complete.
@@ -224,6 +250,7 @@ void APP_Initialize(void)
     LATDbits.LATD0 = 1U;
 
     printf("I2C initialized successfully\r\n");
+    __delay_ms(500);
 }
 
 void APP_Service(void)
@@ -249,11 +276,16 @@ void APP_Service(void)
     if (update_now)
     {
         uint8_t mcp_port_a_value = 0x00U;
-        uint8_t reg_addr = BANKED_GPIOA;
-        i2c_status_t status = I2C_Write(&i2c_master, MCP23017_ADDR, &reg_addr, 1U);
+        i2c_status_t status;
+        i2c_buffer[0] = BANKED_GPIOA;
+        status = MCP23017_Write(&i2c_master, MCP23017_ADDR, 1U);
         if (status == I2C_SUCCESS)
         {
-            status = I2C_Read(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, 1U);
+            status = MCP23017_Read(&i2c_master, MCP23017_ADDR, 1U);
+            if (status == I2C_SUCCESS)
+            {
+                mcp_port_a_value = i2c_buffer[0];
+            }
         }
 
         if (status == I2C_SUCCESS)
@@ -266,13 +298,15 @@ void APP_Service(void)
                 s_porta_report_pending = true;
             }
 
-            uint8_t write_buf[2] = {BANKED_OLATB, (uint8_t)(~mcp_port_a_value)};
-            (void)I2C_Write(&i2c_master, MCP23017_ADDR, write_buf, 2U);
+            i2c_buffer[0] = BANKED_OLATB;
+            i2c_buffer[1] = (uint8_t)(~mcp_port_a_value);
+            (void)MCP23017_Write(&i2c_master, MCP23017_ADDR, 2U);
         }
     }
 
     if (report_now)
     {
         printf("Config is now %02X\r\n", porta_value);
+        __delay_ms(500);
     }
 }
