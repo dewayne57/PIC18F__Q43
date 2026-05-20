@@ -12,6 +12,9 @@
  *   Configure Port C pins for I2C1 hardware module as follows:
  *   RC3 - I2C1 SCL (clock) - open-drain, 2x internal pull-up via RC3I2C
  *   RC4 - I2C1 SDA (data)  - open-drain, 2x internal pull-up via RC4I2C
+ *
+ *   Configure Port D pins as active-low diagnostic LEDs:
+ *   RD0..RD3 - startup, launch, ISR activity, and error indicators
  * 
  *   The demonstration will use the internal 64MHz high frequency oscillator as the system clock.
  ***************************************************************************************** */
@@ -53,6 +56,16 @@ void SYSTEM_Initialize(void)
     ODCONCbits.ODCC4 = 1;   // RC4 open-drain
     RC3I2Cbits.I2CPU = 0b10; // RC3 (SCL): 2x internal I2C pull-up (no external resistor needed)
     RC4I2Cbits.I2CPU = 0b10; // RC4 (SDA): 2x internal I2C pull-up (no external resistor needed)
+
+    // Port D diagnostic LEDs are active-low outputs.
+    TRISDbits.TRISD0 = 0;
+    TRISDbits.TRISD1 = 0;
+    TRISDbits.TRISD2 = 0;
+    TRISDbits.TRISD3 = 0;
+    LATDbits.LATD0 = 1;
+    LATDbits.LATD1 = 1;
+    LATDbits.LATD2 = 1;
+    LATDbits.LATD3 = 1;
 
     // External INT1 on RB2 for MCP23017 interrupt input
     TRISBbits.TRISB2 = 1;   // RB2 is input

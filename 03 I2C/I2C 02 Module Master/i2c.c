@@ -40,7 +40,7 @@
 // Maximum number of wakeups while waiting for an interrupt-driven transfer.
 #define I2C_WAIT_WAKE_LIMIT 10000U
 #define I2C_TARGET_SPEED_KHZ 100U
-#define I2C1CLK_SRC_MFINTOSC 0x00U
+#define I2C1CLK_SRC_MFINTOSC 0x03U
 
 /// @brief A definition of the I2C master operations and state for interrupt-driven 
 /// transfers.  This is used internally by the driver and is not exposed to the user.
@@ -87,6 +87,20 @@ static void i2c_disable_irq_sources(void)
     PIE7bits.I2C1EIE = 0;
 }
 
+/// @brief Enable internal I2C1 event sources that feed the module event interrupt.
+/// @param None
+/// @return None
+static void i2c_enable_module_events(void)
+{
+    I2C1PIE = 0x00U;
+    I2C1PIEbits.SCIE = 1U;
+    I2C1PIEbits.PCIE = 1U;
+    I2C1PIEbits.ADRIE = 1U;
+    I2C1PIEbits.WRIE = 1U;
+    I2C1PIEbits.ACKTIE = 1U;
+    I2C1PIEbits.CNTIE = 1U;
+}
+
 /// @brief Finish the current I2C transfer and update the transfer state
 /// @param status The status of the completed transfer
 /// @return None
@@ -97,6 +111,12 @@ static void i2c_finish_transfer(i2c_status_t status)
     s_i2c_transfer.active = false;
     s_i2c_transfer.done = true;
     s_i2c_transfer.operation = I2C_OPERATION_NONE;
+    LATDbits.LATD1 = 1U;
+
+    if (status == I2C_SUCCESS)
+    {
+        LATDbits.LATD3 = 1U;
+    }
 }
 
 /// @brief Wait for the current I2C transfer to complete or timeout
@@ -132,6 +152,8 @@ void __interrupt(irq(IRQ_I2C1TX), high_priority) I2C1_TX_ISR(void)
         return;
     }
 
+    LATDbits.LATD2 ^= 1U;
+
     PIR7bits.I2C1TXIF = 0U;
 
     if ((!s_i2c_transfer.active) || (s_i2c_transfer.operation != I2C_OPERATION_WRITE))
@@ -142,6 +164,7 @@ void __interrupt(irq(IRQ_I2C1TX), high_priority) I2C1_TX_ISR(void)
     if (I2C1ERRbits.NACKIF != 0U)
     {
         I2C1ERRbits.NACKIF = 0U;
+        LATDbits.LATD3 = 0U;
         i2c_finish_transfer(I2C_ERROR_NAK);
         return;
     }
@@ -166,6 +189,8 @@ void __interrupt(irq(IRQ_I2C1RX), high_priority) I2C1_RX_ISR(void)
     {
         return;
     }
+
+    LATDbits.LATD2 ^= 1U;
 
     PIR7bits.I2C1RXIF = 0U;
 
@@ -195,6 +220,8 @@ void __interrupt(irq(IRQ_I2C1), high_priority) I2C1_EVENT_ISR(void)
     {
         return;
     }
+
+    LATDbits.LATD2 ^= 1U;
 
     PIR7bits.I2C1IF = 0U;
 
@@ -227,6 +254,8 @@ void __interrupt(irq(IRQ_I2C1E), high_priority) I2C1_ERROR_ISR(void)
         return;
     }
 
+    LATDbits.LATD2 ^= 1U;
+
     PIR7bits.I2C1EIF = 0U;
 
     if (!s_i2c_transfer.active)
@@ -237,6 +266,7 @@ void __interrupt(irq(IRQ_I2C1E), high_priority) I2C1_ERROR_ISR(void)
     if (I2C1ERRbits.NACKIF != 0U)
     {
         I2C1ERRbits.NACKIF = 0U;
+        LATDbits.LATD3 = 0U;
         i2c_finish_transfer(I2C_ERROR_NAK);
         return;
     }
@@ -265,7 +295,7 @@ static i2c_status_t i2c_do_write(uint8_t address, const uint8_t *data, uint16_t 
     s_i2c_transfer.done = false;
     s_i2c_transfer.status = I2C_SUCCESS;
     s_i2c_transfer.length = length;
-    s_i2c_transfer.index = 0U;
+    s_i2c_transfer.index = 1U;
     s_i2c_transfer.tx_data = data;
     s_i2c_transfer.rx_data = NULL;
 
@@ -275,6 +305,11 @@ static i2c_status_t i2c_do_write(uint8_t address, const uint8_t *data, uint16_t 
     PIR7bits.I2C1RXIF = 0U;
     PIR7bits.I2C1IF = 0U;
     PIR7bits.I2C1EIF = 0U;
+    i2c_enable_module_events();
+    i2c_enable_module_events();
+
+    LATDbits.LATD1 = 0U;
+    LATDbits.LATD3 = 1U;
 
     IPR7bits.I2C1TXIP = 1U;
     IPR7bits.I2C1RXIP = 1U;
@@ -286,8 +321,12 @@ static i2c_status_t i2c_do_write(uint8_t address, const uint8_t *data, uint16_t 
     PIE7bits.I2C1IE = 1U;
     PIE7bits.I2C1EIE = 1U;
 
+    LATDbits.LATD1 = 0U;
+    LATDbits.LATD3 = 1U;
+
     I2C1ADB0 = address & 0xFEU;
     I2C1CNT = (uint8_t)length;
+    I2C1TXB = data[0];
     I2C1CON0bits.S = 1;
 
     return i2c_wait_transfer_complete();
@@ -335,6 +374,9 @@ static i2c_status_t i2c_do_read(uint8_t address, uint8_t *data, uint16_t length)
     PIE7bits.I2C1IE = 1U;
     PIE7bits.I2C1EIE = 1U;
 
+    LATDbits.LATD1 = 0U;
+    LATDbits.LATD3 = 1U;
+
     I2C1ADB0 = address | 0x01U;
     I2C1CNT = (uint8_t)length;
     I2C1CON0bits.S = 1;
@@ -356,7 +398,11 @@ i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz) {
     I2C1CON2bits.ABD = 0U;
     I2C1CON2bits.SDAHT = 0b01U;
     I2C1PIR = 0x00U; I2C1ERR = 0x00U;
+    i2c_enable_module_events();
     I2C1CON0bits.EN = 1;
+    LATDbits.LATD1 = 1U;
+    LATDbits.LATD2 = 1U;
+    LATDbits.LATD3 = 1U;
     __delay_us(100);
     handle->speed_khz = speed_khz;
     handle->retry_count = 3U;

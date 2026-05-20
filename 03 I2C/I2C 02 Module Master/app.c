@@ -165,6 +165,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
 ///       hardware module master interface. It also prints status messages to the console.
 void APP_Initialize(void)
 {
+    LATDbits.LATD0 = 0U;
     printf("I2C 02 Module Master\r\n");
 
     /*
@@ -179,6 +180,7 @@ void APP_Initialize(void)
     if (I2C_Initialize(&i2c_master, 100) != I2C_SUCCESS)
     {
         printf("Error: Failed to initialize I2C\r\n");
+        LATDbits.LATD3 = 0U;
         while (1)
         {
             // Halt here if I2C initialization fails
@@ -189,6 +191,7 @@ void APP_Initialize(void)
     if (MCP23017_Initialize(&i2c_master) != I2C_SUCCESS)
     {
         printf("Error: Failed to initialize MCP23017\r\n");
+        LATDbits.LATD3 = 0U;
         while (1)
         {
             // Halt here if MCP23017 initialization fails
@@ -217,6 +220,8 @@ void APP_Initialize(void)
     // Enable external INT1 only after MCP23017 setup is complete.
     PIR6bits.INT1IF = 0;
     PIE6bits.INT1IE = 1;
+
+    LATDbits.LATD0 = 1U;
 
     printf("I2C initialized successfully\r\n");
 }

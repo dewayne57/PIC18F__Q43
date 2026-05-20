@@ -44,7 +44,7 @@ This project implements an I2C master using the PIC18F47Q43 hardware I2C1 module
 - `../../Libraries/UARTLIB`: shared UART driver used by this project.
 
 ## I2C1 Module Configuration
-- Clock source: MFINTOSC (`I2C1CLK = 0x00`)
+- Clock source: MFINTOSC (`I2C1CLK = 0b00011`)
 - Bus rate: fixed 100 kHz standard mode for this example
 - Mode: 7-bit host (`I2C1CON0bits.MODE = 0b000`)
 - Address buffer: hardware-managed (`I2C1CON2bits.ABD = 0`)
