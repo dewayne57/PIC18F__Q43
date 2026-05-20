@@ -7,7 +7,7 @@ This material is provided free of charge on an AS-IS basis under the Apache 2.0 
 This project implements an I2C master using the PIC18F47Q43 hardware I2C1 module on GPIO pins RC3 (SCL) and RC4 (SDA). It communicates with an MCP23017 I/O expander, mirrors Port A switch inputs to Port B LEDs, and reports configuration changes over UART. The application logic is identical to I2C 01 Bit Bang Master; only the I2C driver layer is replaced with the hardware peripheral.
 
 ## Peripheral Focus
-- Hardware I2C1 module master (100 kHz)
+- Hardware I2C1 module master (100 kHz, vectored interrupts)
 - MCP23017 I/O expander
 - UART1 debug console
 - External interrupt input (INT1 on RB2)
@@ -44,8 +44,8 @@ This project implements an I2C master using the PIC18F47Q43 hardware I2C1 module
 - `../../Libraries/UARTLIB`: shared UART driver used by this project.
 
 ## I2C1 Module Configuration
-- Clock source: Fosc (64 MHz HFINTOSC), `I2C1CLK = 0x03`
-- Baud rate register: `I2C1BAUD = 159` (yields 100 kHz)
+- Clock source: MFINTOSC (`I2C1CLK = 0x00`)
+- Bus rate: fixed 100 kHz standard mode for this example
 - Mode: 7-bit host (`I2C1CON0bits.MODE = 0b000`)
 - Address buffer: hardware-managed (`I2C1CON2bits.ABD = 0`)
 - SDA hold time: 300 ns (`I2C1CON2bits.SDAHT = 0b01`)

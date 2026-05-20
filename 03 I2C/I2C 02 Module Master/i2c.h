@@ -25,9 +25,9 @@
  *   This example uses an MCP23017 I/O expander as the I2C slave device, with Port A connected
  *   to a 8-bit dip switch, and port B connected to 8 LEDs.  Port A is configured as input with 
  *   weak pull-ups enabled and interrupt on change.  If the user changes any of the switches, 
- *   an interrupt is triggered.  The master will read the state of the MCP23017's GPIOA pins
- *   and write that value (inverted) to GPIOB, which will update the LEDs to match the switch 
- *   states.
+ *   an interrupt is triggered.  The main loop services the request using the interrupt-driven
+ *   I2C module and writes the value (inverted) to GPIOB, which updates the LEDs to match the
+ *   switch states.
  ***************************************************************************************** */
 
 #ifndef I2C_H

@@ -22,60 +22,226 @@
  *   RC4 - I2C1 SDA (Serial Data)  - routed via PPS (RC4PPS = 0x38, I2C1SDAPPS = 0x14)
  * 
  *   I2C1 Module Operation:
- *   The PIC18F47Q43 I2C1 module is used in 7-bit host mode (MODE = 0b000).  All transactions
- *   are polled (no I2C interrupts).  The module automatically generates START, address,
- *   data, and STOP conditions.  The driver sets I2C1ADB0 (address), I2C1CNT (byte count),
- *   and I2C1CON0.S (start), then services the TX or RX buffers until PCIF (stop complete)
- *   is set.
+ *   The PIC18F47Q43 I2C1 module is used in 7-bit host mode (MODE = 0b000).  Transfers are
+ *   handled by vectored, prioritized interrupts rather than register polling.  The module
+ *   automatically generates START, address, data, and STOP conditions.  The driver sets
+ *   I2C1ADB0 (address), I2C1CNT (byte count), and I2C1CON0.S (start), then the I2C1 TX/RX
+ *   and event/error ISRs complete the transaction.
  *
- *   Baud rate formula:
- *   I2C1BAUD = (Fosc / (4 * BaudRate_Hz)) - 1
- *   At 64 MHz, 100 kHz: I2C1BAUD = (64000000 / 400000) - 1 = 159
- *   At 64 MHz, 400 kHz: I2C1BAUD = (64000000 / 1600000) - 1 = 39
+ *   Clock and timing notes:
+ *   This project selects MFINTOSC as the I2C clock source via I2C1CLK.
+ *   The bus is configured for Standard-mode operation (100 kHz).
  ***************************************************************************************** */
 
 #include <xc.h>
 #include "config.h"
 #include "i2c.h"
 
-// Polling timeout: ~10 ms expressed as a loop count of 1 us iterations
-#define I2C_POLL_TIMEOUT_US 10000U
+// Maximum number of wakeups while waiting for an interrupt-driven transfer.
+#define I2C_WAIT_WAKE_LIMIT 10000U
+#define I2C_TARGET_SPEED_KHZ 100U
+#define I2C1CLK_SRC_MFINTOSC 0x00U
 
-/// @brief Wait for I2C transmit buffer to be empty (ready for next byte)
-/// @param  None    
-/// @return i2c_status_t indicating success or error
-static i2c_status_t i2c_wait_txbe(void) {
-    uint16_t timeout = I2C_POLL_TIMEOUT_US;
-    while (timeout-- > 0U) {
-        if (I2C1ERRbits.NACKIF) { I2C1ERRbits.NACKIF = 0; return I2C_ERROR_NAK; }
-        if (I2C1STAT1bits.TXBE) return I2C_SUCCESS;
-        __delay_us(1);
-    }
-    return I2C_ERROR_TIMEOUT;
+/// @brief A definition of the I2C master operations and state for interrupt-driven 
+/// transfers.  This is used internally by the driver and is not exposed to the user.
+typedef enum {
+    I2C_OPERATION_NONE = 0,
+    I2C_OPERATION_WRITE,
+    I2C_OPERATION_READ
+} i2c_operation_t;
+
+/// @brief Internal state structure for managing an I2C transfer in the interrupt-driven 
+/// driver implementation.
+typedef struct {
+    volatile i2c_operation_t operation;
+    volatile bool active;
+    volatile bool done;
+    volatile i2c_status_t status;
+    volatile uint16_t length;
+    volatile uint16_t index;
+    const uint8_t *tx_data;
+    uint8_t *rx_data;
+} i2c_transfer_state_t;
+
+/// @brief Static variable to hold the current I2C transfer state.  This is used by 
+/// the ISRs to manage the ongoing transfer.
+static i2c_transfer_state_t s_i2c_transfer = {
+    .operation = I2C_OPERATION_NONE,
+    .active = false,
+    .done = true,
+    .status = I2C_SUCCESS,
+    .length = 0U,
+    .index = 0U,
+    .tx_data = NULL,
+    .rx_data = NULL
+};
+
+/// @brief Disable all I2C interrupt sources
+/// @param None
+/// @return None
+static void i2c_disable_irq_sources(void)
+{
+    PIE7bits.I2C1RXIE = 0;
+    PIE7bits.I2C1TXIE = 0;
+    PIE7bits.I2C1IE = 0;
+    PIE7bits.I2C1EIE = 0;
 }
 
-/// @brief Wait for I2C receive buffer to be full (data received)   
-/// @param  None
-/// @return i2c_status_t indicating success or error
-static i2c_status_t i2c_wait_rxbf(void) {
-    uint16_t timeout = I2C_POLL_TIMEOUT_US;
-    while (timeout-- > 0U) {
-        if (I2C1STAT1bits.RXBF) return I2C_SUCCESS;
-        __delay_us(1);
-    }
-    return I2C_ERROR_TIMEOUT;
+/// @brief Finish the current I2C transfer and update the transfer state
+/// @param status The status of the completed transfer
+/// @return None
+static void i2c_finish_transfer(i2c_status_t status)
+{
+    i2c_disable_irq_sources();
+    s_i2c_transfer.status = status;
+    s_i2c_transfer.active = false;
+    s_i2c_transfer.done = true;
+    s_i2c_transfer.operation = I2C_OPERATION_NONE;
 }
 
-/// @brief Wait for I2C stop condition to complete
-/// @param  None
+/// @brief Wait for the current I2C transfer to complete or timeout
+/// @param None 
 /// @return i2c_status_t indicating success or error
-static i2c_status_t i2c_wait_stop(void) {
-    uint16_t timeout = I2C_POLL_TIMEOUT_US;
-    while (timeout-- > 0U) {
-        if (I2C1PIRbits.PCIF) { I2C1PIRbits.PCIF = 0; return I2C_SUCCESS; }
-        __delay_us(1);
+static i2c_status_t i2c_wait_transfer_complete(void)
+{
+    uint16_t wake_count = 0U;
+
+    while (!s_i2c_transfer.done)
+    {
+        if (wake_count >= I2C_WAIT_WAKE_LIMIT)
+        {
+            i2c_finish_transfer(I2C_ERROR_TIMEOUT);
+            break;
+        }
+
+        wake_count++;
+        SLEEP();
+        NOP();
     }
-    return I2C_ERROR_TIMEOUT;
+
+    return s_i2c_transfer.status;
+}
+
+/// @brief I2C1 Transmit Interrupt Service Routine
+/// @param None
+/// @return None
+void __interrupt(irq(IRQ_I2C1TX), high_priority) I2C1_TX_ISR(void)
+{
+    if ((PIE7bits.I2C1TXIE == 0U) || (PIR7bits.I2C1TXIF == 0U))
+    {
+        return;
+    }
+
+    PIR7bits.I2C1TXIF = 0U;
+
+    if ((!s_i2c_transfer.active) || (s_i2c_transfer.operation != I2C_OPERATION_WRITE))
+    {
+        return;
+    }
+
+    if (I2C1ERRbits.NACKIF != 0U)
+    {
+        I2C1ERRbits.NACKIF = 0U;
+        i2c_finish_transfer(I2C_ERROR_NAK);
+        return;
+    }
+
+    if (s_i2c_transfer.index < s_i2c_transfer.length)
+    {
+        I2C1TXB = s_i2c_transfer.tx_data[s_i2c_transfer.index];
+        s_i2c_transfer.index++;
+    }
+    else
+    {
+        PIE7bits.I2C1TXIE = 0U;
+    }
+}
+
+/// @brief I2C1 Receive Interrupt Service Routine
+/// @param None
+/// @return None
+void __interrupt(irq(IRQ_I2C1RX), high_priority) I2C1_RX_ISR(void)
+{
+    if ((PIE7bits.I2C1RXIE == 0U) || (PIR7bits.I2C1RXIF == 0U))
+    {
+        return;
+    }
+
+    PIR7bits.I2C1RXIF = 0U;
+
+    if ((!s_i2c_transfer.active) || (s_i2c_transfer.operation != I2C_OPERATION_READ))
+    {
+        return;
+    }
+
+    if (s_i2c_transfer.index < s_i2c_transfer.length)
+    {
+        s_i2c_transfer.rx_data[s_i2c_transfer.index] = I2C1RXB;
+        s_i2c_transfer.index++;
+    }
+
+    if (s_i2c_transfer.index >= s_i2c_transfer.length)
+    {
+        PIE7bits.I2C1RXIE = 0U;
+    }
+}
+
+/// @brief I2C1 Event Interrupt Service Routine
+/// @param None
+/// @return None
+void __interrupt(irq(IRQ_I2C1), high_priority) I2C1_EVENT_ISR(void)
+{
+    if ((PIE7bits.I2C1IE == 0U) || (PIR7bits.I2C1IF == 0U))
+    {
+        return;
+    }
+
+    PIR7bits.I2C1IF = 0U;
+
+    if ((!s_i2c_transfer.active) || (s_i2c_transfer.done))
+    {
+        return;
+    }
+
+    if (I2C1ERRbits.NACKIF != 0U)
+    {
+        I2C1ERRbits.NACKIF = 0U;
+        i2c_finish_transfer(I2C_ERROR_NAK);
+        return;
+    }
+
+    if (I2C1PIRbits.PCIF != 0U)
+    {
+        I2C1PIRbits.PCIF = 0U;
+        i2c_finish_transfer(I2C_SUCCESS);
+    }
+}
+
+/// @brief I2C1 Error Interrupt Service Routine
+/// @param None
+/// @return None
+void __interrupt(irq(IRQ_I2C1E), high_priority) I2C1_ERROR_ISR(void)
+{
+    if ((PIE7bits.I2C1EIE == 0U) || (PIR7bits.I2C1EIF == 0U))
+    {
+        return;
+    }
+
+    PIR7bits.I2C1EIF = 0U;
+
+    if (!s_i2c_transfer.active)
+    {
+        return;
+    }
+
+    if (I2C1ERRbits.NACKIF != 0U)
+    {
+        I2C1ERRbits.NACKIF = 0U;
+        i2c_finish_transfer(I2C_ERROR_NAK);
+        return;
+    }
+
+    i2c_finish_transfer(I2C_ERROR_TIMEOUT);
 }
 
 /// @brief Write data to an I2C slave device
@@ -84,19 +250,47 @@ static i2c_status_t i2c_wait_stop(void) {
 /// @param length Number of bytes to write
 /// @return i2c_status_t indicating success or error
 static i2c_status_t i2c_do_write(uint8_t address, const uint8_t *data, uint16_t length) {
-    I2C1PIR = 0x00U; I2C1ERR = 0x00U;
+    if ((data == NULL) || (length == 0U) || (length > 255U))
+    {
+        return I2C_ERROR_TIMEOUT;
+    }
+
+    if (s_i2c_transfer.active)
+    {
+        return I2C_ERROR_TIMEOUT;
+    }
+
+    s_i2c_transfer.operation = I2C_OPERATION_WRITE;
+    s_i2c_transfer.active = true;
+    s_i2c_transfer.done = false;
+    s_i2c_transfer.status = I2C_SUCCESS;
+    s_i2c_transfer.length = length;
+    s_i2c_transfer.index = 0U;
+    s_i2c_transfer.tx_data = data;
+    s_i2c_transfer.rx_data = NULL;
+
+    I2C1PIR = 0x00U;
+    I2C1ERR = 0x00U;
+    PIR7bits.I2C1TXIF = 0U;
+    PIR7bits.I2C1RXIF = 0U;
+    PIR7bits.I2C1IF = 0U;
+    PIR7bits.I2C1EIF = 0U;
+
+    IPR7bits.I2C1TXIP = 1U;
+    IPR7bits.I2C1RXIP = 1U;
+    IPR7bits.I2C1IP = 1U;
+    IPR7bits.I2C1EIP = 1U;
+
+    PIE7bits.I2C1RXIE = 0U;
+    PIE7bits.I2C1TXIE = 1U;
+    PIE7bits.I2C1IE = 1U;
+    PIE7bits.I2C1EIE = 1U;
+
     I2C1ADB0 = address & 0xFEU;
     I2C1CNT = (uint8_t)length;
     I2C1CON0bits.S = 1;
-    for (uint16_t i = 0U; i < length; i++) {
-        i2c_status_t status = i2c_wait_txbe();
-        if (status != I2C_SUCCESS) { (void)i2c_wait_stop(); return status; }
-        I2C1TXB = data[i];
-    }
-    i2c_status_t status = i2c_wait_stop();
-    if (status != I2C_SUCCESS) return status;
-    if (I2C1ERRbits.NACKIF) { I2C1ERRbits.NACKIF = 0; return I2C_ERROR_NAK; }
-    return I2C_SUCCESS;
+
+    return i2c_wait_transfer_complete();
 }
 
 /// @brief Read data from an I2C slave device
@@ -105,18 +299,47 @@ static i2c_status_t i2c_do_write(uint8_t address, const uint8_t *data, uint16_t 
 /// @param length Number of bytes to read
 /// @return i2c_status_t indicating success or error
 static i2c_status_t i2c_do_read(uint8_t address, uint8_t *data, uint16_t length) {
-    I2C1PIR = 0x00U; I2C1ERR = 0x00U;
+    if ((data == NULL) || (length == 0U) || (length > 255U))
+    {
+        return I2C_ERROR_TIMEOUT;
+    }
+
+    if (s_i2c_transfer.active)
+    {
+        return I2C_ERROR_TIMEOUT;
+    }
+
+    s_i2c_transfer.operation = I2C_OPERATION_READ;
+    s_i2c_transfer.active = true;
+    s_i2c_transfer.done = false;
+    s_i2c_transfer.status = I2C_SUCCESS;
+    s_i2c_transfer.length = length;
+    s_i2c_transfer.index = 0U;
+    s_i2c_transfer.tx_data = NULL;
+    s_i2c_transfer.rx_data = data;
+
+    I2C1PIR = 0x00U;
+    I2C1ERR = 0x00U;
+    PIR7bits.I2C1TXIF = 0U;
+    PIR7bits.I2C1RXIF = 0U;
+    PIR7bits.I2C1IF = 0U;
+    PIR7bits.I2C1EIF = 0U;
+
+    IPR7bits.I2C1TXIP = 1U;
+    IPR7bits.I2C1RXIP = 1U;
+    IPR7bits.I2C1IP = 1U;
+    IPR7bits.I2C1EIP = 1U;
+
+    PIE7bits.I2C1TXIE = 0U;
+    PIE7bits.I2C1RXIE = 1U;
+    PIE7bits.I2C1IE = 1U;
+    PIE7bits.I2C1EIE = 1U;
+
     I2C1ADB0 = address | 0x01U;
     I2C1CNT = (uint8_t)length;
     I2C1CON0bits.S = 1;
-    __delay_us(50);
-    if (I2C1ERRbits.NACKIF) { I2C1ERRbits.NACKIF = 0; (void)i2c_wait_stop(); return I2C_ERROR_NAK; }
-    for (uint16_t i = 0U; i < length; i++) {
-        i2c_status_t status = i2c_wait_rxbf();
-        if (status != I2C_SUCCESS) { (void)i2c_wait_stop(); return status; }
-        data[i] = I2C1RXB;
-    }
-    return i2c_wait_stop();
+
+    return i2c_wait_transfer_complete();
 }
 
 // --- Public API ---
@@ -126,11 +349,9 @@ static i2c_status_t i2c_do_read(uint8_t address, uint8_t *data, uint16_t length)
 /// @return i2c_status_t indicating success or error    
 i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz) {
     if ((handle == NULL) || (speed_khz == 0U)) return I2C_ERROR_NOT_INITIALIZED;
+
     I2C1CON0bits.EN = 0;
-    I2C1CLK = 0x03U;
-    uint32_t baud_val = (_XTAL_FREQ / (4UL * (uint32_t)speed_khz * 1000UL)) - 1UL;
-    if (baud_val > 0xFFU) baud_val = 0xFFU;
-    I2C1BAUD = (uint8_t)baud_val;
+    I2C1CLK = I2C1CLK_SRC_MFINTOSC;
     I2C1CON0bits.MODE = 0b000;
     I2C1CON2bits.ABD = 0U;
     I2C1CON2bits.SDAHT = 0b01U;

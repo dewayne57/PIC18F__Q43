@@ -34,10 +34,11 @@
  *
  *   When a change on Port A is detected, the MCP23017 asserts its INT pin, which is 
  *   connected to the PIC's RB2/INT1 pin.  The PIC is configured to trigger an interrupt 
- *   on the rising edge of INT1, which is active high.  The PIC's external interrupt service
- *   routine reads the MCP23017 Port A value and writes it to Port B.  Port B is configured
- *   as digital outputs and is connected to 8 LEDs.  The state of the LEDs is updated to 
- *   match the switch positions and drives 8 LEDs for visual feedback.
+ *   on the rising edge of INT1, which is active high.  The INT1 ISR only flags that the 
+ *   MCP23017 needs service; APP_Service performs the I2C read/write using the interrupt-
+ *   driven I2C1 module.  Port B is configured as digital outputs and is connected to 8 
+ *   LEDs.  The state of the LEDs is updated to match the switch positions and drives 8 
+ *   LEDs for visual feedback.
  * 
  *   In addition to the LEDs, diagnostic messages are printed to the console over UART1.  
  *   The console output includes the current configuration of Port A whenever it changes.
@@ -60,6 +61,7 @@ static volatile uint8_t s_last_porta_value = 0x00U;
 static volatile uint8_t s_pending_porta_value = 0x00U;
 static volatile bool s_porta_value_valid = false;
 static volatile bool s_porta_report_pending = false;
+static volatile bool s_porta_update_pending = false;
 
 /// @brief UART1 RX ISR (vectored)
 /// @param  None
@@ -85,44 +87,14 @@ void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
     }
 }
 
-/// @brief Handle external interrupt on RB2 to read MCP23017 port A and copy to MCP23017 port B
+/// @brief Handle external interrupt on RB2 and defer MCP23017 service to the main loop
 /// @param  None
 /// @return None
-/// @note This function reads the MCP23017 port A register and writes the value to MCP23017
-///       port B
+/// @note The ISR only records that the MCP23017 interrupt needs service. I2C access is
+///       performed in APP_Service so the module driver can use vectored interrupts.
 void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 {
-    uint8_t mcp_port_a_value = 0x00;
-    uint8_t reg_addr = BANKED_GPIOA;
-
-    // Select GPIOA register, then read one byte from the slave.
-    i2c_status_t status = I2C_SendBytes(&i2c_master, MCP23017_ADDR, &reg_addr, 1);
-    if (status == I2C_SUCCESS)
-    {
-        status = I2C_ReceiveByte(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, false);
-    }
-
-    if (status == I2C_SUCCESS)
-    {
-        // Check if the Port A value has changed since the last read. If it has, update 
-        // the pending value and set the flag to report it in the main loop.  This is done 
-        // to minimize the time spent in the interrupt service routine and to avoid printing 
-        // to the console from within the ISR.
-        if ((!s_porta_value_valid) || (mcp_port_a_value != s_last_porta_value))
-        {
-            s_last_porta_value = mcp_port_a_value;
-            s_porta_value_valid = true;
-            s_pending_porta_value = mcp_port_a_value;
-            s_porta_report_pending = true;
-        }
-
-        // Write MCP23017 Port A value to MCP23017 Port B OLAT register.  We need to invert
-        // the value because the switches pull the pins low when "on" but we want the LEDs
-        // to turn on when the switch is "on".  Writing to the OLAT register updates the 
-        // output latches and the GPIO register for Port B.
-        uint8_t write_buf[2] = {BANKED_OLATB, ~mcp_port_a_value};
-        status = I2C_SendBytes(&i2c_master, MCP23017_ADDR, write_buf, 2);
-    }
+    s_porta_update_pending = true;
 
     // Clear the INT1 interrupt flag
     PIR6bits.INT1IF = 0;
@@ -141,7 +113,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
     // INTPOL=1 makes INT active high; ODR=0 keeps INT in push-pull output mode.
     i2c_buffer[0] = IOCON;
     i2c_buffer[1] = 0x82;
-    status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 2);
+    status = I2C_Write(handle, MCP23017_ADDR, i2c_buffer, 2);
     if (status != I2C_SUCCESS)
     {
         return status;
@@ -159,7 +131,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
         i2c_buffer[8] = 0x00; // INTFA (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPA (write ignored)
         i2c_buffer[10] = 0x00; // GPIOA
-    status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 11);
+    status = I2C_Write(handle, MCP23017_ADDR, i2c_buffer, 11);
     if (status != I2C_SUCCESS)
     {
         return status;
@@ -177,7 +149,7 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
         i2c_buffer[8] = 0x00; // INTFB (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPB (write ignored)
         i2c_buffer[10] = 0x00; // GPIOB
-        status = I2C_SendBytes(handle, MCP23017_ADDR, i2c_buffer, 11);
+        status = I2C_Write(handle, MCP23017_ADDR, i2c_buffer, 11);
     if (status != I2C_SUCCESS)
     {
         return status;
@@ -226,10 +198,10 @@ void APP_Initialize(void)
     // Initial transfer so OLATB reflects GPIOA before the first external interrupt.
     uint8_t mcp_port_a_value = 0x00U;
     uint8_t reg_addr = BANKED_GPIOA;
-    i2c_status_t status = I2C_SendBytes(&i2c_master, MCP23017_ADDR, &reg_addr, 1U);
+    i2c_status_t status = I2C_Write(&i2c_master, MCP23017_ADDR, &reg_addr, 1U);
     if (status == I2C_SUCCESS)
     {
-        status = I2C_ReceiveByte(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, false);
+        status = I2C_Read(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, 1U);
     }
     if (status == I2C_SUCCESS)
     {
@@ -239,7 +211,7 @@ void APP_Initialize(void)
         s_porta_report_pending = true;
 
         uint8_t write_buf[2] = {BANKED_OLATB, (uint8_t)(~mcp_port_a_value)};
-        (void)I2C_SendBytes(&i2c_master, MCP23017_ADDR, write_buf, 2U);
+        (void)I2C_Write(&i2c_master, MCP23017_ADDR, write_buf, 2U);
     }
 
     // Enable external INT1 only after MCP23017 setup is complete.
@@ -253,6 +225,7 @@ void APP_Service(void)
 {
     uint8_t porta_value = 0x00U;
     bool report_now = false;
+    bool update_now = false;
 
     PIE6bits.INT1IE = 0;
     if (s_porta_report_pending)
@@ -261,7 +234,37 @@ void APP_Service(void)
         s_porta_report_pending = false;
         report_now = true;
     }
+    if (s_porta_update_pending)
+    {
+        s_porta_update_pending = false;
+        update_now = true;
+    }
     PIE6bits.INT1IE = 1;
+
+    if (update_now)
+    {
+        uint8_t mcp_port_a_value = 0x00U;
+        uint8_t reg_addr = BANKED_GPIOA;
+        i2c_status_t status = I2C_Write(&i2c_master, MCP23017_ADDR, &reg_addr, 1U);
+        if (status == I2C_SUCCESS)
+        {
+            status = I2C_Read(&i2c_master, MCP23017_ADDR, &mcp_port_a_value, 1U);
+        }
+
+        if (status == I2C_SUCCESS)
+        {
+            if ((!s_porta_value_valid) || (mcp_port_a_value != s_last_porta_value))
+            {
+                s_last_porta_value = mcp_port_a_value;
+                s_porta_value_valid = true;
+                s_pending_porta_value = mcp_port_a_value;
+                s_porta_report_pending = true;
+            }
+
+            uint8_t write_buf[2] = {BANKED_OLATB, (uint8_t)(~mcp_port_a_value)};
+            (void)I2C_Write(&i2c_master, MCP23017_ADDR, write_buf, 2U);
+        }
+    }
 
     if (report_now)
     {
