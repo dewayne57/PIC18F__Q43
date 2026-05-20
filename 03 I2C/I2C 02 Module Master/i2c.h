@@ -39,7 +39,6 @@
 /// @brief I2C master handle structure to manage I2C state and configuration
 typedef struct {
     uint16_t speed_khz;         ///< Target I2C bus speed in kHz
-    uint16_t half_period_us;    ///< Reserved (unused in hardware mode; kept for API compatibility)
     uint8_t retry_count;        ///< Number of retries for I2C operations
     bool initialized;           ///< Flag indicating if I2C interface is initialized
 } i2c_handle_t;
@@ -59,82 +58,20 @@ typedef enum {
 /// @note RC3 is configured as SCL via PPS, RC4 is configured as SDA via PPS
 i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz);
 
-/// @brief Deinitialize the I2C1 hardware module master interface
+/// @brief Write data to an I2C slave (handles start/stop automatically)
 /// @param handle Pointer to i2c_handle_t structure
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Deinitialize(i2c_handle_t *handle);
-
-/// @brief Generate I2C START condition (stub; START is managed by hardware for full transactions)
-/// @param handle Pointer to i2c_handle_t structure
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Start(i2c_handle_t *handle);
-
-/// @brief Generate I2C STOP condition (stub; STOP is managed by hardware for full transactions)
-/// @param handle Pointer to i2c_handle_t structure
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Stop(i2c_handle_t *handle);
-
-/// @brief Generate I2C REPEATED START condition (stub; managed by hardware)
-/// @param handle Pointer to i2c_handle_t structure
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_RestartStart(i2c_handle_t *handle);
-
-/// @brief Send one byte on the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address
-/// @param data Byte to send
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t address, uint8_t data);
-
-/// @brief Send multiple bytes on the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address
+/// @param address I2C slave address (7-bit, left-aligned)
 /// @param data Pointer to the data buffer to send
 /// @param length Number of bytes to send
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length);
+i2c_status_t I2C_Write(i2c_handle_t *handle, uint8_t address, const uint8_t *data, uint16_t length);
 
-/// @brief Probe whether a slave acknowledges its address on the I2C bus
+/// @brief Read data from an I2C slave (handles start/stop automatically)
 /// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address byte with R/W bit clear in bit 0
-/// @return i2c_status_t indicating ACK, NAK, or timeout
-i2c_status_t I2C_ProbeAddress(i2c_handle_t *handle, uint8_t address);
-
-/// @brief Send write data then read data using repeated START (no STOP between)
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address (R/W bit will be set by the function)
-/// @param write_data Pointer to data to write (typically register address)
-/// @param write_length Number of bytes to write
-/// @param read_data Pointer to buffer for read data
-/// @param read_length Number of bytes to read
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_WriteRead(i2c_handle_t *handle, uint8_t address, uint8_t *write_data, uint16_t write_length, uint8_t *read_data, uint16_t read_length);
-
-/// @brief Receive one byte from the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address    
-/// @param data Pointer to store received byte
-/// @param send_ack Reserved; hardware automatically sends NACK on the last byte of a transaction
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t address, uint8_t *data, bool send_ack);
-
-/// @brief Receive multiple bytes from the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address
+/// @param address I2C slave address (7-bit, left-aligned)
 /// @param data Pointer to the buffer to store received bytes
 /// @param length Number of bytes to receive
-/// @param send_ack Reserved; hardware automatically sends NACK on the last byte of a transaction
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length, bool send_ack);
-
-/// @brief Check if SDA is held low by slave
-/// @param handle Pointer to i2c_handle_t structure
-/// @return true if SDA is low, false if SDA is high
-bool I2C_IsSDALow(i2c_handle_t *handle);
-
-/// @brief Check if SCK is held low by slave
-/// @param handle Pointer to i2c_handle_t structure
-/// @return true if SCK is low, false if SCK is high
-bool I2C_IsSCKLow(i2c_handle_t *handle);
+i2c_status_t I2C_Read(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length);
 
 #endif // I2C_H

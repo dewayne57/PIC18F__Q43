@@ -41,418 +41,126 @@
 // Polling timeout: ~10 ms expressed as a loop count of 1 us iterations
 #define I2C_POLL_TIMEOUT_US 10000U
 
-/// @brief Poll until I2C1 TX buffer is empty (module ready to accept the next byte)
-/// @return I2C_SUCCESS, or I2C_ERROR_NAK / I2C_ERROR_TIMEOUT if an error is detected first
-static i2c_status_t i2c_wait_txbe(void)
-{
+/// @brief Wait for I2C transmit buffer to be empty (ready for next byte)
+/// @param  None    
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_wait_txbe(void) {
     uint16_t timeout = I2C_POLL_TIMEOUT_US;
-
-    while (timeout > 0U)
-    {
-        // A NACK from the slave causes the module to stop early and set PCIF.
-        if (I2C1ERRbits.NACKIF != 0U)
-        {
-            I2C1ERRbits.NACKIF = 0;
-            return I2C_ERROR_NAK;
-        }
-        if (I2C1STAT1bits.TXBE != 0U)
-        {
-            return I2C_SUCCESS;
-        }
+    while (timeout-- > 0U) {
+        if (I2C1ERRbits.NACKIF) { I2C1ERRbits.NACKIF = 0; return I2C_ERROR_NAK; }
+        if (I2C1STAT1bits.TXBE) return I2C_SUCCESS;
         __delay_us(1);
-        timeout--;
     }
-
     return I2C_ERROR_TIMEOUT;
 }
 
-/// @brief Poll until I2C1 RX buffer contains a received byte
-/// @return I2C_SUCCESS, or I2C_ERROR_TIMEOUT
-static i2c_status_t i2c_wait_rxbf(void)
-{
+/// @brief Wait for I2C receive buffer to be full (data received)   
+/// @param  None
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_wait_rxbf(void) {
     uint16_t timeout = I2C_POLL_TIMEOUT_US;
-
-    while (timeout > 0U)
-    {
-        if (I2C1STAT1bits.RXBF != 0U)
-        {
-            return I2C_SUCCESS;
-        }
+    while (timeout-- > 0U) {
+        if (I2C1STAT1bits.RXBF) return I2C_SUCCESS;
         __delay_us(1);
-        timeout--;
     }
-
     return I2C_ERROR_TIMEOUT;
 }
 
-/// @brief Poll until I2C1 stop condition is complete (PCIF set)
-/// @return I2C_SUCCESS, or I2C_ERROR_TIMEOUT
-static i2c_status_t i2c_wait_stop(void)
-{
+/// @brief Wait for I2C stop condition to complete
+/// @param  None
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_wait_stop(void) {
     uint16_t timeout = I2C_POLL_TIMEOUT_US;
-
-    while (timeout > 0U)
-    {
-        if (I2C1PIRbits.PCIF != 0U)
-        {
-            I2C1PIRbits.PCIF = 0;
-            return I2C_SUCCESS;
-        }
+    while (timeout-- > 0U) {
+        if (I2C1PIRbits.PCIF) { I2C1PIRbits.PCIF = 0; return I2C_SUCCESS; }
         __delay_us(1);
-        timeout--;
     }
-
     return I2C_ERROR_TIMEOUT;
 }
 
-/// @brief Perform a complete hardware I2C write transaction:
-///        START + address(W) + data[0..length-1] + STOP
-/// @param address 8-bit I2C address (write bit will be forced clear)
-/// @param data Pointer to bytes to send
-/// @param length Number of bytes to send
-/// @return I2C_SUCCESS, I2C_ERROR_NAK, or I2C_ERROR_TIMEOUT
-static i2c_status_t i2c_do_write(uint8_t address, uint8_t *data, uint16_t length)
-{
-    // Clear all interrupt flags before starting a new transaction.
-    I2C1PIR  = 0x00U;
-    I2C1ERR  = 0x00U;
-
-    // Load address with write bit (bit 0 = 0).
+/// @brief Write data to an I2C slave device
+/// @param address I2C slave address
+/// @param data Pointer to data buffer to write
+/// @param length Number of bytes to write
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_do_write(uint8_t address, const uint8_t *data, uint16_t length) {
+    I2C1PIR = 0x00U; I2C1ERR = 0x00U;
     I2C1ADB0 = address & 0xFEU;
-
-    // Set the byte count (hardware sends STOP automatically when count reaches 0).
     I2C1CNT = (uint8_t)length;
-
-    // Initiate START condition – the module takes over from here.
     I2C1CON0bits.S = 1;
-
-    // Feed each data byte into the TX buffer.
-    for (uint16_t i = 0U; i < length; i++)
-    {
+    for (uint16_t i = 0U; i < length; i++) {
         i2c_status_t status = i2c_wait_txbe();
-        if (status != I2C_SUCCESS)
-        {
-            // Wait for the bus to return to idle before returning the error.
-            (void)i2c_wait_stop();
-            return status;
-        }
+        if (status != I2C_SUCCESS) { (void)i2c_wait_stop(); return status; }
         I2C1TXB = data[i];
     }
-
-    // Wait for the hardware to issue the STOP condition.
     i2c_status_t status = i2c_wait_stop();
-    if (status != I2C_SUCCESS)
-    {
-        return status;
-    }
-
-    // Check for a late NACK (e.g., on the last data byte).
-    if (I2C1ERRbits.NACKIF != 0U)
-    {
-        I2C1ERRbits.NACKIF = 0;
-        return I2C_ERROR_NAK;
-    }
-
+    if (status != I2C_SUCCESS) return status;
+    if (I2C1ERRbits.NACKIF) { I2C1ERRbits.NACKIF = 0; return I2C_ERROR_NAK; }
     return I2C_SUCCESS;
 }
 
-/// @brief Perform a complete hardware I2C read transaction:
-///        START + address(R) + data[0..length-1] + STOP
-/// @param address 8-bit I2C address (read bit will be forced set)
-/// @param data Pointer to buffer for received bytes
-/// @param length Number of bytes to receive
-/// @return I2C_SUCCESS, I2C_ERROR_NAK, or I2C_ERROR_TIMEOUT
-static i2c_status_t i2c_do_read(uint8_t address, uint8_t *data, uint16_t length)
-{
-    // Clear all interrupt flags before starting a new transaction.
-    I2C1PIR  = 0x00U;
-    I2C1ERR  = 0x00U;
-
-    // Load address with read bit (bit 0 = 1).
+/// @brief Read data from an I2C slave device
+/// @param address I2C slave address
+/// @param data Pointer to data buffer to read into
+/// @param length Number of bytes to read
+/// @return i2c_status_t indicating success or error
+static i2c_status_t i2c_do_read(uint8_t address, uint8_t *data, uint16_t length) {
+    I2C1PIR = 0x00U; I2C1ERR = 0x00U;
     I2C1ADB0 = address | 0x01U;
-
-    // Set the byte count. The module sends NACK + STOP automatically on the last byte.
     I2C1CNT = (uint8_t)length;
-
-    // Initiate START condition.
     I2C1CON0bits.S = 1;
-
-    // Check for NACK after address (slave not present).
-    // Give the hardware a brief moment to send the address and receive ACK/NACK.
     __delay_us(50);
-    if (I2C1ERRbits.NACKIF != 0U)
-    {
-        I2C1ERRbits.NACKIF = 0;
-        (void)i2c_wait_stop();
-        return I2C_ERROR_NAK;
-    }
-
-    // Collect each received byte from the RX buffer.
-    for (uint16_t i = 0U; i < length; i++)
-    {
+    if (I2C1ERRbits.NACKIF) { I2C1ERRbits.NACKIF = 0; (void)i2c_wait_stop(); return I2C_ERROR_NAK; }
+    for (uint16_t i = 0U; i < length; i++) {
         i2c_status_t status = i2c_wait_rxbf();
-        if (status != I2C_SUCCESS)
-        {
-            (void)i2c_wait_stop();
-            return status;
-        }
+        if (status != I2C_SUCCESS) { (void)i2c_wait_stop(); return status; }
         data[i] = I2C1RXB;
     }
-
-    // Wait for the hardware to issue the STOP condition.
     return i2c_wait_stop();
 }
 
+// --- Public API ---
 /// @brief Initialize the I2C1 hardware module master interface
-/// @param handle Pointer to i2c_handle_t structure
-/// @param speed_khz Desired I2C bus speed in kHz (e.g. 100 or 400)
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz)
-{
-    if ((handle == NULL) || (speed_khz == 0U))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
-    // Disable the module while configuring it.
+/// @param handle Pointer to i2c_handle_t structure to initialize
+/// @param speed_khz Desired I2C bus speed in kHz (for example 100 or 400)
+/// @return i2c_status_t indicating success or error    
+i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz) {
+    if ((handle == NULL) || (speed_khz == 0U)) return I2C_ERROR_NOT_INITIALIZED;
     I2C1CON0bits.EN = 0;
-
-    // Select Fosc (64 MHz) as the I2C1 clock source.
-    // Clock source 0b0011 = Fosc per the PIC18F47Q43 datasheet.
     I2C1CLK = 0x03U;
-
-    // Calculate and load the baud-rate register.
-    // Formula: I2C1BAUD = (Fosc / (4 * BaudRate_Hz)) - 1
     uint32_t baud_val = (_XTAL_FREQ / (4UL * (uint32_t)speed_khz * 1000UL)) - 1UL;
-    if (baud_val > 0xFFU)
-    {
-        baud_val = 0xFFU;
-    }
+    if (baud_val > 0xFFU) baud_val = 0xFFU;
     I2C1BAUD = (uint8_t)baud_val;
-
-    // 7-bit host mode (MODE bits = 0b000).
     I2C1CON0bits.MODE = 0b000;
-
-    // Use I2C1ADB0 as the address buffer (ABD = 0).
-    // SDA hold time 300 ns (SDAHT = 0b01) is suitable for standard and fast mode.
-    I2C1CON2bits.ABD   = 0U;
+    I2C1CON2bits.ABD = 0U;
     I2C1CON2bits.SDAHT = 0b01U;
-
-    // Clear all flags.
-    I2C1PIR = 0x00U;
-    I2C1ERR = 0x00U;
-
-    // Enable the I2C1 module.
+    I2C1PIR = 0x00U; I2C1ERR = 0x00U;
     I2C1CON0bits.EN = 1;
-
-    // Allow bus lines to settle.
     __delay_us(100);
-
-    handle->speed_khz     = speed_khz;
-    handle->half_period_us = (uint16_t)(500U / speed_khz); // Kept for API compatibility
-    handle->retry_count   = 3U;
-    handle->initialized   = true;
-
+    handle->speed_khz = speed_khz;
+    handle->retry_count = 3U;
+    handle->initialized = true;
     return I2C_SUCCESS;
 }
 
-/// @brief Deinitialize the I2C1 hardware module master interface
-/// @param handle Pointer to i2c_handle_t structure
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_Deinitialize(i2c_handle_t *handle)
-{
-    if (handle == NULL)
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
-    I2C1CON0bits.EN  = 0;
-    handle->initialized = false;
-
-    return I2C_SUCCESS;
-}
-
-/// @brief START condition stub — the hardware manages START as part of full transactions.
-/// @param handle Pointer to i2c_handle_t structure
-/// @return I2C_SUCCESS
-i2c_status_t I2C_Start(i2c_handle_t *handle)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-    return I2C_SUCCESS;
-}
-
-/// @brief STOP condition stub — the hardware manages STOP as part of full transactions.
-/// @param handle Pointer to i2c_handle_t structure
-/// @return I2C_SUCCESS
-i2c_status_t I2C_Stop(i2c_handle_t *handle)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-    return I2C_SUCCESS;
-}
-
-/// @brief REPEATED START stub — the hardware manages RESTART as part of full transactions.
-/// @param handle Pointer to i2c_handle_t structure
-/// @return I2C_SUCCESS
-i2c_status_t I2C_RestartStart(i2c_handle_t *handle)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-    return I2C_SUCCESS;
-}
-
-/// @brief Send one byte on the I2C bus (single-byte write transaction)
-/// @param handle Pointer to i2c_handle_t structure
+/// @brief Write data to an I2C slave device
+/// @param handle Pointer to initialized i2c_handle_t structure
 /// @param address I2C slave address
-/// @param data Byte to send
+/// @param data Pointer to data buffer to write
+/// @param length Number of bytes to write
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendByte(i2c_handle_t *handle, uint8_t address, uint8_t data)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
-    return i2c_do_write(address, &data, 1U);
-}
-
-/// @brief Send multiple bytes on the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address
-/// @param data Pointer to the data buffer to send
-/// @param length Number of bytes to send
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_SendBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length)
-{
-    if ((handle == NULL) || (!handle->initialized) || (data == NULL) || (length == 0U))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
+i2c_status_t I2C_Write(i2c_handle_t *handle, uint8_t address, const uint8_t *data, uint16_t length) {
+    if ((handle == NULL) || (!handle->initialized) || (data == NULL) || (length == 0U)) return I2C_ERROR_NOT_INITIALIZED;
     return i2c_do_write(address, data, length);
 }
 
-/// @brief Probe whether a slave acknowledges its address on the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address byte with R/W bit clear in bit 0
-/// @return I2C_SUCCESS (ACK), I2C_ERROR_NAK, or I2C_ERROR_TIMEOUT
-i2c_status_t I2C_ProbeAddress(i2c_handle_t *handle, uint8_t address)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
-    // Send a zero-payload write transaction — just address + STOP.
-    // Set CNT = 0 so the module generates STOP immediately after the address ACK.
-    I2C1PIR  = 0x00U;
-    I2C1ERR  = 0x00U;
-    I2C1ADB0 = address & 0xFEU;
-    I2C1CNT  = 0U;
-    I2C1CON0bits.S = 1;
-
-    __delay_us(50);
-
-    if (I2C1ERRbits.NACKIF != 0U)
-    {
-        I2C1ERRbits.NACKIF = 0;
-        (void)i2c_wait_stop();
-        return I2C_ERROR_NAK;
-    }
-
-    return i2c_wait_stop();
-}
-
-/// @brief Receive one byte from the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
+/// @brief  Read data from an I2C slave device
+/// @param handle Pointer to initialized i2c_handle_t structure
 /// @param address I2C slave address
-/// @param data Pointer to store received byte
-/// @param send_ack Reserved; hardware automatically sends NACK on the last byte
+/// @param data Pointer to data buffer to read into
+/// @param length Number of bytes to read
 /// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveByte(i2c_handle_t *handle, uint8_t address, uint8_t *data, bool send_ack)
-{
-    (void)send_ack; // Hardware handles ACK/NACK automatically
-
-    if ((handle == NULL) || (!handle->initialized) || (data == NULL))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
-    return i2c_do_read(address, data, 1U);
-}
-
-/// @brief Receive multiple bytes from the I2C bus
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address
-/// @param data Pointer to the buffer to store received bytes
-/// @param length Number of bytes to receive
-/// @param send_ack Reserved; hardware automatically sends NACK on the last byte
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_ReceiveBytes(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length, bool send_ack)
-{
-    (void)send_ack; // Hardware handles ACK/NACK automatically
-
-    if ((handle == NULL) || (!handle->initialized) || (data == NULL) || (length == 0U))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
+i2c_status_t I2C_Read(i2c_handle_t *handle, uint8_t address, uint8_t *data, uint16_t length) {
+    if ((handle == NULL) || (!handle->initialized) || (data == NULL) || (length == 0U)) return I2C_ERROR_NOT_INITIALIZED;
     return i2c_do_read(address, data, length);
-}
-
-/// @brief Send write data then read data using two separate transactions.
-/// @param handle Pointer to i2c_handle_t structure
-/// @param address I2C slave address (R/W bit set by function)
-/// @param write_data Pointer to data to write (typically register address)
-/// @param write_length Number of bytes to write
-/// @param read_data Pointer to buffer for read data
-/// @param read_length Number of bytes to read
-/// @return i2c_status_t indicating success or error
-i2c_status_t I2C_WriteRead(i2c_handle_t *handle, uint8_t address, uint8_t *write_data, uint16_t write_length, uint8_t *read_data, uint16_t read_length)
-{
-    if ((handle == NULL) || (!handle->initialized) || (write_data == NULL) || (read_data == NULL))
-    {
-        return I2C_ERROR_NOT_INITIALIZED;
-    }
-
-    i2c_status_t status = i2c_do_write(address, write_data, write_length);
-    if (status != I2C_SUCCESS)
-    {
-        return status;
-    }
-
-    return i2c_do_read(address, read_data, read_length);
-}
-
-/// @brief Check if SDA is held low by slave (reads the RC4 pin state)
-/// @param handle Pointer to i2c_handle_t structure
-/// @return true if SDA is low, false if SDA is high
-bool I2C_IsSDALow(i2c_handle_t *handle)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return false;
-    }
-
-    return (PORTCbits.RC4 == 0);
-}
-
-/// @brief Check if SCK is held low by slave (reads the RC3 pin state)
-/// @param handle Pointer to i2c_handle_t structure
-/// @return true if SCK is low, false if SCK is high
-bool I2C_IsSCKLow(i2c_handle_t *handle)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return false;
-    }
-
-    return (PORTCbits.RC3 == 0);
 }
