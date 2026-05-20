@@ -1,8 +1,8 @@
 /* *****************************************************************************************
  *   File Name: app.c
- *   Description: Bit bang I2C master implementation for PIC18F__Q43.
+ *   Description: Hardware I2C1 module master implementation for PIC18F__Q43.
  *   Author: Dewayne Hafenstein
- *   Date: 2026-05-11
+ *   Date: 2026-05-19
  *
  *   Copyright (c) 2026, Dewayne Hafenstein.
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +17,9 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  *
- *   This is the demonstration application implementation for the I2C 01 Bit Bang Master
+ *   This is the demonstration application implementation for the I2C 02 Module Master
  *   example. It initializes the system, sets up UART1 for debug output, and configures
- *   the I2C bit bang master interface.
+ *   the I2C1 hardware module master interface.
  *
  *   This application uses an MCP23017 I2C I/O expander as a remote slave device for
  *   demonstration purposes. The MCP23017 is a 2-port (16-bit) I/O expander with interrupt
@@ -189,11 +189,11 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
 /// @brief Initialize the application.
 /// @param  None
 /// @return None
-/// @note This function initializes the system, UART1 for debug output, and I2C
-///       bit bang master interface. It also prints status messages to the console.
+/// @note This function initializes the system, UART1 for debug output, and the I2C1
+///       hardware module master interface. It also prints status messages to the console.
 void APP_Initialize(void)
 {
-    printf("I2C 01 Bit Bang Master\r\n");
+    printf("I2C 02 Module Master\r\n");
 
     /*
      * Configure RB2 as the INT1 input. The MCP23017 INT pin is active high,
@@ -203,7 +203,7 @@ void APP_Initialize(void)
     ANSELBbits.ANSELB2 = 0; // RB2 is digital
     WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
 
-    // Initialize I2C bit bang master for 100kHz bus speed
+    // Initialize I2C1 hardware module master for 100kHz bus speed
     if (I2C_Initialize(&i2c_master, 100) != I2C_SUCCESS)
     {
         printf("Error: Failed to initialize I2C\r\n");
@@ -268,4 +268,3 @@ void APP_Service(void)
         printf("Config is now %02X\r\n", porta_value);
     }
 }
-

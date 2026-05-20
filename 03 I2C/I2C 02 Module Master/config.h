@@ -20,22 +20,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Define UART frame format settings for parity
-typedef enum
-{
-  UART_PARITY_NONE = 0,
-  UART_PARITY_ODD = 1,
-  UART_PARITY_EVEN = 2
-} uart_parity_t;
-
-// Define UART frame format settings for stop bits
-typedef enum
-{
-  UART_STOP_BITS_1 = 0,
-  UART_STOP_BITS_1_5 = 1,
-  UART_STOP_BITS_2 = 2
-} uart_stop_bits_t;
-
 // PIC 18F47Q43 Configuration Bit Settings
 #pragma config FEXTOSC = OFF          // Dont use the external oscillator
 #pragma config RSTOSC = HFINTOSC_64MHZ // Use internal 64MHz high frequency osc
@@ -46,8 +30,7 @@ typedef enum
 #pragma config BOREN = 3              // Brown-out reset is enabled
 #pragma config LPBOREN = OFF          // Low power brown-out reset is disabled
 #pragma config IVT1WAY = 0            // IVTLOCK Set/cleared repeatedly
-#pragma config MVECEN = 0             // Vectored interrupts disabled <== Note: This is required
-                                      // for single level interrupts
+#pragma config MVECEN = 1             // Vectored interrupts enabled
 #pragma config PWRTS = 2              // Power up timer at 64mS
 #pragma config MCLRE = 1              // Master clear retains that function
 #pragma config XINST = OFF            // No extended instruction set
@@ -67,17 +50,23 @@ typedef enum
 #pragma config CP = OFF               // Code is not protected
 
 #define _XTAL_FREQ 64000000UL         // Define the system clock frequency for delay functions
-#define BAUD_RATE 115200              // Define the baud rate for UART communication
-#define UART_1_BRG_VALUE ((_XTAL_FREQ / (16UL * BAUD_RATE)) - 1) // Calculate the baud rate
-                                      // generator value (see datasheet for details )
-#define UART_1_PARITY UART_PARITY_NONE // No parity
-#define UART_1_DATA_BITS 8            // 8 data bits 
-#define UART_1_STOP_BITS UART_STOP_BITS_1 // 1 stop bit
+/*
+ * Define the MCP23017 I2C address.
+ *
+ * Most i2c examples expect to "or" the read/write bit to the address, shifting it
+ * left by 1 to make room for the R/W bit.  This means that the data sheet may call
+ * for an address of x'40' for example, but the code has to use x'20' to account for
+ * the 1-bit left shift.  I dont particularly care for this convention because it
+ * does not match what is generally documented in data sheets, so I will define the
+ * address in 8-bit format and let the i2c library simply set the low-order bit
+ * appropriately for read/write operations.
+ */
+#define MCP23017_ADDR 0x40
 
-/// @brief Initialize the system, including clock settings, pin configurations, and any 
-/// other necessary hardware setup for the UART demonstration project.  This function 
-/// should be called at the beginning of the main function to ensure that all
-/// hardware is properly initialized before use.  
+/// @brief Initialize the system, including clock settings, pin configurations for I2C and
+/// external IOC, and any other necessary hardware setup for the I2C module master
+/// demonstration project.  This function should be called at the beginning of the main
+/// function to ensure that all hardware is properly initialized before use.
 /// @param  None
 /// @return None
 void SYSTEM_Initialize(void);

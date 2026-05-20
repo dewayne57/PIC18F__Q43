@@ -18,10 +18,10 @@
  *   The library keeps UART configuration and ring-buffer state in application-owned
  *   uart_handle_t structures.  The application chooses which UART peripheral each
  *   handle targets, provides the TX and RX buffers, and passes the handle to the API.
- *   The library configures the hardware and manages the buffers and interrupts based 
+ *   The library configures the hardware and manages the buffers and interrupts based
  *   on the provided handle configuration.  The application code does not need to
- *   maintain separate driver code or global state for each UART peripheral it uses.  
- *   The application MUST however allocate the buffers to be used and initialize the 
+ *   maintain separate driver code or global state for each UART peripheral it uses.
+ *   The application MUST however allocate the buffers to be used and initialize the
  *   UART handle data structure appropriately.  See the ReadMe.md file for details.
  *
  *   This design allows one project to run multiple UART peripherals at once without
@@ -39,38 +39,47 @@
 // Forward declarations for user application to register handles
 static uart_handle_t *uartlib_open_handles[5] = {0};
 
-/// @brief  Register a UART handle in the library's internal tracking array. This is 
-/// called by UART_Open() when a handle is successfully opened. It allows the library's 
-/// ISRs to find the handle based on the port number and call the appropriate interrupt 
+/// @brief  Register a UART handle in the library's internal tracking array. This is
+/// called by UART_Open() when a handle is successfully opened. It allows the library's
+/// ISRs to find the handle based on the port number and call the appropriate interrupt
 /// handlers.
 /// @param uart The uart handle to be registered.
 /// @return None
-static void uartlib_register_handle(uart_handle_t *uart) {
-    if (!uart) return;
+static void uartlib_register_handle(uart_handle_t *uart)
+{
+    if (!uart)
+        return;
     int idx = (int)uart->port - 1;
-    if (idx >= 0 && idx < 5) uartlib_open_handles[idx] = uart;
+    if (idx >= 0 && idx < 5)
+        uartlib_open_handles[idx] = uart;
 }
 
-/// @brief Unregister a UART handle from the library's internal tracking array. 
-/// This is called by UART_Close() when a handle is closed. It ensures that the 
+/// @brief Unregister a UART handle from the library's internal tracking array.
+/// This is called by UART_Close() when a handle is closed. It ensures that the
 /// library's ISRs no longer reference the closed handle.
 /// @param uart The uart handle to be unregistered.
 /// @return None
-static void uartlib_unregister_handle(uart_handle_t *uart) {
-    if (!uart) return;
+static void uartlib_unregister_handle(uart_handle_t *uart)
+{
+    if (!uart)
+        return;
     int idx = (int)uart->port - 1;
-    if (idx >= 0 && idx < 5 && uartlib_open_handles[idx] == uart) uartlib_open_handles[idx] = 0;
+    if (idx >= 0 && idx < 5 && uartlib_open_handles[idx] == uart)
+        uartlib_open_handles[idx] = 0;
 }
 
 // Flat ISR: calls all open handles with flat mode
-/// @brief Flat ISR handler for all UARTs. This function should be called from 
-/// the application's main ISR when using flat interrupt mode. It iterates through 
-/// all registered UART handles and calls the appropriate RX and TX handlers for 
+/// @brief Flat ISR handler for all UARTs. This function should be called from
+/// the application's main ISR when using flat interrupt mode. It iterates through
+/// all registered UART handles and calls the appropriate RX and TX handlers for
 /// those that are open and configured for flat mode.
-UARTLIB_WEAK_ISR void UARTLIB_FlatISR(void) {
-    for (int i = 0; i < 5; ++i) {
+UARTLIB_WEAK_ISR void UARTLIB_FlatISR(void)
+{
+    for (int i = 0; i < 5; ++i)
+    {
         uart_handle_t *uart = uartlib_open_handles[i];
-        if (uart && uart->initialized && uart->isr_mode == UART_ISR_FLAT) {
+        if (uart && uart->initialized && uart->isr_mode == UART_ISR_FLAT)
+        {
             UART_HandleRxInterrupt(uart);
             UART_HandleTxInterrupt(uart);
         }
@@ -78,48 +87,68 @@ UARTLIB_WEAK_ISR void UARTLIB_FlatISR(void) {
 }
 
 // Vectored ISRs: one per UART, only call if handle is open and vectored
-UARTLIB_WEAK_ISR void UARTLIB_U1RX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U1RX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[0];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleRxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleRxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U1TX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U1TX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[0];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleTxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleTxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U2RX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U2RX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[1];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleRxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleRxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U2TX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U2TX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[1];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleTxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleTxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U3RX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U3RX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[2];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleRxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleRxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U3TX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U3TX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[2];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleTxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleTxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U4RX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U4RX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[3];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleRxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleRxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U4TX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U4TX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[3];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleTxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleTxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U5RX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U5RX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[4];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleRxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleRxInterrupt(uart);
 }
-UARTLIB_WEAK_ISR void UARTLIB_U5TX_ISR(void) {
+UARTLIB_WEAK_ISR void UARTLIB_U5TX_ISR(void)
+{
     uart_handle_t *uart = uartlib_open_handles[4];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED) UART_HandleTxInterrupt(uart);
+    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
+        UART_HandleTxInterrupt(uart);
 }
 
-static void UART_SetBaudRate(const uart_handle_t *uart); 
+static void UART_SetBaudRate(const uart_handle_t *uart);
 static uart_handle_t *uart_printf_target = (uart_handle_t *)0;
 
 /// @brief Clear the in-handle diagnostic status message.
@@ -137,7 +166,7 @@ static void UART_ClearStatusMessage(uart_handle_t *uart)
 
 /// @brief Return true when value is a power of 2 and large enough for a ring buffer.
 /// @param value The value to be checked.
-/// @return True if the value is a power of 2 and large enough for a ring buffer, 
+/// @return True if the value is a power of 2 and large enough for a ring buffer,
 /// false otherwise.
 static bool UART_IsPowerOfTwo(uint16_t value)
 {
@@ -186,18 +215,24 @@ static bool UART_PPSPinIsValid(uart_pps_pin_t pin)
 
 /// @brief Return the UART TX output function code for a given UART port.
 /// @param port The UART port to be checked.
-/// @return The PPS function code for the UART TX output of the specified port, 
+/// @return The PPS function code for the UART TX output of the specified port,
 /// or 0 if the port is invalid.
 static uint8_t UART_TxOutputFunctionValue(uart_port_t port)
 {
     switch (port)
     {
-    case UART_PORT_1: return 0x20U;
-    case UART_PORT_2: return 0x24U;
-    case UART_PORT_3: return 0x28U;
-    case UART_PORT_4: return 0x2CU;
-    case UART_PORT_5: return 0x30U;
-    default:          return 0x00U;
+    case UART_PORT_1:
+        return 0x20U;
+    case UART_PORT_2:
+        return 0x24U;
+    case UART_PORT_3:
+        return 0x28U;
+    case UART_PORT_4:
+        return 0x2CU;
+    case UART_PORT_5:
+        return 0x30U;
+    default:
+        return 0x00U;
     }
 }
 
@@ -209,12 +244,18 @@ static uint8_t UART_RtsOutputFunctionValue(uart_port_t port)
 {
     switch (port)
     {
-    case UART_PORT_1: return 0x22U;
-    case UART_PORT_2: return 0x26U;
-    case UART_PORT_3: return 0x2AU;
-    case UART_PORT_4: return 0x2EU;
-    case UART_PORT_5: return 0x32U;
-    default:          return 0x00U;
+    case UART_PORT_1:
+        return 0x22U;
+    case UART_PORT_2:
+        return 0x26U;
+    case UART_PORT_3:
+        return 0x2AU;
+    case UART_PORT_4:
+        return 0x2EU;
+    case UART_PORT_5:
+        return 0x32U;
+    default:
+        return 0x00U;
     }
 }
 
@@ -228,70 +269,142 @@ static bool UART_SetPinDirection(uart_pps_pin_t pin, bool input)
 
     switch (pin)
     {
-    case UART_PPS_PIN_RA0: TRISAbits.TRISA0 = direction; return true;
-    case UART_PPS_PIN_RA1: TRISAbits.TRISA1 = direction; return true;
-    case UART_PPS_PIN_RA2: TRISAbits.TRISA2 = direction; return true;
-    case UART_PPS_PIN_RA3: TRISAbits.TRISA3 = direction; return true;
-    case UART_PPS_PIN_RA4: TRISAbits.TRISA4 = direction; return true;
-    case UART_PPS_PIN_RA5: TRISAbits.TRISA5 = direction; return true;
-    case UART_PPS_PIN_RA6: TRISAbits.TRISA6 = direction; return true;
-    case UART_PPS_PIN_RA7: TRISAbits.TRISA7 = direction; return true;
+    case UART_PPS_PIN_RA0:
+        TRISAbits.TRISA0 = direction;
+        return true;
+    case UART_PPS_PIN_RA1:
+        TRISAbits.TRISA1 = direction;
+        return true;
+    case UART_PPS_PIN_RA2:
+        TRISAbits.TRISA2 = direction;
+        return true;
+    case UART_PPS_PIN_RA3:
+        TRISAbits.TRISA3 = direction;
+        return true;
+    case UART_PPS_PIN_RA4:
+        TRISAbits.TRISA4 = direction;
+        return true;
+    case UART_PPS_PIN_RA5:
+        TRISAbits.TRISA5 = direction;
+        return true;
+    case UART_PPS_PIN_RA6:
+        TRISAbits.TRISA6 = direction;
+        return true;
+    case UART_PPS_PIN_RA7:
+        TRISAbits.TRISA7 = direction;
+        return true;
 
-    case UART_PPS_PIN_RB0: TRISBbits.TRISB0 = direction; return true;
-    case UART_PPS_PIN_RB1: TRISBbits.TRISB1 = direction; return true;
-    case UART_PPS_PIN_RB2: TRISBbits.TRISB2 = direction; return true;
-    case UART_PPS_PIN_RB3: TRISBbits.TRISB3 = direction; return true;
-    case UART_PPS_PIN_RB4: TRISBbits.TRISB4 = direction; return true;
-    case UART_PPS_PIN_RB5: TRISBbits.TRISB5 = direction; return true;
-    case UART_PPS_PIN_RB6: TRISBbits.TRISB6 = direction; return true;
-    case UART_PPS_PIN_RB7: TRISBbits.TRISB7 = direction; return true;
+    case UART_PPS_PIN_RB0:
+        TRISBbits.TRISB0 = direction;
+        return true;
+    case UART_PPS_PIN_RB1:
+        TRISBbits.TRISB1 = direction;
+        return true;
+    case UART_PPS_PIN_RB2:
+        TRISBbits.TRISB2 = direction;
+        return true;
+    case UART_PPS_PIN_RB3:
+        TRISBbits.TRISB3 = direction;
+        return true;
+    case UART_PPS_PIN_RB4:
+        TRISBbits.TRISB4 = direction;
+        return true;
+    case UART_PPS_PIN_RB5:
+        TRISBbits.TRISB5 = direction;
+        return true;
+    case UART_PPS_PIN_RB6:
+        TRISBbits.TRISB6 = direction;
+        return true;
+    case UART_PPS_PIN_RB7:
+        TRISBbits.TRISB7 = direction;
+        return true;
 
-    case UART_PPS_PIN_RC0: TRISCbits.TRISC0 = direction; return true;
-    case UART_PPS_PIN_RC1: TRISCbits.TRISC1 = direction; return true;
-    case UART_PPS_PIN_RC2: TRISCbits.TRISC2 = direction; return true;
-    case UART_PPS_PIN_RC3: TRISCbits.TRISC3 = direction; return true;
-    case UART_PPS_PIN_RC4: TRISCbits.TRISC4 = direction; return true;
-    case UART_PPS_PIN_RC5: TRISCbits.TRISC5 = direction; return true;
-    case UART_PPS_PIN_RC6: TRISCbits.TRISC6 = direction; return true;
-    case UART_PPS_PIN_RC7: TRISCbits.TRISC7 = direction; return true;
+    case UART_PPS_PIN_RC0:
+        TRISCbits.TRISC0 = direction;
+        return true;
+    case UART_PPS_PIN_RC1:
+        TRISCbits.TRISC1 = direction;
+        return true;
+    case UART_PPS_PIN_RC2:
+        TRISCbits.TRISC2 = direction;
+        return true;
+    case UART_PPS_PIN_RC3:
+        TRISCbits.TRISC3 = direction;
+        return true;
+    case UART_PPS_PIN_RC4:
+        TRISCbits.TRISC4 = direction;
+        return true;
+    case UART_PPS_PIN_RC5:
+        TRISCbits.TRISC5 = direction;
+        return true;
+    case UART_PPS_PIN_RC6:
+        TRISCbits.TRISC6 = direction;
+        return true;
+    case UART_PPS_PIN_RC7:
+        TRISCbits.TRISC7 = direction;
+        return true;
 
-        case UART_PPS_PIN_RD0:
-        case UART_PPS_PIN_RD1:
-        case UART_PPS_PIN_RD2:
-        case UART_PPS_PIN_RD3:
-        case UART_PPS_PIN_RD4:
-        case UART_PPS_PIN_RD5:
-        case UART_PPS_PIN_RD6:
-        case UART_PPS_PIN_RD7:
-    #if defined(TRISD)
+    case UART_PPS_PIN_RD0:
+    case UART_PPS_PIN_RD1:
+    case UART_PPS_PIN_RD2:
+    case UART_PPS_PIN_RD3:
+    case UART_PPS_PIN_RD4:
+    case UART_PPS_PIN_RD5:
+    case UART_PPS_PIN_RD6:
+    case UART_PPS_PIN_RD7:
+#if defined(TRISD)
         switch (pin)
         {
-        case UART_PPS_PIN_RD0: TRISDbits.TRISD0 = direction; return true;
-        case UART_PPS_PIN_RD1: TRISDbits.TRISD1 = direction; return true;
-        case UART_PPS_PIN_RD2: TRISDbits.TRISD2 = direction; return true;
-        case UART_PPS_PIN_RD3: TRISDbits.TRISD3 = direction; return true;
-        case UART_PPS_PIN_RD4: TRISDbits.TRISD4 = direction; return true;
-        case UART_PPS_PIN_RD5: TRISDbits.TRISD5 = direction; return true;
-        case UART_PPS_PIN_RD6: TRISDbits.TRISD6 = direction; return true;
-        case UART_PPS_PIN_RD7: TRISDbits.TRISD7 = direction; return true;
-        default: break;
+        case UART_PPS_PIN_RD0:
+            TRISDbits.TRISD0 = direction;
+            return true;
+        case UART_PPS_PIN_RD1:
+            TRISDbits.TRISD1 = direction;
+            return true;
+        case UART_PPS_PIN_RD2:
+            TRISDbits.TRISD2 = direction;
+            return true;
+        case UART_PPS_PIN_RD3:
+            TRISDbits.TRISD3 = direction;
+            return true;
+        case UART_PPS_PIN_RD4:
+            TRISDbits.TRISD4 = direction;
+            return true;
+        case UART_PPS_PIN_RD5:
+            TRISDbits.TRISD5 = direction;
+            return true;
+        case UART_PPS_PIN_RD6:
+            TRISDbits.TRISD6 = direction;
+            return true;
+        case UART_PPS_PIN_RD7:
+            TRISDbits.TRISD7 = direction;
+            return true;
+        default:
+            break;
         }
-    #endif
+#endif
         return false;
 
-        case UART_PPS_PIN_RE0:
-        case UART_PPS_PIN_RE1:
-        case UART_PPS_PIN_RE2:
-        case UART_PPS_PIN_RE3:
-    #if defined(TRISE)
+    case UART_PPS_PIN_RE0:
+    case UART_PPS_PIN_RE1:
+    case UART_PPS_PIN_RE2:
+    case UART_PPS_PIN_RE3:
+#if defined(TRISE)
         switch (pin)
         {
-        case UART_PPS_PIN_RE0: TRISEbits.TRISE0 = direction; return true;
-        case UART_PPS_PIN_RE1: TRISEbits.TRISE1 = direction; return true;
-        case UART_PPS_PIN_RE2: TRISEbits.TRISE2 = direction; return true;
-        default: break;
+        case UART_PPS_PIN_RE0:
+            TRISEbits.TRISE0 = direction;
+            return true;
+        case UART_PPS_PIN_RE1:
+            TRISEbits.TRISE1 = direction;
+            return true;
+        case UART_PPS_PIN_RE2:
+            TRISEbits.TRISE2 = direction;
+            return true;
+        default:
+            break;
         }
-    #endif
+#endif
         return false;
 
     default:
@@ -306,70 +419,142 @@ static bool UART_DisableAnalogOnPin(uart_pps_pin_t pin)
 {
     switch (pin)
     {
-    case UART_PPS_PIN_RA0: ANSELAbits.ANSELA0 = 0U; return true;
-    case UART_PPS_PIN_RA1: ANSELAbits.ANSELA1 = 0U; return true;
-    case UART_PPS_PIN_RA2: ANSELAbits.ANSELA2 = 0U; return true;
-    case UART_PPS_PIN_RA3: ANSELAbits.ANSELA3 = 0U; return true;
-    case UART_PPS_PIN_RA4: ANSELAbits.ANSELA4 = 0U; return true;
-    case UART_PPS_PIN_RA5: ANSELAbits.ANSELA5 = 0U; return true;
-    case UART_PPS_PIN_RA6: ANSELAbits.ANSELA6 = 0U; return true;
-    case UART_PPS_PIN_RA7: ANSELAbits.ANSELA7 = 0U; return true;
+    case UART_PPS_PIN_RA0:
+        ANSELAbits.ANSELA0 = 0U;
+        return true;
+    case UART_PPS_PIN_RA1:
+        ANSELAbits.ANSELA1 = 0U;
+        return true;
+    case UART_PPS_PIN_RA2:
+        ANSELAbits.ANSELA2 = 0U;
+        return true;
+    case UART_PPS_PIN_RA3:
+        ANSELAbits.ANSELA3 = 0U;
+        return true;
+    case UART_PPS_PIN_RA4:
+        ANSELAbits.ANSELA4 = 0U;
+        return true;
+    case UART_PPS_PIN_RA5:
+        ANSELAbits.ANSELA5 = 0U;
+        return true;
+    case UART_PPS_PIN_RA6:
+        ANSELAbits.ANSELA6 = 0U;
+        return true;
+    case UART_PPS_PIN_RA7:
+        ANSELAbits.ANSELA7 = 0U;
+        return true;
 
-    case UART_PPS_PIN_RB0: ANSELBbits.ANSELB0 = 0U; return true;
-    case UART_PPS_PIN_RB1: ANSELBbits.ANSELB1 = 0U; return true;
-    case UART_PPS_PIN_RB2: ANSELBbits.ANSELB2 = 0U; return true;
-    case UART_PPS_PIN_RB3: ANSELBbits.ANSELB3 = 0U; return true;
-    case UART_PPS_PIN_RB4: ANSELBbits.ANSELB4 = 0U; return true;
-    case UART_PPS_PIN_RB5: ANSELBbits.ANSELB5 = 0U; return true;
-    case UART_PPS_PIN_RB6: ANSELBbits.ANSELB6 = 0U; return true;
-    case UART_PPS_PIN_RB7: ANSELBbits.ANSELB7 = 0U; return true;
+    case UART_PPS_PIN_RB0:
+        ANSELBbits.ANSELB0 = 0U;
+        return true;
+    case UART_PPS_PIN_RB1:
+        ANSELBbits.ANSELB1 = 0U;
+        return true;
+    case UART_PPS_PIN_RB2:
+        ANSELBbits.ANSELB2 = 0U;
+        return true;
+    case UART_PPS_PIN_RB3:
+        ANSELBbits.ANSELB3 = 0U;
+        return true;
+    case UART_PPS_PIN_RB4:
+        ANSELBbits.ANSELB4 = 0U;
+        return true;
+    case UART_PPS_PIN_RB5:
+        ANSELBbits.ANSELB5 = 0U;
+        return true;
+    case UART_PPS_PIN_RB6:
+        ANSELBbits.ANSELB6 = 0U;
+        return true;
+    case UART_PPS_PIN_RB7:
+        ANSELBbits.ANSELB7 = 0U;
+        return true;
 
-    case UART_PPS_PIN_RC0: ANSELCbits.ANSELC0 = 0U; return true;
-    case UART_PPS_PIN_RC1: ANSELCbits.ANSELC1 = 0U; return true;
-    case UART_PPS_PIN_RC2: ANSELCbits.ANSELC2 = 0U; return true;
-    case UART_PPS_PIN_RC3: ANSELCbits.ANSELC3 = 0U; return true;
-    case UART_PPS_PIN_RC4: ANSELCbits.ANSELC4 = 0U; return true;
-    case UART_PPS_PIN_RC5: ANSELCbits.ANSELC5 = 0U; return true;
-    case UART_PPS_PIN_RC6: ANSELCbits.ANSELC6 = 0U; return true;
-    case UART_PPS_PIN_RC7: ANSELCbits.ANSELC7 = 0U; return true;
+    case UART_PPS_PIN_RC0:
+        ANSELCbits.ANSELC0 = 0U;
+        return true;
+    case UART_PPS_PIN_RC1:
+        ANSELCbits.ANSELC1 = 0U;
+        return true;
+    case UART_PPS_PIN_RC2:
+        ANSELCbits.ANSELC2 = 0U;
+        return true;
+    case UART_PPS_PIN_RC3:
+        ANSELCbits.ANSELC3 = 0U;
+        return true;
+    case UART_PPS_PIN_RC4:
+        ANSELCbits.ANSELC4 = 0U;
+        return true;
+    case UART_PPS_PIN_RC5:
+        ANSELCbits.ANSELC5 = 0U;
+        return true;
+    case UART_PPS_PIN_RC6:
+        ANSELCbits.ANSELC6 = 0U;
+        return true;
+    case UART_PPS_PIN_RC7:
+        ANSELCbits.ANSELC7 = 0U;
+        return true;
 
-        case UART_PPS_PIN_RD0:
-        case UART_PPS_PIN_RD1:
-        case UART_PPS_PIN_RD2:
-        case UART_PPS_PIN_RD3:
-        case UART_PPS_PIN_RD4:
-        case UART_PPS_PIN_RD5:
-        case UART_PPS_PIN_RD6:
-        case UART_PPS_PIN_RD7:
-    #if defined(ANSELD)
+    case UART_PPS_PIN_RD0:
+    case UART_PPS_PIN_RD1:
+    case UART_PPS_PIN_RD2:
+    case UART_PPS_PIN_RD3:
+    case UART_PPS_PIN_RD4:
+    case UART_PPS_PIN_RD5:
+    case UART_PPS_PIN_RD6:
+    case UART_PPS_PIN_RD7:
+#if defined(ANSELD)
         switch (pin)
         {
-        case UART_PPS_PIN_RD0: ANSELDbits.ANSELD0 = 0U; return true;
-        case UART_PPS_PIN_RD1: ANSELDbits.ANSELD1 = 0U; return true;
-        case UART_PPS_PIN_RD2: ANSELDbits.ANSELD2 = 0U; return true;
-        case UART_PPS_PIN_RD3: ANSELDbits.ANSELD3 = 0U; return true;
-        case UART_PPS_PIN_RD4: ANSELDbits.ANSELD4 = 0U; return true;
-        case UART_PPS_PIN_RD5: ANSELDbits.ANSELD5 = 0U; return true;
-        case UART_PPS_PIN_RD6: ANSELDbits.ANSELD6 = 0U; return true;
-        case UART_PPS_PIN_RD7: ANSELDbits.ANSELD7 = 0U; return true;
-        default: break;
+        case UART_PPS_PIN_RD0:
+            ANSELDbits.ANSELD0 = 0U;
+            return true;
+        case UART_PPS_PIN_RD1:
+            ANSELDbits.ANSELD1 = 0U;
+            return true;
+        case UART_PPS_PIN_RD2:
+            ANSELDbits.ANSELD2 = 0U;
+            return true;
+        case UART_PPS_PIN_RD3:
+            ANSELDbits.ANSELD3 = 0U;
+            return true;
+        case UART_PPS_PIN_RD4:
+            ANSELDbits.ANSELD4 = 0U;
+            return true;
+        case UART_PPS_PIN_RD5:
+            ANSELDbits.ANSELD5 = 0U;
+            return true;
+        case UART_PPS_PIN_RD6:
+            ANSELDbits.ANSELD6 = 0U;
+            return true;
+        case UART_PPS_PIN_RD7:
+            ANSELDbits.ANSELD7 = 0U;
+            return true;
+        default:
+            break;
         }
-    #endif
+#endif
         return false;
 
-        case UART_PPS_PIN_RE0:
-        case UART_PPS_PIN_RE1:
-        case UART_PPS_PIN_RE2:
-        case UART_PPS_PIN_RE3:
-    #if defined(ANSELE)
+    case UART_PPS_PIN_RE0:
+    case UART_PPS_PIN_RE1:
+    case UART_PPS_PIN_RE2:
+    case UART_PPS_PIN_RE3:
+#if defined(ANSELE)
         switch (pin)
         {
-        case UART_PPS_PIN_RE0: ANSELEbits.ANSELE0 = 0U; return true;
-        case UART_PPS_PIN_RE1: ANSELEbits.ANSELE1 = 0U; return true;
-        case UART_PPS_PIN_RE2: ANSELEbits.ANSELE2 = 0U; return true;
-        default: break;
+        case UART_PPS_PIN_RE0:
+            ANSELEbits.ANSELE0 = 0U;
+            return true;
+        case UART_PPS_PIN_RE1:
+            ANSELEbits.ANSELE1 = 0U;
+            return true;
+        case UART_PPS_PIN_RE2:
+            ANSELEbits.ANSELE2 = 0U;
+            return true;
+        default:
+            break;
         }
-    #endif
+#endif
         return false;
 
     default:
@@ -377,7 +562,7 @@ static bool UART_DisableAnalogOnPin(uart_pps_pin_t pin)
     }
 }
 
-/// @brief Assign a peripheral output function code to a selected PPS 
+/// @brief Assign a peripheral output function code to a selected PPS
 /// output pin register.
 /// @param pin The PPS pin to be configured as an output.
 /// @param function_value The PPS function code to be assigned to the pin's output register.
@@ -708,54 +893,66 @@ static bool UART_AssignInputPPS(uart_port_t port, uart_pps_pin_t rx_pin, uart_pp
 }
 
 /// @brief Configure UART PPS and TRIS/ANSEL for TX/RX and optional RTS/CTS pins.
-/// @param uart The UART handle containing the desired PPS pin configuration and 
+/// @param uart The UART handle containing the desired PPS pin configuration and
 /// flow control settings.
 /// @return True if PPS and pin configurations were successfully applied, false otherwise.
 static bool UART_ConfigurePPS(uart_handle_t *uart)
 {
     bool use_hw_flow = (uart->flow_control == UART_FLOW_RTS_CTS);
 
-
     // Only configure TX if present
-    if (uart->tx_pin != UART_PPS_PIN_NONE) {
-        if (!UART_DisableAnalogOnPin(uart->tx_pin)) {
+    if (uart->tx_pin != UART_PPS_PIN_NONE)
+    {
+        if (!UART_DisableAnalogOnPin(uart->tx_pin))
+        {
             (void)UART_SetStatusMessage(uart, "PPS: TX pin not on package");
             return false;
         }
-        if (!UART_SetPinDirection(uart->tx_pin, false)) {
+        if (!UART_SetPinDirection(uart->tx_pin, false))
+        {
             (void)UART_SetStatusMessage(uart, "PPS: TX pin dir unavailable");
             return false;
         }
     }
     // Only configure RX if present
-    if (uart->rx_pin != UART_PPS_PIN_NONE) {
-        if (!UART_DisableAnalogOnPin(uart->rx_pin)) {
+    if (uart->rx_pin != UART_PPS_PIN_NONE)
+    {
+        if (!UART_DisableAnalogOnPin(uart->rx_pin))
+        {
             (void)UART_SetStatusMessage(uart, "PPS: RX pin not on package");
             return false;
         }
-        if (!UART_SetPinDirection(uart->rx_pin, true)) {
+        if (!UART_SetPinDirection(uart->rx_pin, true))
+        {
             (void)UART_SetStatusMessage(uart, "PPS: RX pin dir unavailable");
             return false;
         }
     }
     // Only configure RTS/CTS if flow control and present
-    if (use_hw_flow) {
-        if (uart->rts_pin != UART_PPS_PIN_NONE) {
-            if (!UART_DisableAnalogOnPin(uart->rts_pin)) {
+    if (use_hw_flow)
+    {
+        if (uart->rts_pin != UART_PPS_PIN_NONE)
+        {
+            if (!UART_DisableAnalogOnPin(uart->rts_pin))
+            {
                 (void)UART_SetStatusMessage(uart, "PPS: RTS pin not package");
                 return false;
             }
-            if (!UART_SetPinDirection(uart->rts_pin, false)) {
+            if (!UART_SetPinDirection(uart->rts_pin, false))
+            {
                 (void)UART_SetStatusMessage(uart, "PPS: RTS dir unavailable");
                 return false;
             }
         }
-        if (uart->cts_pin != UART_PPS_PIN_NONE) {
-            if (!UART_DisableAnalogOnPin(uart->cts_pin)) {
+        if (uart->cts_pin != UART_PPS_PIN_NONE)
+        {
+            if (!UART_DisableAnalogOnPin(uart->cts_pin))
+            {
                 (void)UART_SetStatusMessage(uart, "PPS: CTS pin not package");
                 return false;
             }
-            if (!UART_SetPinDirection(uart->cts_pin, true)) {
+            if (!UART_SetPinDirection(uart->cts_pin, true))
+            {
                 (void)UART_SetStatusMessage(uart, "PPS: CTS dir unavailable");
                 return false;
             }
@@ -768,22 +965,27 @@ static bool UART_ConfigurePPS(uart_handle_t *uart)
     PPSLOCKbits.PPSLOCKED = 0U;
 #endif
 
-
     // Only assign PPS if present
-    if (uart->tx_pin != UART_PPS_PIN_NONE) {
-        if (!UART_AssignOutputPPS(uart->tx_pin, UART_TxOutputFunctionValue(uart->port))) {
+    if (uart->tx_pin != UART_PPS_PIN_NONE)
+    {
+        if (!UART_AssignOutputPPS(uart->tx_pin, UART_TxOutputFunctionValue(uart->port)))
+        {
             (void)UART_SetStatusMessage(uart, "PPS error: TX output map");
             goto pps_lock_and_fail;
         }
     }
-    if (use_hw_flow && uart->rts_pin != UART_PPS_PIN_NONE) {
-        if (!UART_AssignOutputPPS(uart->rts_pin, UART_RtsOutputFunctionValue(uart->port))) {
+    if (use_hw_flow && uart->rts_pin != UART_PPS_PIN_NONE)
+    {
+        if (!UART_AssignOutputPPS(uart->rts_pin, UART_RtsOutputFunctionValue(uart->port)))
+        {
             (void)UART_SetStatusMessage(uart, "PPS error: RTS output map");
             goto pps_lock_and_fail;
         }
     }
-    if ((uart->rx_pin != UART_PPS_PIN_NONE) || (use_hw_flow && uart->cts_pin != UART_PPS_PIN_NONE)) {
-        if (!UART_AssignInputPPS(uart->port, uart->rx_pin, uart->cts_pin, use_hw_flow)) {
+    if ((uart->rx_pin != UART_PPS_PIN_NONE) || (use_hw_flow && uart->cts_pin != UART_PPS_PIN_NONE))
+    {
+        if (!UART_AssignInputPPS(uart->port, uart->rx_pin, uart->cts_pin, use_hw_flow))
+        {
             (void)UART_SetStatusMessage(uart, "PPS error: RX/CTS input map");
             goto pps_lock_and_fail;
         }
@@ -808,7 +1010,7 @@ pps_lock_and_fail:
 
 /// @brief Apply UART1 default pin mappings when new PPS fields are omitted.
 /// @param uart The UART handle containing the desired PPS pin configuration.
-/// @return None. The uart handle is modified in-place to fill in any missing 
+/// @return None. The uart handle is modified in-place to fill in any missing
 /// PPS pin fields with UART1 defaults.
 static void UART_ApplyDefaultPins(uart_handle_t *uart)
 {
@@ -841,7 +1043,7 @@ static void UART_ApplyDefaultPins(uart_handle_t *uart)
 
 /// @brief Validate an application-owned UART handle before touching hardware.
 /// @param uart The UART handle to be validated.
-/// @return True if the handle is valid, false otherwise. If false is returned, 
+/// @return True if the handle is valid, false otherwise. If false is returned,
 /// a status message is set indicating the reason for the failure.
 static bool UART_HandleIsValid(uart_handle_t *uart)
 {
@@ -912,30 +1114,36 @@ static bool UART_HandleIsValid(uart_handle_t *uart)
         return false;
     }
 
-
     // At least one of TX or RX must be present
-    if ((uart->tx_pin == UART_PPS_PIN_NONE) && (uart->rx_pin == UART_PPS_PIN_NONE)) {
+    if ((uart->tx_pin == UART_PPS_PIN_NONE) && (uart->rx_pin == UART_PPS_PIN_NONE))
+    {
         (void)UART_SetStatusMessage(uart, "missing TX and RX PPS pin");
         return false;
     }
-    if (uart->tx_pin != UART_PPS_PIN_NONE && !UART_PPSPinIsValid(uart->tx_pin)) {
+    if (uart->tx_pin != UART_PPS_PIN_NONE && !UART_PPSPinIsValid(uart->tx_pin))
+    {
         (void)UART_SetStatusMessage(uart, "invalid TX PPS pin");
         return false;
     }
-    if (uart->rx_pin != UART_PPS_PIN_NONE && !UART_PPSPinIsValid(uart->rx_pin)) {
+    if (uart->rx_pin != UART_PPS_PIN_NONE && !UART_PPSPinIsValid(uart->rx_pin))
+    {
         (void)UART_SetStatusMessage(uart, "invalid RX PPS pin");
         return false;
     }
-    if (uart->flow_control == UART_FLOW_RTS_CTS) {
-        if ((uart->rts_pin == UART_PPS_PIN_NONE) || (uart->cts_pin == UART_PPS_PIN_NONE)) {
+    if (uart->flow_control == UART_FLOW_RTS_CTS)
+    {
+        if ((uart->rts_pin == UART_PPS_PIN_NONE) || (uart->cts_pin == UART_PPS_PIN_NONE))
+        {
             (void)UART_SetStatusMessage(uart, "missing RTS/CTS PPS pin");
             return false;
         }
-        if (!UART_PPSPinIsValid(uart->rts_pin)) {
+        if (!UART_PPSPinIsValid(uart->rts_pin))
+        {
             (void)UART_SetStatusMessage(uart, "invalid RTS PPS pin");
             return false;
         }
-        if (!UART_PPSPinIsValid(uart->cts_pin)) {
+        if (!UART_PPSPinIsValid(uart->cts_pin))
+        {
             (void)UART_SetStatusMessage(uart, "invalid CTS PPS pin");
             return false;
         }
@@ -1081,9 +1289,9 @@ static void UART_SetBaudRate(const uart_handle_t *uart)
     uint16_t brg_value;
 
     /*
-     * Compute the baud rate generator value from the requested baud rate and mode.  The 
+     * Compute the baud rate generator value from the requested baud rate and mode.  The
      * formula is:
-     * 
+     *
      * - Standard speed (high_speed_baud=false): brg_value = (Fosc / (16 * BaudRate)) - 1
      * - High speed     (high_speed_baud=true):  brg_value = (Fosc /  (4 * BaudRate)) - 1
      */
@@ -1648,7 +1856,12 @@ bool UART_Open(uart_handle_t *uart)
     UART_EnableHardware(uart->port);
 
     /* Startup settling delay — avoids __delay_ms() dependency on _XTAL_FREQ. */
-    { volatile uint16_t i = 0xFFFFU; while (i-- != 0U) { } }
+    {
+        volatile uint16_t i = 0xFFFFU;
+        while (i-- != 0U)
+        {
+        }
+    }
     UART_DiscardStartupRxByte(uart->port);
 
     UART_SetRxInterruptEnabled(uart->port, true);
@@ -1886,4 +2099,3 @@ void putch(char data)
         (void)UART_WriteChar(uart_printf_target, data);
     }
 }
-

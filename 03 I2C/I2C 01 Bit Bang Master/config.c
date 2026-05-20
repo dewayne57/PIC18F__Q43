@@ -60,7 +60,7 @@ void SYSTEM_Initialize(void)
       // External INT1 on RB2 for interrupt input
       TRISBbits.TRISB2 = 1;   // RB2 is input
       ANSELBbits.ANSELB2 = 0; // RB2 is digital
-      WPUBbits.WPUB2 = 1;     // Weak pull-up enabled on RB2
+      WPUBbits.WPUB2 = 0;     // Weak pull-up disabled on RB2
 
       PPS_Unlock();
       INT1PPS = 0x0AU;        // INT1 input <- RB2

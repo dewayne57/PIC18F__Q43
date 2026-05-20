@@ -1,72 +1,96 @@
 /* *****************************************************************************************
  *   File Name: main.c
- *   Description: Main application for UART 01 Interrupt Echo Console.
+ *   Description: Hardware I2C module master implementation for PIC18F47Q43.
  *   Author: Dewayne Hafenstein
- *   Date: 2026-04-10
+ *   Date: 2026-05-19
+ * 
+ *   Copyright (c) 2026, Dewayne Hafenstein.
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *   
  ***************************************************************************************** */
 
 #include <xc.h>
-#include <stdio.h>
 #include "config.h"
-#include "uart.h"
+#include "app.h"
+#include "../../Libraries/UARTLIB/uartlib.h"
+#include "i2c.h"
+
+static char console_tx_buffer[128];
+static char console_rx_buffer[128];
+
+uart_handle_t console_uart = {
+    .port = UART_PORT_1,
+    .high_speed_baud = false,
+    .baud_rate = 19200U,
+    .fosc = _XTAL_FREQ,
+    .data_bits = 8U,
+    .parity = UART_PARITY_NONE,
+    .stop_bits = UART_STOP_BITS_1,
+    .flow_control = UART_FLOW_NONE,
+     .tx_pin = UART_PPS_PIN_RB0,
+     .rx_pin = UART_PPS_PIN_RB1,
+     .rts_pin = UART_PPS_PIN_NONE,
+     .cts_pin = UART_PPS_PIN_NONE,
+     .isr_mode = UART_ISR_VECTORED,
+    .tx_buffer = console_tx_buffer,
+    .tx_buffer_size = sizeof(console_tx_buffer),
+    .rx_buffer = console_rx_buffer,
+    .rx_buffer_size = sizeof(console_rx_buffer),
+    .tx_head = 0U,
+    .tx_tail = 0U,
+    .rx_head = 0U,
+    .rx_tail = 0U,
+    .initialized = false};
+
+i2c_handle_t i2c_master;
+uint8_t i2c_buffer[16];
 
 /// @brief Main application entry point.
 /// @param  None
 /// @return None
-/// @note This application initializes the system and UART1, then enters an infinite loop 
-///       where it continuously checks for received data and echoes it back if available.
-///       The use of UART1_RxAvailable ensures that we only attempt to read when data is 
-///       present, preventing blocking on an empty buffer. The main loop remains responsive,
-///       allowing for other tasks to be added in the future while maintaining efficient 
-///       UART communication.
-/// @param  
+/// @note This application initializes the system, UART1 console output, and the I2C1 hardware
+///       module master, then enters an infinite loop. The I2C master is available for I2C
+///       transactions via the i2c_master handle. External interrupt on RB2 is monitored for
+///       external events. The main loop remains responsive, allowing for I2C master operations
+///       and UART communication.
 void main(void)
 {
-    int counter = 0;
+     char rx_char;
 
-    SYSTEM_Initialize();
-    UART1_Initialize();
+     SYSTEM_Initialize();
 
-    while (1)
-    {
-        // Perform a non-blocking check for received data and echo it back if available. This 
-        // allows the main application to remain responsive while still providing UART communication
-        // capabilities. The use of UART1_RxAvailable ensures that we only attempt to read when data
-        // is present, preventing blocking on an empty buffer.
-        __delay_ms(1000); 
-        printf("Test %i\\r\\n", counter++);
-    }
+     if (!UART_Open(&console_uart))
+     {
+          while (1)
+          {
+          }
+     }
+
+     UART_SelectPrintfTarget(&console_uart);
+    
+     APP_Initialize();
+
+     while (1)
+     {
+          APP_Service();
+
+          while (UART_RxAvailable(&console_uart) > 0U)
+          {
+               if (UART_ReadChar(&console_uart, &rx_char))
+               {
+                    (void)UART_WriteChar(&console_uart, rx_char);
+               }
+          }
+     }
 }
-
-#ifndef UART1_VECTORED_INTERRUPTS
-/// @brief Interrupt Service Routine.
-/// @note This ISR handles all interrupts for the application.  It does not use the VECTORED 
-///       interrupt feature of the PIC18F, so it must call the appropriate handler functions
-///       for each peripheral that generates an interrupt.  In this case, it checks if the 
-///       UART1 receive or transmit interrupts are enabled and if their respective flags are set,
-///       and calls the corresponding handler functions to process the interrupts.  This approach
-///       allows for a centralized ISR that can handle multiple interrupt sources without the need
-///       for separate vector locations, while still ensuring that each interrupt is processed
-///       efficiently and correctly.
-/// @param None
-/// @return None
-/// @note If UART1_VECTORED_INTERRUPTS is set to 1, the UART1 receive and transmit interrupts can be
-///       generated as low priority interrupts, and the corresponding handler functions will be
-///       called directly from the respective ISRs.  If not set, this main ISR will handle all
-///       interrupts, and it is important to ensure that the appropriate handler functions are called
-///       for each interrupt source to ensure proper operation of the application.
-void __interrupt() ISR(void)
-{
-    if (PIR4bits.U1RXIF != 0U)
-    {
-        UART1_RX_ISR();
-    }
-    if (PIR4bits.U1TXIF != 0U)
-    {
-        UART1_TX_ISR();
-    }
-
-}
-#endif
-
 
