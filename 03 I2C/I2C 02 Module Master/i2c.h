@@ -51,14 +51,12 @@ typedef struct {
     uint8_t retry_count;        ///< Number of retries for I2C operations
     bool initialized;           ///< Flag indicating if I2C interface is initialized
     i2c_operation_t current_operation; ///< Current I2C operation in progress
-    const uint8_t *tx_buffer;   ///< Application-owned transmit buffer
+    uint8_t *tx_buffer;         ///< Application-owned transmit buffer
     uint16_t tx_buffer_size;    ///< Maximum transmit buffer size in bytes
     volatile uint16_t tx_pos;   ///< Current transmit position within tx_buffer
-    volatile uint16_t tx_remaining; ///< Number of bytes remaining to transmit
     uint8_t *rx_buffer;         ///< Application-owned receive buffer
     uint16_t rx_buffer_size;    ///< Maximum receive buffer size in bytes
     volatile uint16_t rx_pos;   ///< Current receive position within rx_buffer
-    volatile uint16_t rx_remaining; ///< Number of bytes remaining to receive
 } i2c_handle_t;
 
 /// @brief I2C Return codes
@@ -85,11 +83,29 @@ i2c_status_t I2C_Initialize(i2c_handle_t *handle, uint16_t speed_khz);
 /// @return i2c_status_t indicating success or error
 i2c_status_t I2C_Write(i2c_handle_t *handle, uint8_t device_address, uint16_t length);
 
+/// @brief Write a single byte to a specific register of an I2C slave device
+/// @param handle Pointer to i2c_handle_t structure
+/// @param device_address 8-bit I2C device address in write form; the driver toggles the low bit as needed
+/// @param register_address Register address within the I2C slave device
+/// @param data Data byte to write to the specified register
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_WriteRegister(i2c_handle_t *handle, uint8_t device_address, 
+    uint8_t register_address, const uint8_t data);
+
 /// @brief Read into the configured receive buffer from the selected I2C slave
 /// @param handle Pointer to i2c_handle_t structure
 /// @param device_address 8-bit I2C device address in write form; the driver toggles the low bit as needed
 /// @param length Number of bytes to receive into the configured receive buffer
 /// @return i2c_status_t indicating success or error
 i2c_status_t I2C_Read(i2c_handle_t *handle, uint8_t device_address, uint16_t length);
+
+/// @brief Read a single byte from a specific register of an I2C slave device
+/// @param handle Pointer to i2c_handle_t structure
+/// @param device_address 8-bit I2C device address in write form; the driver toggles the low bit as needed
+/// @param register_address Register address within the I2C slave device
+/// @param data Pointer to a variable to store the read data
+/// @return i2c_status_t indicating success or error
+i2c_status_t I2C_ReadRegister(i2c_handle_t *handle, uint8_t device_address, 
+    uint8_t register_address, uint8_t *data);
 
 #endif // I2C_H
