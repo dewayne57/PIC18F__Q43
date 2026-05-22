@@ -54,15 +54,14 @@ uart_handle_t console_uart = {
     .initialized = false};
 
 i2c_handle_t i2c_master = {
-     .speed_khz = 100U,
-     .retry_count = 3U,
+     .speed_khz = 100,
+     .retry_count = 3,
      .initialized = false,
      .tx_buffer = i2c_buffer,
      .tx_buffer_size = sizeof(i2c_buffer),
-     .tx_pos = 0U,
      .rx_buffer = i2c_buffer,
-     .rx_buffer_size = sizeof(i2c_buffer),
-     .rx_pos = 0U};
+     .rx_buffer_size = sizeof(i2c_buffer)
+};
 
 /// @brief Main application entry point.
 /// @param  None

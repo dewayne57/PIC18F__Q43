@@ -21,7 +21,12 @@
  *   pins on the microcontroller.
  ***************************************************************************************** */
 
- #include "pps.h" 
+#include <xc.h>
+#include "pps.h"
+
+static uint8_t s_saved_gieh = 0U;
+static uint8_t s_saved_giel = 0U;
+static uint8_t s_irq_state_valid = 0U;
 
 /**
  * Functions to unlock and lock the PPS registers.  These functions are used to allow changes
@@ -30,6 +35,15 @@
 void PPS_Unlock(void)
 {
 #if defined(PPSLOCK)
+#if defined(INTCON0)
+    // Keep unlock/write/lock atomic so PPS sequence is not interrupted.
+    s_saved_gieh = INTCON0bits.GIEH;
+    s_saved_giel = INTCON0bits.GIEL;
+    s_irq_state_valid = 1U;
+    INTCON0bits.GIEH = 0U;
+    INTCON0bits.GIEL = 0U;
+#endif
+
     PPSLOCK = 0x55U;
     PPSLOCK = 0xAAU;
     PPSLOCKbits.PPSLOCKED = 0U;
@@ -48,5 +62,14 @@ void PPS_Lock(void)
     PPSLOCK = 0x55U;
     PPSLOCK = 0xAAU;
     PPSLOCKbits.PPSLOCKED = 1U;
+
+#if defined(INTCON0)
+    if (s_irq_state_valid != 0U)
+    {
+        INTCON0bits.GIEH = s_saved_gieh;
+        INTCON0bits.GIEL = s_saved_giel;
+        s_irq_state_valid = 0U;
+    }
+#endif
 #endif
 }

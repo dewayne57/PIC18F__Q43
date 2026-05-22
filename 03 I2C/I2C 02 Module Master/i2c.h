@@ -36,17 +36,29 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/// @brief Internal state structure for managing an I2C transfer in the interrupt-driven 
+/// driver implementation. This is used internally by the driver and is not exposed to 
+/// the user.
+typedef enum {
+    I2C_OPERATION_NONE = 0,
+    I2C_OPERATION_WRITE,
+    I2C_OPERATION_READ
+} i2c_operation_t;
+
 /// @brief I2C master handle structure to manage I2C state, configuration, and app-owned buffers.
 typedef struct {
     uint16_t speed_khz;         ///< Target I2C bus speed in kHz
     uint8_t retry_count;        ///< Number of retries for I2C operations
     bool initialized;           ///< Flag indicating if I2C interface is initialized
+    i2c_operation_t current_operation; ///< Current I2C operation in progress
     const uint8_t *tx_buffer;   ///< Application-owned transmit buffer
     uint16_t tx_buffer_size;    ///< Maximum transmit buffer size in bytes
     volatile uint16_t tx_pos;   ///< Current transmit position within tx_buffer
+    volatile uint16_t tx_remaining; ///< Number of bytes remaining to transmit
     uint8_t *rx_buffer;         ///< Application-owned receive buffer
     uint16_t rx_buffer_size;    ///< Maximum receive buffer size in bytes
     volatile uint16_t rx_pos;   ///< Current receive position within rx_buffer
+    volatile uint16_t rx_remaining; ///< Number of bytes remaining to receive
 } i2c_handle_t;
 
 /// @brief I2C Return codes
