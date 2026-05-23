@@ -473,7 +473,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "I2C 01 Module Master DMA.kicad_pro",
+    "filename": "I2C 01 Module Master.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -640,8 +640,8 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "I2C 01 Module Master DMA.kicad_sch",
-        "name": "I2C 01 Module Master DMA",
+        "filename": "I2C 01 Module Master.kicad_sch",
+        "name": "I2C 01 Module Master",
         "uuid": "5eab76fb-ada6-45ba-98e5-e02a58866275"
       }
     ],
@@ -651,7 +651,7 @@
   "sheets": [
     [
       "5eab76fb-ada6-45ba-98e5-e02a58866275",
-      "I2C 01 Module Master DMA"
+      "I2C 01 Module Master"
     ]
   ],
   "text_variables": {},
