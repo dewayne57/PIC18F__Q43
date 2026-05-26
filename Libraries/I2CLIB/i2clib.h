@@ -1,8 +1,8 @@
 /* *****************************************************************************************
  *   File Name: i2clib.h
- *   Description: Hardware I2C library header file for PIC18 series Q43 microcontrollers. 
- *   This library provides an interface for performing I2C operations, including reading 
- *   and writing data as either a master or slave device. The library is designed to be 
+ *   Description: Hardware I2C library header file for PIC18 series Q43 microcontrollers.
+ *   This library provides an interface for performing I2C operations, including reading
+ *   and writing data as either a master or slave device. The library is designed to be
  *   used with the I2C1 module provided by the PIC18___Q43, and it supports both 7-bit
  *   and 10-bit addressing modes.
  *   Author: Dewayne Hafenstein
@@ -20,15 +20,15 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- * 
- *   Usage Notes: 
- *  - This library is designed to be used with the I2C1 module on PIC18F__Q43 family 
- *    microcontrollers. It uses the hardware I2C module and is intended for applications 
+ *
+ *   Usage Notes:
+ *  - This library is designed to be used with the I2C1 module on PIC18F__Q43 family
+ *    microcontrollers. It uses the hardware I2C module and is intended for applications
  *    that require efficient and reliable I2C communication.
- * 
- *  - The user MUST define the _XTAL_FREQ macro in their project configuration to match 
+ *
+ *  - The user MUST define the _XTAL_FREQ macro in their project configuration to match
  *    the frequency of the external crystal oscillator used in their system. This is
- *    necessary for the delay functions to work correctly and to ensure proper timing 
+ *    necessary for the delay functions to work correctly and to ensure proper timing
  *    of I2C operations.
  *
  ***************************************************************************************** */
@@ -40,10 +40,12 @@
 
 // The maximum number of retries for an I2C operation before giving up and returning an error.
 #define I2C_MAX_RETRIES 3
-// The signature for a properly initialized I2C handle. This can be used to verify that a 
+// The signature for a properly initialized I2C handle. This can be used to verify that a
 // handle has been correctly initialized before performing I2C operations.
 #define I2C_HANDLE_SIGNATURE 0xD42B
 
+// Common clock sources for the I2C peripheral. The driver will select the appropriate 
+// clock source based on the desired I2C speed and the available system clocks.
 #define I2C_CLK_EXTOSC 0b00101
 #define I2C_CLK_REF 0b00100
 #define I2C_CLK_HFINTOSC 0b00010
@@ -64,7 +66,11 @@ typedef enum
     I2C_ERROR_TIMEOUT,         // I2C transaction timed out
     I2C_ERROR_NOT_INITIALIZED, // I2C not initialized
     I2C_ERROR_ILLEGAL_STATE,   // Illegal I2C state
-    I2C_ERROR_BUS_COLLISION    // I2C bus collision detected
+    I2C_ERROR_BUS_COLLISION,   // I2C bus collision detected
+    I2C_ERROR_NACK_RECEIVED,   // Slave returned NACK
+    I2C_ERROR_BUFFER_OVERFLOW, // RX data exceeded caller-provided buffer
+    I2C_ERROR_ALREADY_INITIALIZED,
+    I2C_ERROR_INVALID_SPEED
 } i2c_status_t;
 
 /// @brief Enumeration for I2C operation types. This enumeration defines the possible
@@ -100,23 +106,31 @@ typedef enum
 /// read/write bit for master mode.
 typedef struct
 {
-    struct
+    union
     {
-        uint8_t reserved : 5;  // Reserved bits for 10-bit addressing
-        uint8_t address_h : 2; // 10-bit I2C address high bit portion
-        uint8_t rw : 1;        // read (not write) bit for 10-bit addressing
-    } master;
-    uint8_t address_l; // 10-bit I2C address low byte
+        struct
+        {
+            uint8_t reserved : 5; // Reserved bits for 10-bit addressing
+            uint8_t value : 2;    // 10-bit I2C address high bit portion
+            uint8_t rw : 1;       // read (not write) bit for 10-bit addressing
+        } bits;
+        uint8_t address_h; // the high byte of the 10-bit address, including the R/W bit
+    } address;             // Union for the high byte of the 10-bit address, including the R/W bit
+    uint8_t address_l;     // 10-bit I2C address low byte
 } i2c_address10_t;
 
 /// @brief Typedef for representing a 7-bit I2C address, including the
 /// read/write bit for master mode. The 7-bit address is stored in the upper
 /// 7 bits of the byte, and the least significant bit is used for the read/write
 /// flag.
-typedef struct
+typedef union
 {
-    uint8_t address : 7; // 7-bit I2C address
-    uint8_t rw : 1;      // Read (1) or Write (0) bit for 7-bit addressing
+    struct
+    {
+        uint8_t value : 7; // 7-bit I2C address
+        uint8_t rw : 1;    // Read (1) or Write (0) bit for 7-bit addressing
+    } bits;
+    uint8_t address_l; // the low byte of the 10-bit address or the full 7-bit address
 } i2c_address7_t;
 
 /// @brief The i2c handle structure encapsulates all the necessary information
@@ -128,19 +142,28 @@ typedef struct
 /// fields are reserved for use by the driver implementation.
 typedef struct
 {
-    i2c_mode_t mode; // I2C operating mode
-    uint8_t channel; // I2C channel number (if multiple channels \
-                                     are supported, 1-based index)
+    i2c_mode_t mode;    // I2C operating mode
+    uint8_t channel;    // I2C channel number (if multiple channels
+                        // are supported, 1-based index)
     uint16_t speed_khz; // I2C clock speed in kHz
 
     // Everything below this line is for internal driver use and should not
     // be modified by the application.
-    uint16_t signature;    // Unique signature to verify handle integrity
-    uint16_t buffer_size; // Max size of the current buffer in bytes
-    uint8_t *buffer;      // Pointer to the current buffer
-    uint8_t buffer_pos;   // Position in the current buffer
-    uint8_t retry_count;    // Number of retries for the current operation
-    i2c_status_t status;  // I2C status
+    uint16_t signature;      // Unique signature to verify handle integrity
+    uint16_t tx_buffer_size; // Max size of the transmit buffer in bytes
+    uint16_t rx_buffer_size; // Max size of the receive buffer in bytes
+    const uint8_t *tx_buffer; // Pointer to the transmit buffer
+    uint8_t *rx_buffer;      // Pointer to the receive buffer
+    uint8_t tx_buffer_pos;   // Position in the transmit buffer
+    uint8_t rx_buffer_pos;   // Position in the receive buffer
+    uint8_t retry_count;     // Number of retries for the current operation
+    i2c_status_t status;     // I2C status
+
+    union
+    {
+        i2c_address7_t address7;   // 7-bit I2C address structure
+        i2c_address10_t address10; // 10-bit I2C address structure
+    } device_address;              // Union for storing the device address in either 7-bit or 10-bit format
 
     volatile i2c_operation_t current_operation; // Current I2C operation (read/write/none)
     volatile uint8_t rx_pos;                    // Current position in the receive buffer
@@ -148,7 +171,6 @@ typedef struct
 
     bool initialized; // Flag to indicate if the handle has been initialized
 } i2c_handle_t;
-
 
 // Function prototypes for the I2C library
 
@@ -161,15 +183,15 @@ typedef struct
 /// supported, this should be a 1-based index).
 /// @param mode The I2C operating mode to be set for the handle (e.g
 /// as master or slave mode).
-/// @param speed The I2C clock speed in kHz. This parameter is used to calculate 
+/// @param speed The I2C clock speed in kHz. This parameter is used to calculate
 /// the appropriate timing for I2C operations. The driver will compute the necessary
-/// clock settings based on the provided speed and will select the appropriate 
+/// clock settings based on the provided speed and will select the appropriate
 /// clock source for the I2C peripheral to achieve the desired communication speed.
 /// @return The status of the I2C initialization, indicating success or any errors
 /// @note This function must be called before any other I2C operations are performed,
 /// and the handle must be properly initialized to ensure correct operation of the I2C
 /// driver.
-i2c_status_t i2c_init(i2c_handle_t *handle,uint8_t channel, i2c_mode_t mode, uint16_t speed);
+i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, uint16_t speed);
 
 /// @brief Writes data to the specified I2C slave device. This function initiates an
 /// I2C write transaction to the given address, sending the specified data. The
@@ -183,7 +205,7 @@ i2c_status_t i2c_init(i2c_handle_t *handle,uint8_t channel, i2c_mode_t mode, uin
 /// @param length Number of bytes to be transmitted.
 /// @return The status of the I2C write operation.
 i2c_status_t i2c_writeSlave(i2c_handle_t *handle, uint16_t address, const uint8_t *data,
-                             uint8_t length);
+                            uint8_t length);
 
 /// @brief Reads data from the specified I2C slave device. This function initiates an
 /// I2C read transaction from the given address, receiving the specified amount of
@@ -198,7 +220,7 @@ i2c_status_t i2c_writeSlave(i2c_handle_t *handle, uint16_t address, const uint8_
 /// @param length Number of bytes to be received.
 /// @return The status of the I2C read operation.
 i2c_status_t i2c_readSlave(i2c_handle_t *handle, uint16_t address, uint8_t *data,
-                            uint16_t length);
+                           uint8_t length);
 
 /// @brief Performs a combined write followed by a read operation on the I2C bus.
 /// This function is useful for slave devices that require a register address to be
@@ -217,13 +239,12 @@ i2c_status_t i2c_readSlave(i2c_handle_t *handle, uint16_t address, uint8_t *data
 /// @param write_length Number of bytes to be transmitted in the write phase.
 /// @param read_data Pointer to the data buffer to be received in the read phase.
 /// @param max_read_length Maximum number of bytes to be received in the read phase.
-/// @param received_length Pointer to a variable where the actual number of bytes 
+/// @param received_length Pointer to a variable where the actual number of bytes
 /// received will be stored.
 /// @return The status of the combined I2C write-read operation.
 i2c_status_t i2c_writeReadSlave(i2c_handle_t *handle, uint16_t address,
-                                  const uint8_t *write_data, uint8_t write_length, 
-                                  uint8_t *read_data,
-                                  uint8_t max_read_length, uint8_t *received_length);
+                                const uint8_t *write_data, uint8_t write_length,
+                                uint8_t *read_data, uint8_t read_length);
 
 /// @brief  Gets the current status of the I2C operation. This function allows
 /// the application code to query the status of the I2C bus and determine if any
@@ -243,17 +264,17 @@ i2c_status_t i2c_getStatus(i2c_handle_t *handle);
 /// @param length Number of bytes to be transmitted.
 /// @return The status of the I2C write operation.
 i2c_status_t i2c_writeMaster(i2c_handle_t *handle, const uint8_t *data,
-                              uint8_t length);
+                             uint8_t length);
 
 /// @brief This function is used by slave devices to receive data from the master
 /// in response to a write request.
 /// @param handle Pointer to the I2C handle structure.
 /// @param data Pointer to the data buffer to be received.
 /// @param max_length Maximum number of bytes to be received.
-/// @param received_length Pointer to a variable where the actual number of 
+/// @param received_length Pointer to a variable where the actual number of
 /// bytes received will be stored.
 /// @return The status of the I2C read operation.
 i2c_status_t i2c_readMaster(i2c_handle_t *handle, uint8_t *data,
-                             uint8_t max_length, uint8_t *received_length);
+                            uint8_t max_length, uint8_t *received_length);
 
 #endif // I2CLIB_H
