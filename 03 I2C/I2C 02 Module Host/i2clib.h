@@ -73,14 +73,12 @@ typedef enum
     I2C_ERROR_INVALID_SPEED
 } i2c_status_t;
 
-/// @brief Enumeration for I2C operation types. This enumeration defines the possible
-/// operations that can be performed on the I2C bus, including reading and writing data.
-/// The driver will set the current operation to one of these values when an I2C transaction
-/// is initiated, allowing the application code to determine the type of transaction in
-/// progress and handle it accordingly.
+/// @brief Enumeration for I2C operating modes.  These match the values 
+/// specified in the I2C1CON0 MODE field. The driver will use this mode 
+/// information to configure the I2C peripheral.  Note, masking is NOT 
+/// supported in this library. 
 typedef enum
 {
-    // Q43 I2C MODE field encodings (I2C1CON0.MODE)
     I2C_MODE_HOST_7BIT = 0b100,   // Host mode with 7-bit addressing
     I2C_MODE_HOST_10BIT = 0b101,  // Host mode with 10-bit addressing
     I2C_MODE_CLIENT_7BIT = 0b000, // Client mode with 7-bit addressing
@@ -151,8 +149,8 @@ typedef struct
     // be modified by the application.  It will be cleared and initialized
     // during the i2c_init() function processing.
     uint16_t signature;       // Unique signature to verify handle integrity
-    uint16_t tx_buffer_size;  // Max size of the transmit buffer in bytes
-    uint16_t rx_buffer_size;  // Max size of the receive buffer in bytes
+    uint8_t tx_buffer_size;   // Max size of the transmit buffer in bytes (0-255)
+    uint8_t rx_buffer_size;   // Max size of the receive buffer in bytes (0-255)
     const uint8_t *tx_buffer; // Pointer to the transmit buffer
     uint8_t *rx_buffer;       // Pointer to the receive buffer
     uint8_t tx_buffer_pos;    // Position in the transmit buffer
@@ -168,6 +166,7 @@ typedef struct
     volatile i2c_operation_t current_operation; // Current I2C operation (read/write/none)
     volatile uint8_t rx_pos;                    // Current position in the receive buffer
     volatile uint8_t tx_pos;                    // Current position in the transmit buffer
+    volatile bool repeated_start_pending;       // True after write phase until the read phase actually begins
 
     bool initialized; // Flag to indicate if the handle has been initialized
 } i2c_handle_t;
@@ -235,15 +234,14 @@ i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *dat
 /// the transaction.
 /// @param handle Pointer to the I2C handle structure.
 /// @param address The 7-bit I2C address of the target device.
-/// @param write_data Pointer to the data buffer to be transmitted in the write phase.
-/// @param write_length Number of bytes to be transmitted in the write phase.
+/// @param write_byte Single byte to be transmitted in the write phase before the repeated start.
 /// @param read_data Pointer to the data buffer to be received in the read phase.
 /// @param max_read_length Maximum number of bytes to be received in the read phase.
 /// @param received_length Pointer to a variable where the actual number of bytes
 /// received will be stored.
 /// @return The status of the combined I2C write-read operation.
 i2c_status_t i2c_writeReadClient(i2c_handle_t *handle, uint16_t address,
-                                 const uint8_t *write_data, uint8_t write_length,
+                                 uint8_t write_byte,
                                  uint8_t *read_data, uint8_t read_length);
 
 /// @brief  Gets the current status of the I2C operation. This function allows
@@ -277,4 +275,25 @@ i2c_status_t i2c_writeHost(i2c_handle_t *handle, const uint8_t *data,
 i2c_status_t i2c_readHost(i2c_handle_t *handle, uint8_t *data,
                           uint8_t max_length, uint8_t *received_length);
 
+/// @brief This function allows the application to check if the last I2C 
+/// transaction has completed or not.  
+/// @param handle Pointer to the I2C handle structure.
+/// @return true if the last operation has completed, false otherwise.                           
+bool i2c_isComplete(i2c_handle_t *handle); 
+
+/// @brief This function allows the caller to block processing and wait 
+/// for the last I2C communication transaction to complete.  Note, this is 
+/// a blocking call, and control is not returned until the transaction is 
+/// completed.  
+/// @param handle Pointer to the I2C handle structure.
+/// @return the status of the call.  Note, this can be an error value
+/// if the I2C system has not been initialized or the handle is invalid.
+i2c_status_t i2c_waitComplete(i2c_handle_t *handle);
+
+/// @brief Print a concise diagnostics dump of the I2C software state and
+/// key I2C1 hardware registers.
+/// @param handle Pointer to the I2C handle structure to inspect.
+/// @param title Optional title to display in the diagnostics output.
+/// @return None.
+void i2c_printDiagnostics(i2c_handle_t *handle, char* title);
 #endif // I2CLIB_H

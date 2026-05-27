@@ -1,7 +1,7 @@
 # I2C Library
 
 Interrupt-driven I2C library for the PIC18F Q43 family using the I2C1 peripheral.
-The library supports master-mode transactions with 7-bit and 10-bit addressing
+The library supports host-mode transactions with 7-bit and 10-bit addressing
 through one common API and an application-owned i2c_handle_t structure.
 
 ## Intended Use
@@ -16,7 +16,7 @@ shared I2C transaction support.
 | File | Purpose |
 |------|---------|
 | i2clib.h | Public API, enums, address types, and i2c_handle_t |
-| i2clib.c | Implementation for I2C1 master operations and weak vectored ISRs |
+| i2clib.c | Implementation for I2C1 host operations and weak vectored ISRs |
 
 ## Design Summary
 
@@ -25,23 +25,23 @@ shared I2C transaction support.
 - Caller-provided TX and RX buffers are tracked in the handle for ISR-driven
   transfers.
 - The current implementation configures and uses I2C1 hardware pins on RC3/RC4.
-- The implementation currently supports master transactions:
-  - i2c_writeSlave()
-  - i2c_readSlave()
-  - i2c_writeReadSlave()
+- The implementation currently supports host transactions:
+  - i2c_writeClient()
+  - i2c_readClient()
+  - i2c_writeReadClient()
 - The library provides weak vectored ISR handlers for general, error, TX,
   and RX I2C1 interrupts.
 
 ## Current Scope and Limitations
 
-- Current implementation focus is I2C_MODE_MASTER_7BIT and
-  I2C_MODE_MASTER_10BIT.
-- Slave and multi-master configuration paths are present in enums and switch
+- Current implementation focus is I2C_MODE_HOST_7BIT and
+  I2C_MODE_HOST_10BIT.
+- Client and multi-host configuration paths are present in enums and switch
   blocks but not fully implemented yet.
 - i2c_handle_t includes a channel field, but the current implementation is tied
   to I2C1 hardware.
-- Header declarations exist for i2c_getStatus(), i2c_writeMaster(), and
-  i2c_readMaster(), but these are not implemented yet in i2clib.c.
+- Header declarations exist for i2c_getStatus(), i2c_writeHost(), and
+  i2c_readHost(), but these are not implemented yet in i2clib.c.
 
 ## Adding the Library to a Project
 
@@ -73,7 +73,7 @@ static uint8_t i2c_tx_buf[32];
 static uint8_t i2c_rx_buf[32];
 
 static i2c_handle_t i2c1_handle = {
-  .mode = I2C_MODE_MASTER_7BIT,
+  .mode = I2C_MODE_HOST_7BIT,
   .channel = 1,
   .speed_khz = 400,
   .initialized = false,
@@ -83,7 +83,7 @@ static i2c_handle_t i2c1_handle = {
 ## Initialization
 
 ```c
-i2c_status_t st = i2c_init(&i2c1_handle, 1, I2C_MODE_MASTER_7BIT, 400);
+i2c_status_t st = i2c_init(&i2c1_handle, 1, I2C_MODE_HOST_7BIT, 400);
 if (st == I2C_SUCCESS)
 {
   INTCON0bits.GIE = 1;
@@ -92,18 +92,18 @@ if (st == I2C_SUCCESS)
 
 ## Transfer API Examples
 
-Write bytes to a slave:
+Write bytes to a client:
 
 ```c
 const uint8_t tx_data[] = { 0x10, 0x55, 0xAA };
-i2c_status_t st = i2c_writeSlave(&i2c1_handle, 0x50, tx_data, sizeof(tx_data));
+i2c_status_t st = i2c_writeClient(&i2c1_handle, 0x50, tx_data, sizeof(tx_data));
 ```
 
-Read bytes from a slave:
+Read bytes from a client:
 
 ```c
 uint8_t rx_data[8];
-i2c_status_t st = i2c_readSlave(&i2c1_handle, 0x50, rx_data, sizeof(rx_data));
+i2c_status_t st = i2c_readClient(&i2c1_handle, 0x50, rx_data, sizeof(rx_data));
 ```
 
 Write then read (common register-address transaction):
@@ -111,7 +111,7 @@ Write then read (common register-address transaction):
 ```c
 uint8_t reg = 0x00;
 uint8_t rx_data[4];
-i2c_status_t st = i2c_writeReadSlave(&i2c1_handle, 0x50, &reg, 1, rx_data, sizeof(rx_data));
+i2c_status_t st = i2c_writeReadClient(&i2c1_handle, 0x50, &reg, 1, rx_data, sizeof(rx_data));
 ```
 
 ## Public API Summary
@@ -119,12 +119,12 @@ i2c_status_t st = i2c_writeReadSlave(&i2c1_handle, 0x50, &reg, 1, rx_data, sizeo
 | Function | Purpose |
 |----------|---------|
 | i2c_init() | Initializes I2C1 hardware and validates/initializes the handle |
-| i2c_writeSlave() | Starts a master write transaction to a slave address |
-| i2c_readSlave() | Starts a master read transaction from a slave address |
-| i2c_writeReadSlave() | Starts a combined write-then-read transaction |
+| i2c_writeClient() | Starts a host write transaction to a client address |
+| i2c_readClient() | Starts a host read transaction from a client address |
+| i2c_writeReadClient() | Starts a combined write-then-read transaction |
 | i2c_getStatus() | Declared in header; implementation pending |
-| i2c_writeMaster() | Declared in header; implementation pending |
-| i2c_readMaster() | Declared in header; implementation pending |
+| i2c_writeHost() | Declared in header; implementation pending |
+| i2c_readHost() | Declared in header; implementation pending |
 
 ## Interrupt Model
 
@@ -145,7 +145,7 @@ management behavior.
 2. Define an i2c_handle_t and any transaction buffers your project needs.
 3. Call i2c_init() at startup with the desired mode and speed.
 4. Enable global interrupts in the application.
-5. Use i2c_writeSlave(), i2c_readSlave(), and i2c_writeReadSlave() for
+5. Use i2c_writeClient(), i2c_readClient(), and i2c_writeReadClient() for
    transactions.
 
 ## Notes
@@ -155,5 +155,5 @@ management behavior.
   currently falls back to 64000000UL.
 - Error ISR handling currently maps NACK and bus-collision conditions to
   I2C_ERROR_NACK_RECEIVED and I2C_ERROR_BUS_COLLISION.
-- This library is a shared foundation and still evolving with additional slave,
-  multi-master, and status/query features.
+- This library is a shared foundation and still evolving with additional client,
+  multi-host, and status/query features.

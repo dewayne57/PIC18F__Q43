@@ -131,19 +131,19 @@ Demonstrated concepts:
 ### 03 - Inter-Integrated Circuit (I2C)
 
 This family demonstrates I2C communication using both bit-bang and module-based approaches,
-covering host and peripheral (slave) roles as well as DMA-assisted transfers.
+covering host and peripheral (client) roles as well as DMA-assisted transfers.
 
 Projects:
 
-- I2C 01 Bit Bang Master: Implements I2C host transactions in software without the hardware
+- I2C 01 Bit Bang Host: Implements I2C host transactions in software without the hardware
   module, demonstrating start/stop conditions, byte transfer, and ACK handling.
-- I2C 02 Module Master: Demonstrates host mode transactions using the hardware I2C module,
+- I2C 02 Module Host: Demonstrates host mode transactions using the hardware I2C module,
   including address, data, and error handling.
-- I2C 03 Module Slave: Demonstrates peripheral (responder) mode using the hardware I2C
+- I2C 03 Module Client: Demonstrates peripheral (responder) mode using the hardware I2C
   module, handling address match and data exchange.
-- I2C 04 Module Master DMA: Extends module master operation with DMA-assisted payload
+- I2C 04 Module Host DMA: Extends module host operation with DMA-assisted payload
   transfers to reduce firmware overhead on bulk transactions.
-- I2C 05 Module Slave DMA: Extends module slave operation with DMA-assisted data movement
+- I2C 05 Module Client DMA: Extends module client operation with DMA-assisted data movement
   for higher-throughput peripheral responses.
 
 Demonstrated concepts:
@@ -151,7 +151,7 @@ Demonstrated concepts:
 - Start/address/data/stop flow
 - ACK and error handling
 - Bit-bang versus module-based operation
-- Host and peripheral (slave) roles
+- Host and peripheral (client) roles
 - DMA-assisted module transfers
 
 ### 04 - Serial Peripheral Interface (SPI)
