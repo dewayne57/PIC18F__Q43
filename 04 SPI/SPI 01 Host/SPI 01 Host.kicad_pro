@@ -473,7 +473,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "I2C 01 Module Master.kicad_pro",
+    "filename": "SPI 01 Host.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -640,18 +640,18 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "I2C 01 Module Master.kicad_sch",
-        "name": "I2C 01 Module Master",
+        "filename": "SPI 01 Host.kicad_sch",
+        "name": "SPI 01 Host",
         "uuid": "5eab76fb-ada6-45ba-98e5-e02a58866275"
       }
     ],
-    "used_designators": "",
+    "used_designators": "U1-2,#PWR112,#PWR120-121",
     "variants": []
   },
   "sheets": [
     [
       "5eab76fb-ada6-45ba-98e5-e02a58866275",
-      "I2C 01 Module Master"
+      "SPI 01 Host"
     ]
   ],
   "text_variables": {},
