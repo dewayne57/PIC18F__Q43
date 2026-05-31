@@ -75,10 +75,11 @@ spi_status_t SPI_Open(spi_handle_t *handle)
     CRITICAL_SECTION_START();
     SPI1CON0bits.EN = 0; // Ensure SPI module is disabled before configuration
 
-    // Setup interrupts for SPI1 module and related pins
-    PIE3bits.SPI1IE = 1;   // Enable SPI1 interrupt
-    PIE3bits.SPI1RXIE = 1; // Enable SPI1 receive interrupt
-    PIE3bits.SPI1TXIE = 1; // Enable SPI1 transmit interrupt
+    // Keep SPI IRQ sources disabled until a transfer is started.
+    // Enabling TXIE while idle can retrigger continuously on TXIF.
+    PIE3bits.SPI1IE = 0;
+    PIE3bits.SPI1RXIE = 0;
+    PIE3bits.SPI1TXIE = 0;
     // PIE5 if SPI2 is being used for a second SPI interface in the future
 
     clear_spi_interrupt_flags(); // Clear SPI1 interrupt flags before enabling
@@ -106,7 +107,7 @@ spi_status_t SPI_Open(spi_handle_t *handle)
 
     SPI1CON2bits.BUSY = 0;  // Clear busy flag before enabling module
     SPI1CON2bits.SSFLT = 0; // clear slave select fault flag before enabling module
-    SPI1CON2bits.SSET = 0;  // Slave select is controlled by hardware
+    SPI1CON2bits.SSET = 1;  // SPI module controls RC6 SS
     SPI1CON2bits.TXR = 1;   // Require Tx FIFO
     SPI1CON2bits.RXR = 1;   // Require Rx FIFO
 
@@ -130,6 +131,9 @@ spi_status_t SPI_Open(spi_handle_t *handle)
     SPI1INTEbits.TXUIE = 1; // Enable transmit underflow interrupt (indicates when the
     // transmit FIFO is empty)
 
+    LATCbits.LATC0 = 1;   // Default address bit 0 high before enabling output
+    LATCbits.LATC1 = 1;   // Default address bit 1 high before enabling output
+    LATCbits.LATC2 = 1;   // Default address bit 2 high before enabling output
     TRISCbits.TRISC0 = 0; // RC0 is output (SPI device address bit 0)
     TRISCbits.TRISC1 = 0; // RC1 is output (SPI device address bit 1)
     TRISCbits.TRISC2 = 0; // RC2 is output (SPI device address bit 2)
@@ -139,10 +143,12 @@ spi_status_t SPI_Open(spi_handle_t *handle)
     TRISCbits.TRISC6 = 0; // RC6 is output (SPI SS)
 
     PPS_Unlock();
-    SPI1SCKPPS = 0b010011; // Map SPI1 SCLK to RC3
+    SPI1SCKPPS = 0b010011; // SPI1 SCK input mapping (used in client mode)
     SPI1SDIPPS = 0b010100; // Map SPI1 SDI to RC4
+    RC3PPS = 0x31;         // Map SPI1 SCK output to RC3
     RC5PPS = 0x32;         // Map SPI1 SDO to RC5
     SPI1SSPPS = 0b010110;  // Map SPI1 SS to RC6
+    RC6PPS = 0x33;         // Map SPI1 SS to RC6
     PPS_Lock();
 
     handle->initialized = true;
@@ -197,6 +203,26 @@ spi_status_t SPI_IsBusy(spi_handle_t *handle)
     return SPI_SUCCESS; // SPI module is not busy and ready for a new transaction
 }
 
+/// @brief Wait for the SPI transaction to complete.
+/// @param handle Pointer to the SPI handle structure representing the SPI module.
+/// @return Status of the wait operation (SPI_SUCCESS if the transaction completed successfully).
+spi_status_t SPI_WaitForCompletion(spi_handle_t *handle)
+{
+    if (handle == NULL)
+    {
+        return SPI_ERROR_INVALID_PARAM;
+    }
+    if (!handle->initialized)
+    {
+        return SPI_NOT_OPEN; // SPI module is not initialized
+    }
+    while (SPI1CON2bits.SPI1BUSY)
+    {
+        // Wait for SPI transaction to complete
+    }
+    return SPI_SUCCESS;
+}
+
 /// @brief Write data to the SPI module.
 /// @param handle Pointer to the SPI handle structure representing the SPI module.
 /// @param address SPI device address to write to.
@@ -222,6 +248,7 @@ spi_status_t SPI_Write(spi_handle_t *handle, uint8_t address, uint8_t *data, siz
     current_handle = handle; // Set the current handle for use in ISRs
     SPI1CON2bits.RXR = 0;    // No receive, transmit only
     SPI1CON2bits.TXR = 1;    // Enable transmit
+    SPI1CON2bits.SSET = 1;   // Explicitly enable SPI control of SS for this transfer
 
     // Load the address bits onto the appropriate pins (e.g., RC0-RC2 for a 3-bit address)
     LATCbits.LATC0 = address & 0x01;        // Set RC0 to address bit 0
@@ -230,6 +257,10 @@ spi_status_t SPI_Write(spi_handle_t *handle, uint8_t address, uint8_t *data, siz
     handle->tx_buffer = data;               // Set the transmit buffer pointer
     handle->tx_buffer_size = length;        // Set the transmit buffer size
     handle->tx_buffer_index = 1;            // Initialize the transmit buffer index
+    handle->status = SPI_SUCCESS;
+    clear_spi_interrupt_flags();
+    PIE3bits.SPI1RXIE = 0;
+    PIE3bits.SPI1TXIE = 1;
     SPI1TCNT = length;                      // Set transfer byte count for the SPI transaction
     SPI1TXB = data[0];                      // Load the first byte of data into the transmit buffer to start the transaction
 
@@ -262,6 +293,7 @@ spi_status_t SPI_Read(spi_handle_t *handle, uint8_t address, uint8_t *data, size
     current_handle = handle; // Set the current handle for use in ISRs
     SPI1CON2bits.RXR = 1;    // Enable receive, no transmit
     SPI1CON2bits.TXR = 0;    // No transmit
+    SPI1CON2bits.SSET = 1;   // Explicitly enable SPI control of SS for this transfer
     // Load the address bits onto the appropriate pins (e.g., RC0-RC2 for a 3-bit address)
     LATCbits.LATC0 = address & 0x01;        // Set RC0 to address bit 0
     LATCbits.LATC1 = (address >> 1) & 0x01; // Set RC1 to address bit 1
@@ -269,6 +301,10 @@ spi_status_t SPI_Read(spi_handle_t *handle, uint8_t address, uint8_t *data, size
     handle->rx_buffer = data;               // Set the receive buffer pointer
     handle->rx_buffer_size = length;        // Set the receive buffer size
     handle->rx_buffer_index = 0;            // Initialize the receive buffer index
+    handle->status = SPI_SUCCESS;
+    clear_spi_interrupt_flags();
+    PIE3bits.SPI1TXIE = 0;
+    PIE3bits.SPI1RXIE = 1;
     SPI1TCNT = length;                      // Set transfer byte count for the SPI transaction
     SPI1TXB = 0x00;                         // Load dummy data to initiate the SPI transaction and \
                                                generate clock pulses for the slave device to send \
@@ -295,6 +331,8 @@ void __attribute__((weak)) __interrupt(irq(IRQ_SPI1), high_priority) spi1_genera
     {
         // Transfer counter zero interrupt handling (indicates specified number of bytes have been transmitted/received)
         SPI1INTFbits.TCZIF = 0; // Clear transfer counter zero interrupt flag
+        PIE3bits.SPI1TXIE = 0;
+        PIE3bits.SPI1RXIE = 0;
         // Handle any necessary actions when the specified number of bytes have been transferred
     }
     if (SPI1INTEbits.RXOIE && SPI1INTFbits.RXOIF)
@@ -317,13 +355,28 @@ void __attribute__((weak)) __interrupt(irq(IRQ_SPI1), high_priority) spi1_genera
 /// in the application code).
 void __attribute__((weak)) __interrupt(irq(IRQ_SPI1RX), high_priority) spi1_receiveISR(void)
 {
+    if (current_handle == NULL)
+    {
+        PIE3bits.SPI1RXIE = 0;
+        PIR3bits.SPI1RXIF = 0;
+        return;
+    }
+
     if (current_handle->rx_buffer_index >= current_handle->rx_buffer_size)
     {
         // Buffer overflow.  Discard the received byte and set an error flag or handle as needed.
         current_handle->status = SPI_ERROR_BUFFER_OVERFLOW; // Set an error flag or handle as needed
+        PIE3bits.SPI1RXIE = 0;
+        PIR3bits.SPI1RXIF = 0;
         return;
     }
     current_handle->rx_buffer[current_handle->rx_buffer_index++] = SPI1RXB; // Read received byte from SPI1 receive buffer and store in receive buffer
+
+    if (current_handle->rx_buffer_index >= current_handle->rx_buffer_size)
+    {
+        PIE3bits.SPI1RXIE = 0;
+        PIR3bits.SPI1RXIF = 0;
+    }
 }
 
 /// @brief SPI1 transmit interrupt service routine (ISR).  This ISR is triggered when the SPI1
@@ -332,14 +385,29 @@ void __attribute__((weak)) __interrupt(irq(IRQ_SPI1RX), high_priority) spi1_rece
 /// the appropriate location (e.g., a transmit buffer in the application code).
 void __attribute__((weak)) __interrupt(irq(IRQ_SPI1TX), high_priority) spi1_transmitISR(void)
 {
+    if (current_handle == NULL)
+    {
+        PIE3bits.SPI1TXIE = 0;
+        PIR3bits.SPI1TXIF = 0;
+        return;
+    }
+
     if (current_handle->tx_buffer_index >= current_handle->tx_buffer_size)
     {
-        current_handle->status = SPI_ERROR_BUFFER_UNDERFLOW; // Set an error flag or handle as needed
-        // Clear the transfer byte count to indicate that all bytes have been transmitted and prevent
-        // further transmit interrupts until a new transaction is initiated
+        current_handle->status = SPI_SUCCESS;
+        PIE3bits.SPI1TXIE = 0;
+        PIR3bits.SPI1TXIF = 0;
+        // Clear the transfer byte count to indicate that all bytes have been transmitted.
         SPI1TCNT = 0;
         return;
     }
     // Load next byte to transmit from transmit buffer into SPI1 transmit buffer
     SPI1TXB = current_handle->tx_buffer[current_handle->tx_buffer_index++];
+
+    if (current_handle->tx_buffer_index >= current_handle->tx_buffer_size)
+    {
+        // Final byte is queued; stop TX interrupts for this transaction.
+        PIE3bits.SPI1TXIE = 0;
+        PIR3bits.SPI1TXIF = 0;
+    }
 }

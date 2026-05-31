@@ -27,6 +27,7 @@
 #include "../../Libraries/UARTLIB/uartlib.h"
 #include "../../Libraries/DEBUGLIB/debuglib.h"
 
+static uint8_t spi_buffer[128];
 extern uart_handle_t console_uart; // UART handle for console output
 
 spi_handle_t spi_handle = {
@@ -42,24 +43,148 @@ spi_handle_t spi_handle = {
     .initialized = false                       // SPI module is not initialized yet
 };
 
+/// @brief UART1 RX ISR (vectored)
+/// @param  None
+/// @return None
+void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
+{
+    // Handle UART1 Receive Interrupt
+    if ((PIE4bits.U1RXIE != 0U) && (PIR4bits.U1RXIF != 0U))
+    {
+        UART_HandleRxInterrupt(&console_uart);
+    }
+}
+
+/// @brief UART1 TX ISR (vectored)
+/// @param  None
+/// @return None
+void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
+{
+    // Handle UART1 Transmit Interrupt
+    if ((PIE4bits.U1TXIE != 0U) && (PIR4bits.U1TXIF != 0U))
+    {
+        UART_HandleTxInterrupt(&console_uart);
+    }
+}
+
+/// @brief Handle external interrupt on RB2 to read MCP23S17 port A and copy to MCP23S17 port B
+/// @param  None
+/// @return None
+/// @note This function reads the MCP23S17 port A register and writes the value to MCP23S17
+///       port B using SPI
+void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
+{
+    uint8_t mcp_port_a_value = 0x00;
+    spi_status_t status = SPI_Read(&spi_handle, MCP23S17_ADDR, &mcp_port_a_value, 1);
+    if (status == SPI_SUCCESS)
+    {
+        // Write the value read from MCP23S17 port A to MCP23S17 port B
+        status = SPI_Write(&spi_handle, MCP23S17_ADDR, &mcp_port_a_value, 1);
+    }
+}
+
+/// @brief Initialize the MCP23S17 at device id 0 to operate in banked mode, set up
+/// port A as weak pull up digital inputs with interrupt on change enabled, and
+/// port B as digital outputs.
+/// @param  None
+/// @return None
+void MCP23S17_Initialize(void)
+{
+    LATCbits.LATC7 = 1;    // release i/o extender from reset
+    __delay_ms(10);        // wait to settle
+    spi_buffer[0] = IOCON; // IOCON register address
+    spi_buffer[1] = 0x82;  // Set IOCON register to enable banked mode
+    spi_status_t status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 2);
+
+    if (status != SPI_SUCCESS)
+    {
+        printf("Failed to initialize MCP23S17. Status code: %d\n\r", status);
+        while (1)
+            ; // Halt execution if MCP23S17 initialization fails
+    }
+    status = SPI_WaitForCompletion(&spi_handle);
+    if (status != SPI_SUCCESS)
+    {
+        printf("Failed to wait for MCP23S17 initialization. Status code: %d\n\r", status);
+        while (1)
+            ; // Halt execution if MCP23S17 initialization fails
+    }
+
+    spi_buffer[0] = BANKED_IODIRA;
+    spi_buffer[1] = 0xFF;  // IODIRA: inputs
+    spi_buffer[2] = 0x00;  // IPOLA
+    spi_buffer[3] = 0xFF;  // GPINTENA
+    spi_buffer[4] = 0x00;  // DEFVALA
+    spi_buffer[5] = 0x00;  // INTCONA
+    spi_buffer[6] = 0x82;  // IOCON
+    spi_buffer[7] = 0xFF;  // GPPUA
+    spi_buffer[8] = 0x00;  // INTFA (write ignored)
+    spi_buffer[9] = 0x00;  // INTCAPA (write ignored)
+    spi_buffer[10] = 0x00; // GPIOA
+    status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 11);
+    if (status != SPI_SUCCESS)
+    {
+        printf("Failed to initialize MCP23S17 port A. Status code: %d\n\r", status);
+        while (1)
+            ; // Halt execution if MCP23S17 initialization fails
+    }
+
+    status = SPI_WaitForCompletion(&spi_handle);
+    if (status != SPI_SUCCESS)
+    {
+        printf("Failed to wait for MCP23S17 initialization. Status code: %d\n\r", status);
+        while (1)
+            ; // Halt execution if MCP23S17 initialization fails
+    }
+
+    spi_buffer[0] = BANKED_IODIRB;
+    spi_buffer[1] = 0x00;  // IODIRB: outputs
+    spi_buffer[2] = 0x00;  // IPOLB
+    spi_buffer[3] = 0x00;  // GPINTENB
+    spi_buffer[4] = 0x00;  // DEFVALB
+    spi_buffer[5] = 0x00;  // INTCONB
+    spi_buffer[6] = 0x82;  // IOCON
+    spi_buffer[7] = 0x00;  // GPPUB
+    spi_buffer[8] = 0x00;  // INTFB (write ignored)
+    spi_buffer[9] = 0x00;  // INTCAPB (write ignored)
+    spi_buffer[10] = 0x00; // GPIOB
+    status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 11);
+    if (status != SPI_SUCCESS)
+    {
+        printf("Failed to initialize MCP23S17 port B. Status code: %d\n\r", status);
+        while (1)
+            ; // Halt execution if MCP23S17 initialization fails
+    }
+
+    status = SPI_WaitForCompletion(&spi_handle);
+    if (status != SPI_SUCCESS)
+    {
+        printf("Failed to wait for MCP23S17 initialization. Status code: %d\n\r", status);
+        while (1)
+            ; // Halt execution if MCP23S17 initialization fails
+    }
+}
+
 /// @brief Main application entry point.
 /// @param  None
 /// @return None
 void APP_Initialize(void)
 {
-    printf("UART initialized for console output.");
+    printf("UART initialized for console output.\n\r");
 
     // Initialize SPI module with desired settings
     spi_status_t status = SPI_Open(&spi_handle);
     if (status != SPI_SUCCESS)
     {
-        printf("Failed to initialize SPI module. Status code: %d\n", status);
+        printf("Failed to initialize SPI module. Status code: %d\n\r", status);
         while (1)
             ; // Halt execution if SPI initialization fails
     }
-    printf("SPI module initialized successfully.\n");
-    // Additional application initialization code can be added here (e.g., initialize peripherals,
-    // set up application state, etc.)
+    printf("SPI module initialized successfully.\n\r");
+
+    printf("Initializing IO Expander\n\r");
+    MCP23S17_Initialize();
+    printf("IO Expander initialized successfully.\n\r");
 }
 
 /// @brief Main application service loop.  This function is called repeatedly from the main loop

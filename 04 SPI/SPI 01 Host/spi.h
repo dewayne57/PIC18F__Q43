@@ -129,4 +129,5 @@ spi_status_t SPI_Close(spi_handle_t *handle);
 spi_status_t SPI_Write(spi_handle_t *handle, uint8_t address, uint8_t *data, size_t length);
 spi_status_t SPI_Read(spi_handle_t *handle, uint8_t address, uint8_t *data, size_t length);
 spi_status_t SPI_IsBusy(spi_handle_t *handle);
+spi_status_t SPI_WaitForCompletion(spi_handle_t *handle);
 #endif /* SPI_H */
