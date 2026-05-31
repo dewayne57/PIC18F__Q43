@@ -24,17 +24,19 @@
 /// @brief Defines the possible status codes returned by SPI functions.
 typedef enum
 {
-    SPI_SUCCESS = 0,         // Operation completed successfully
-    SPI_INVALID_ADDRESS,     // Address provided is out of range or not valid for the
-                             // target device
-    SPI_ERROR,               // General error occurred
-    SPI_ERROR_TIMEOUT,       // Operation timed out
-    SPI_BUSY,                // SPI module is busy
-    SPI_ERROR_INVALID_PARAM, // One or more parameters provided to the function are invalid
-                             // (e.g. null pointer, zero length)
-    SPI_NOT_OPEN,            // SPI module is not open
-    SPI_ALREADY_OPEN,        // SPI module is already open
-    SPI_INVALID_STATE        // SPI module is in an invalid state
+    SPI_SUCCESS = 0,            // Operation completed successfully
+    SPI_INVALID_ADDRESS,        // Address provided is out of range or not valid for the
+                                // target device
+    SPI_ERROR,                  // General error occurred
+    SPI_ERROR_TIMEOUT,          // Operation timed out
+    SPI_BUSY,                   // SPI module is busy
+    SPI_ERROR_INVALID_PARAM,    // One or more parameters provided to the function are invalid
+                                // (e.g. null pointer, zero length)
+    SPI_ERROR_BUFFER_OVERFLOW,  // Received more data than the provided buffer can hold
+    SPI_ERROR_BUFFER_UNDERFLOW, // Attempted to transmit more data than the provided buffer contains
+    SPI_NOT_OPEN,               // SPI module is not open
+    SPI_ALREADY_OPEN,           // SPI module is already open
+    SPI_INVALID_STATE           // SPI module is in an invalid state
 } spi_status_t;
 
 /// @brief Defines the operating mode of the SPI module, either as a host (master) or
@@ -111,11 +113,14 @@ typedef struct
 
     // Application code should not alter or set any of the fields below this line.  These are
     // used internally by the SPI module implementation.
-    uint8_t *tx_buffer;    // Pointer to the SPI transmit buffer
-    size_t tx_buffer_size; // Size of the SPI transmit buffer
-    uint8_t *rx_buffer;    // Pointer to the SPI receive buffer
-    size_t rx_buffer_size; // Size of the SPI receive buffer
-    bool initialized;      // Flag to indicate if the SPI module has been initialized
+    spi_status_t status;    // Last recorded status of the SPI module (e.g., SPI_SUCCESS, SPI_ERROR, etc.)
+    uint8_t *tx_buffer;     // Pointer to the SPI transmit buffer
+    size_t tx_buffer_index; // Current index in the SPI transmit buffer for ongoing transactions
+    size_t tx_buffer_size;  // Size of the SPI transmit buffer
+    uint8_t *rx_buffer;     // Pointer to the SPI receive buffer
+    size_t rx_buffer_index; // Current index in the SPI receive buffer for ongoing transactions
+    size_t rx_buffer_size;  // Size of the SPI receive buffer
+    bool initialized;       // Flag to indicate if the SPI module has been initialized
 } spi_handle_t;
 
 // API function prototypes

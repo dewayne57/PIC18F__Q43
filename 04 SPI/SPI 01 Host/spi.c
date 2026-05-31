@@ -26,6 +26,9 @@
 #include "../../Libraries/PPSLIB/pps.h"
 #include "../../Libraries/INTLIB/intlib.h"
 
+// Global variable to store the current SPI handle for use in ISRs
+static spi_handle_t *current_handle;
+
 /// @brief Validate the provided SPI device address against the expected range for the target
 /// device(s).  This function can be used by the SPI_Write and SPI_Read functions to ensure
 /// that the caller is attempting to communicate with a valid device address before initiating
@@ -110,7 +113,7 @@ spi_status_t SPI_Open(spi_handle_t *handle)
     SPI1STATUS = 0; // Clear status register before enabling module
 
     // Set SPI clock source (e.g., Fosc/4, Fosc/16, etc.) based on handle parameter
-    SPI1CLK = (unsigned char) handle->clock_source;
+    SPI1CLK = (unsigned char)handle->clock_source;
     // Set baud rate for desired clock speed (calculated based on the selected clock source and
     // desired speed in kHz)
     SPI1BAUD = (uint8_t)(((handle->clock_frequency_khz * 1000UL) /
@@ -216,6 +219,20 @@ spi_status_t SPI_Write(spi_handle_t *handle, uint8_t address, uint8_t *data, siz
         return address_status; // Invalid address provided
     }
 
+    current_handle = handle; // Set the current handle for use in ISRs
+    SPI1CON2bits.RXR = 0;    // No receive, transmit only
+    SPI1CON2bits.TXR = 1;    // Enable transmit
+
+    // Load the address bits onto the appropriate pins (e.g., RC0-RC2 for a 3-bit address)
+    LATCbits.LATC0 = address & 0x01;        // Set RC0 to address bit 0
+    LATCbits.LATC1 = (address >> 1) & 0x01; // Set RC1 to address bit 1
+    LATCbits.LATC2 = (address >> 2) & 0x01; // Set RC2 to address bit 2
+    handle->tx_buffer = data;               // Set the transmit buffer pointer
+    handle->tx_buffer_size = length;        // Set the transmit buffer size
+    handle->tx_buffer_index = 1;            // Initialize the transmit buffer index
+    SPI1TCNT = length;                      // Set transfer byte count for the SPI transaction
+    SPI1TXB = data[0];                      // Load the first byte of data into the transmit buffer to start the transaction
+
     // Add write implementation here (e.g., load data into transmit buffer, initiate SPI transaction, etc.)
     return SPI_SUCCESS;
 }
@@ -242,7 +259,21 @@ spi_status_t SPI_Read(spi_handle_t *handle, uint8_t address, uint8_t *data, size
         return address_status; // Invalid address provided
     }
 
-    // Add read implementation here (e.g., initiate SPI transaction, read data from receive buffer, etc.)
+    current_handle = handle; // Set the current handle for use in ISRs
+    SPI1CON2bits.RXR = 1;    // Enable receive, no transmit
+    SPI1CON2bits.TXR = 0;    // No transmit
+    // Load the address bits onto the appropriate pins (e.g., RC0-RC2 for a 3-bit address)
+    LATCbits.LATC0 = address & 0x01;        // Set RC0 to address bit 0
+    LATCbits.LATC1 = (address >> 1) & 0x01; // Set RC1 to address bit 1
+    LATCbits.LATC2 = (address >> 2) & 0x01; // Set RC2 to address bit 2
+    handle->rx_buffer = data;               // Set the receive buffer pointer
+    handle->rx_buffer_size = length;        // Set the receive buffer size
+    handle->rx_buffer_index = 0;            // Initialize the receive buffer index
+    SPI1TCNT = length;                      // Set transfer byte count for the SPI transaction
+    SPI1TXB = 0x00;                         // Load dummy data to initiate the SPI transaction and \
+                                               generate clock pulses for the slave device to send \
+                                               data back
+
     return SPI_SUCCESS;
 }
 
@@ -253,6 +284,31 @@ spi_status_t SPI_Read(spi_handle_t *handle, uint8_t address, uint8_t *data, size
 /// received data, clearing overflow conditions, etc.).
 void __attribute__((weak)) __interrupt(irq(IRQ_SPI1), high_priority) spi1_generalISR(void)
 {
+    // Handle shift register empty, transfer counter zero, receive overflow, and transmit underflow conditions
+    if (SPI1INTEbits.SRMTIE && SPI1INTFbits.SRMTIF)
+    {
+        // Shift register empty interrupt handling (indicates SPI bus is idle after last bit of last byte has been transmitted)
+        SPI1INTFbits.SRMTIF = 0; // Clear shift register empty interrupt flag
+        // Handle any necessary actions when the SPI bus becomes idle after a transmission
+    }
+    if (SPI1INTEbits.TCZIE && SPI1INTFbits.TCZIF)
+    {
+        // Transfer counter zero interrupt handling (indicates specified number of bytes have been transmitted/received)
+        SPI1INTFbits.TCZIF = 0; // Clear transfer counter zero interrupt flag
+        // Handle any necessary actions when the specified number of bytes have been transferred
+    }
+    if (SPI1INTEbits.RXOIE && SPI1INTFbits.RXOIF)
+    {
+        // Receive overflow interrupt handling (indicates receive FIFO has overflowed)
+        SPI1INTFbits.RXOIF = 0; // Clear receive overflow interrupt flag
+        // Handle receive overflow condition (e.g., set error flag, discard data, etc.)
+    }
+    if (SPI1INTEbits.TXUIE && SPI1INTFbits.TXUIF)
+    {
+        // Transmit underflow interrupt handling (indicates transmit FIFO is empty when it should not be)
+        SPI1INTFbits.TXUIF = 0; // Clear transmit underflow interrupt flag
+        // Handle transmit underflow condition (e.g., set error flag, load next byte to transmit, etc.)
+    }
 }
 
 /// @brief SPI1 receive interrupt service routine (ISR).  This ISR is triggered when a byte
@@ -261,6 +317,13 @@ void __attribute__((weak)) __interrupt(irq(IRQ_SPI1), high_priority) spi1_genera
 /// in the application code).
 void __attribute__((weak)) __interrupt(irq(IRQ_SPI1RX), high_priority) spi1_receiveISR(void)
 {
+    if (current_handle->rx_buffer_index >= current_handle->rx_buffer_size)
+    {
+        // Buffer overflow.  Discard the received byte and set an error flag or handle as needed.
+        current_handle->status = SPI_ERROR_BUFFER_OVERFLOW; // Set an error flag or handle as needed
+        return;
+    }
+    current_handle->rx_buffer[current_handle->rx_buffer_index++] = SPI1RXB; // Read received byte from SPI1 receive buffer and store in receive buffer
 }
 
 /// @brief SPI1 transmit interrupt service routine (ISR).  This ISR is triggered when the SPI1
@@ -269,4 +332,14 @@ void __attribute__((weak)) __interrupt(irq(IRQ_SPI1RX), high_priority) spi1_rece
 /// the appropriate location (e.g., a transmit buffer in the application code).
 void __attribute__((weak)) __interrupt(irq(IRQ_SPI1TX), high_priority) spi1_transmitISR(void)
 {
+    if (current_handle->tx_buffer_index >= current_handle->tx_buffer_size)
+    {
+        current_handle->status = SPI_ERROR_BUFFER_UNDERFLOW; // Set an error flag or handle as needed
+        // Clear the transfer byte count to indicate that all bytes have been transmitted and prevent
+        // further transmit interrupts until a new transaction is initiated
+        SPI1TCNT = 0;
+        return;
+    }
+    // Load next byte to transmit from transmit buffer into SPI1 transmit buffer
+    SPI1TXB = current_handle->tx_buffer[current_handle->tx_buffer_index++];
 }
