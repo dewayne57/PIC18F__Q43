@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>com.microchip.mplab.nbide.embedded.makeproject</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/make-project/1">
+            <name>SPI 01 Host</name>
+            <creation-uuid>bebc46a0-c742-4b7d-bdbd-49bf49f85499</creation-uuid>
+            <make-project-type>0</make-project-type>
+            <sourceEncoding>ISO-8859-1</sourceEncoding>
+            <make-dep-projects>
+                <make-dep-project>../../Libraries/PPSLIB</make-dep-project>
+                <make-dep-project>../../Libraries/UARTLIB</make-dep-project>
+                <make-dep-project>../../Libraries/DEBUGLIB</make-dep-project>
+                <make-dep-project>../../Libraries/INTLIB</make-dep-project>
+            </make-dep-projects>
+            <sourceRootList>
+                <sourceRootElem>.</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>
+                    <name>default</name>
+                    <type>2</type>
+                </confElem>
+            </confList>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
+        </data>
+    </configuration>
+</project>
