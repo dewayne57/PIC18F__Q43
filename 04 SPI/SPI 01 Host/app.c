@@ -74,12 +74,19 @@ void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
 ///       port B using SPI
 void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 {
+    spi_buffer[0] = MCP23S17_ADDR | 0x01; // Set the device address for subsequent register reads (read bit set)
+    spi_buffer[1] = BANKED_GPIOA;         // GPIOA register address
+    spi_buffer[2] = 0x00;                 // Dummy byte for reading data
+
     uint8_t mcp_port_a_value = 0x00;
     spi_status_t status = SPI_Read(&spi_handle, MCP23S17_ADDR, &mcp_port_a_value, 1);
     if (status == SPI_SUCCESS)
     {
         // Write the value read from MCP23S17 port A to MCP23S17 port B
-        status = SPI_Write(&spi_handle, MCP23S17_ADDR, &mcp_port_a_value, 1);
+        spi_buffer[0] = MCP23S17_ADDR;    // Set the device address for subsequent register write
+        spi_buffer[1] = BANKED_GPIOB;     // GPIOB register address
+        spi_buffer[2] = mcp_port_a_value; // Data to write to GPIOB
+        status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 3);
     }
 }
 
@@ -90,11 +97,12 @@ void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 /// @return None
 void MCP23S17_Initialize(void)
 {
-    LATCbits.LATC7 = 1;    // release i/o extender from reset
-    __delay_ms(10);        // wait to settle
-    spi_buffer[0] = IOCON; // IOCON register address
-    spi_buffer[1] = 0x82;  // Set IOCON register to enable banked mode
-    spi_status_t status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 2);
+    LATCbits.LATC7 = 1;            // release i/o extender from reset
+    __delay_ms(10);                // wait to settle
+    spi_buffer[0] = MCP23S17_ADDR; // Set the device address for subsequent register writes
+    spi_buffer[1] = IOCON;         // IOCON register address
+    spi_buffer[2] = 0x82;          // Set IOCON register to enable banked mode
+    spi_status_t status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 3);
 
     if (status != SPI_SUCCESS)
     {
@@ -110,18 +118,19 @@ void MCP23S17_Initialize(void)
             ; // Halt execution if MCP23S17 initialization fails
     }
 
-    spi_buffer[0] = BANKED_IODIRA;
-    spi_buffer[1] = 0xFF;  // IODIRA: inputs
-    spi_buffer[2] = 0x00;  // IPOLA
-    spi_buffer[3] = 0xFF;  // GPINTENA
-    spi_buffer[4] = 0x00;  // DEFVALA
-    spi_buffer[5] = 0x00;  // INTCONA
-    spi_buffer[6] = 0x82;  // IOCON
-    spi_buffer[7] = 0xFF;  // GPPUA
-    spi_buffer[8] = 0x00;  // INTFA (write ignored)
-    spi_buffer[9] = 0x00;  // INTCAPA (write ignored)
-    spi_buffer[10] = 0x00; // GPIOA
-    status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 11);
+    spi_buffer[0] = MCP23S17_ADDR; // Set the device address for subsequent register writes
+    spi_buffer[1] = BANKED_IODIRA;
+    spi_buffer[2] = 0xFF;  // IODIRA: inputs
+    spi_buffer[3] = 0x00;  // IPOLA
+    spi_buffer[4] = 0xFF;  // GPINTENA
+    spi_buffer[5] = 0x00;  // DEFVALA
+    spi_buffer[6] = 0x00;  // INTCONA
+    spi_buffer[7] = 0x82;  // IOCON
+    spi_buffer[8] = 0xFF;  // GPPUA
+    spi_buffer[9] = 0x00;  // INTFA (write ignored)
+    spi_buffer[10] = 0x00; // INTCAPA (write ignored)
+    spi_buffer[11] = 0x00; // GPIOA
+    status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 12);
     if (status != SPI_SUCCESS)
     {
         printf("Failed to initialize MCP23S17 port A. Status code: %d\n\r", status);
@@ -137,18 +146,19 @@ void MCP23S17_Initialize(void)
             ; // Halt execution if MCP23S17 initialization fails
     }
 
-    spi_buffer[0] = BANKED_IODIRB;
-    spi_buffer[1] = 0x00;  // IODIRB: outputs
-    spi_buffer[2] = 0x00;  // IPOLB
-    spi_buffer[3] = 0x00;  // GPINTENB
-    spi_buffer[4] = 0x00;  // DEFVALB
-    spi_buffer[5] = 0x00;  // INTCONB
-    spi_buffer[6] = 0x82;  // IOCON
-    spi_buffer[7] = 0x00;  // GPPUB
-    spi_buffer[8] = 0x00;  // INTFB (write ignored)
-    spi_buffer[9] = 0x00;  // INTCAPB (write ignored)
-    spi_buffer[10] = 0x00; // GPIOB
-    status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 11);
+    spi_buffer[0] = MCP23S17_ADDR; // Set the device address for subsequent register writes
+    spi_buffer[1] = BANKED_IODIRB;
+    spi_buffer[2] = 0x00;  // IODIRB: outputs
+    spi_buffer[3] = 0x00;  // IPOLB
+    spi_buffer[4] = 0x00;  // GPINTENB
+    spi_buffer[5] = 0x00;  // DEFVALB
+    spi_buffer[6] = 0x00;  // INTCONB
+    spi_buffer[7] = 0x82;  // IOCON
+    spi_buffer[8] = 0x00;  // GPPUB
+    spi_buffer[9] = 0x00;  // INTFB (write ignored)
+    spi_buffer[10] = 0x00; // INTCAPB (write ignored)
+    spi_buffer[11] = 0x00; // GPIOB
+    status = SPI_Write(&spi_handle, MCP23S17_ADDR, spi_buffer, 12);
     if (status != SPI_SUCCESS)
     {
         printf("Failed to initialize MCP23S17 port B. Status code: %d\n\r", status);
