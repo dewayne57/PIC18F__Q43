@@ -67,11 +67,11 @@ void __interrupt() ISR(void)
 /// @Return None
 void CRC_Initialize(void)
 {
-    CRCCON0 = 0x00;
-    CRCCON0bits.EN = 1;
-    CRCCON1 = 0xFF;
-    CRCXOR = 0x1021;
-    CRCACC = CRC_SEED;
+    CRCCON0 = 0x00;     // Reset the CRC module configuration
+    CRCCON0bits.EN = 1; // Enable the CRC module
+    CRCCON1 = 0xFF;     // Polynomial and Data length set to 16-bits
+    CRCXOR = 0x1021;    // Set the polynomial to 0x1021 for CRC-16-CCITT
+    CRCACC = CRC_SEED;  // Initialize the CCITT output to 0xFFFF
 }
 
 /// @brief  Process a message through the CRC module.
@@ -83,7 +83,9 @@ void CRC_Initialize(void)
 uint16_t CRC_Process(char *message, size_t message_len)
 {
     CRCCON0bits.EN = 1; // Ensure CRC module is enabled
-    CRCACC = CRC_SEED;    // Initialize the CCITT output
+    CRCACC = CRC_SEED;    // Initialize the CCITT output each time we process a message, 
+                          // so that the caller doesn't have to worry about resetting it 
+                          // between messages.
     if (message == 0 || message_len < 2)
     {
         return CRC_SEED; // Return the default for the CCITT polynomial.
@@ -94,6 +96,7 @@ uint16_t CRC_Process(char *message, size_t message_len)
         message[message_len] = 0x00;
         message_len++;
     }
+    
     for (size_t i = 0; i < message_len; i += 2)
     {
         CRCDATH = (unsigned char)message[i];
