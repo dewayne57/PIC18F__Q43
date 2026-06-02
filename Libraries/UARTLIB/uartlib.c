@@ -34,120 +34,6 @@
 #include <stdint.h>
 #include "uartlib.h"
 
-#define UARTLIB_WEAK_ISR __attribute__((weak))
-
-// Forward declarations for user application to register handles
-static uart_handle_t *uartlib_open_handles[5] = {0};
-
-/// @brief  Register a UART handle in the library's internal tracking array. This is
-/// called by UART_Open() when a handle is successfully opened. It allows the library's
-/// ISRs to find the handle based on the port number and call the appropriate interrupt
-/// handlers.
-/// @param uart The uart handle to be registered.
-/// @return None
-static void uartlib_register_handle(uart_handle_t *uart)
-{
-    if (!uart)
-        return;
-    int idx = (int)uart->port - 1;
-    if (idx >= 0 && idx < 5)
-        uartlib_open_handles[idx] = uart;
-}
-
-/// @brief Unregister a UART handle from the library's internal tracking array.
-/// This is called by UART_Close() when a handle is closed. It ensures that the
-/// library's ISRs no longer reference the closed handle.
-/// @param uart The uart handle to be unregistered.
-/// @return None
-static void uartlib_unregister_handle(uart_handle_t *uart)
-{
-    if (!uart)
-        return;
-    int idx = (int)uart->port - 1;
-    if (idx >= 0 && idx < 5 && uartlib_open_handles[idx] == uart)
-        uartlib_open_handles[idx] = 0;
-}
-
-// Flat ISR: calls all open handles with flat mode
-/// @brief Flat ISR handler for all UARTs. This function should be called from
-/// the application's main ISR when using flat interrupt mode. It iterates through
-/// all registered UART handles and calls the appropriate RX and TX handlers for
-/// those that are open and configured for flat mode.
-UARTLIB_WEAK_ISR void UARTLIB_FlatISR(void)
-{
-    for (int i = 0; i < 5; ++i)
-    {
-        uart_handle_t *uart = uartlib_open_handles[i];
-        if (uart && uart->initialized && uart->isr_mode == UART_ISR_FLAT)
-        {
-            UART_HandleRxInterrupt(uart);
-            UART_HandleTxInterrupt(uart);
-        }
-    }
-}
-
-// Vectored ISRs: one per UART, only call if handle is open and vectored
-UARTLIB_WEAK_ISR void UARTLIB_U1RX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[0];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleRxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U1TX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[0];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleTxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U2RX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[1];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleRxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U2TX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[1];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleTxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U3RX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[2];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleRxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U3TX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[2];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleTxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U4RX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[3];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleRxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U4TX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[3];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleTxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U5RX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[4];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleRxInterrupt(uart);
-}
-UARTLIB_WEAK_ISR void UARTLIB_U5TX_ISR(void)
-{
-    uart_handle_t *uart = uartlib_open_handles[4];
-    if (uart && uart->initialized && uart->isr_mode == UART_ISR_VECTORED)
-        UART_HandleTxInterrupt(uart);
-}
-
 static void UART_SetBaudRate(const uart_handle_t *uart);
 static uart_handle_t *uart_printf_target = (uart_handle_t *)0;
 
@@ -1748,32 +1634,10 @@ static bool UART_TxBufferPop(uart_handle_t *uart, char *data)
     return true;
 }
 
-/// @brief Return the number of unused bytes remaining in the selected RX ring buffer.
-static uint16_t UART_RxBufferFreeCount(const uart_handle_t *uart)
-{
-    uint16_t used;
-
-    if (uart->rx_head >= uart->rx_tail)
-    {
-        used = (uint16_t)(uart->rx_head - uart->rx_tail);
-    }
-    else
-    {
-        used = (uint16_t)(uart->rx_buffer_size - (uint16_t)(uart->rx_tail - uart->rx_head));
-    }
-
-    return (uint16_t)((uart->rx_buffer_size - 1U) - used);
-}
-
 /// @brief Push one byte into the selected RX ring buffer.
 static bool UART_RxBufferPush(uart_handle_t *uart, char data)
 {
     uint16_t next_head;
-
-    if (data == 0x00)
-    {
-        return true;
-    }
 
     next_head = (uint16_t)((uart->rx_head + 1U) & UART_RxBufferMask(uart));
     if (next_head == uart->rx_tail)
@@ -2029,6 +1893,8 @@ const char *UART_GetStatusMessage(const uart_handle_t *uart)
 /// @brief Handle a receive interrupt for one UART instance.
 void UART_HandleRxInterrupt(uart_handle_t *uart)
 {
+    uint16_t rx_used;
+
     if (uart == (uart_handle_t *)0)
     {
         return;
@@ -2042,7 +1908,16 @@ void UART_HandleRxInterrupt(uart_handle_t *uart)
 
     if (UART_RxInterruptIsPending(uart->port))
     {
-        if (UART_RxBufferFreeCount(uart) == 0U)
+        if (uart->rx_head >= uart->rx_tail)
+        {
+            rx_used = (uint16_t)(uart->rx_head - uart->rx_tail);
+        }
+        else
+        {
+            rx_used = (uint16_t)(uart->rx_buffer_size - (uint16_t)(uart->rx_tail - uart->rx_head));
+        }
+
+        if (((uint16_t)((uart->rx_buffer_size - 1U) - rx_used)) == 0U)
         {
             (void)UART_ReadRxByte(uart->port);
             UART_SetRxInterruptEnabled(uart->port, false);
@@ -2077,6 +1952,13 @@ void UART_HandleTxInterrupt(uart_handle_t *uart)
     {
         UART_SendNext(uart);
     }
+}
+
+/// @brief Handle both receive and transmit interrupt sources for one UART instance.
+void UART_HandleInterrupts(uart_handle_t *uart)
+{
+    UART_HandleRxInterrupt(uart);
+    UART_HandleTxInterrupt(uart);
 }
 
 /// @brief Select which UART instance the global printf hook should use.

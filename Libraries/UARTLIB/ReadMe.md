@@ -19,10 +19,10 @@ demonstration projects.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `uartlib.h` | Public API, enums, and the `uart_handle_t` instance structure |
-| `uartlib.c` | Implementation, auto ISR support (flat/vectored), and `putch()` support |
+| File        | Purpose                                                                          |
+| ----------- | -------------------------------------------------------------------------------- |
+| `uartlib.h` | Public API, enums, and the `uart_handle_t` instance structure                    |
+| `uartlib.c` | Implementation of UART APIs, interrupt-processing helpers, and `putch()` support |
 
 ## Design Summary
 
@@ -37,12 +37,9 @@ the handle fields, then call `UART_Open()` to reinitialize the UART.
 - The same source files can manage multiple UART peripherals in one project.
 - The library performs all pin initialization for TRIS, ADCON, and PPS based on 
   the selected pin values in the uart handle structure. 
-- The library provides weak interrupt handlers for both flat (legacy) and
-  vectored interrupt systems.
-- By default, no UART ISR wiring is required in application code.
-- If an application overrides a library ISR, it should call
-  `UART_HandleRxInterrupt()` and/or `UART_HandleTxInterrupt()` for the affected
-  UART handle.
+- The application owns interrupt vector declarations and ISR routing.
+- Application ISR code calls `UART_HandleRxInterrupt()` or `UART_HandleTxInterrupt()` for vectored 
+  interrupts, or `UART_HandleInterrupts()` for flat interrupts, for each UART handle it uses.
 
 ## Important Limitation
 
@@ -53,11 +50,14 @@ UART2 through UART5 are supported for the common TX/RX ring-buffer use case with
 
 ## Adding the Library to a Project
 
-1. Add `../../libraries/uartlib/uartlib.h` to your MPLAB X project as an external
+1. In MPLAB X, add the UARTLIB as a library project to the application's project. 
+2. Add `../../libraries/uartlib/uartlib.h` to your MPLAB X project as an external
    include file, or define `../../libraries/uartlib` as an include search path.
-2. Add `../../libraries/uartlib/uartlib.o` to your link input as an external 
-   object file, or add `../../libraries/uartlib` as an object search path. 
-3. Include the header where the UART handles are defined:
+3. Define the transmit and receive buffers in your application.
+4. Define the `uart_handle_t` structure and initialize it appropriately. 
+5. Call the `UART_Open(&<handle>)` function for each handle. 
+6. Call `UART_SelectPrintfTarget(&<handle>);` for only one UART handle 
+   if you want to redirect printf or putc output to that port.
 
 ```c
 #include "uartlib.h"
@@ -84,9 +84,9 @@ static char console_rx_buffer[128];
 static uart_handle_t console_uart = {
   .port = UART_PORT_1,
   .high_speed_baud = false,
-  .baud_rate = 19200U,
+  .baud_rate = 19200,
   .fosc = _XTAL_FREQ,
-  .data_bits = 8U,
+  .data_bits = 8,
   .parity = UART_PARITY_NONE,
   .stop_bits = UART_STOP_BITS_1,
   .flow_control = UART_FLOW_NONE,
@@ -94,10 +94,10 @@ static uart_handle_t console_uart = {
   .tx_buffer_size = sizeof(console_tx_buffer),
   .rx_buffer = console_rx_buffer,
   .rx_buffer_size = sizeof(console_rx_buffer),
-  .tx_head = 0U,
-  .tx_tail = 0U,
-  .rx_head = 0U,
-  .rx_tail = 0U,
+  .tx_head = 0,
+  .tx_tail = 0,
+  .rx_head = 0,
+  .rx_tail = 0,
   .initialized = false,
   .tx_pin = UART_PPS_PIN_RB0, // TX output pin (set to UART_PPS_PIN_NONE for RX-only)
   .rx_pin = UART_PPS_PIN_RB1, // RX input pin (set to UART_PPS_PIN_NONE for TX-only)
@@ -116,9 +116,10 @@ static uart_handle_t console_uart = {
 ## Initialisation
 
 ```c
-if (UART_Open(&console_uart))
+if (!UART_Open(&console_uart))
 {
-  INTCON0bits.GIE = 1;
+  // Uart initialization failed, halt here.
+  while (1) { }
 }
 ```
 
@@ -139,10 +140,10 @@ if (UART_Open(&console_uart))
 
 ### Baud Rate Formula
 
-| Speed mode | Formula |
-|-----------|---------|
-| Standard (`high_speed_baud = false`) | `BRG = (Fosc / (16 * baud)) - 1` |
-| High speed (`high_speed_baud = true`) | `BRG = (Fosc / (4 * baud)) - 1` |
+| Speed mode                            | Formula                          |
+| ------------------------------------- | -------------------------------- |
+| Standard (`high_speed_baud = false`)  | `BRG = (Fosc / (16 * baud)) - 1` |
+| High speed (`high_speed_baud = true`) | `BRG = (Fosc / (4 * baud)) - 1`  |
 
 `high_speed_baud` maps directly to the UART BRGS bit.
 
@@ -153,12 +154,12 @@ baud rates, set `high_speed_baud = true` and use the high-speed formula.
 Common standard-speed BRG values at 64 MHz:
 
 | Baud rate | BRG |
-|-----------|-----|
-| 9600 | 415 |
-| 19200 | 207 |
-| 38400 | 103 |
-| 57600 | 68 |
-| 115200 | 34 |
+| --------- | --- |
+| 9600      | 415 |
+| 19200     | 207 |
+| 38400     | 103 |
+| 57600     | 68  |
+| 115200    | 34  |
 
 ## Transmit API
 
@@ -200,17 +201,18 @@ printf("Hello from UART1\r\n");
 
 ## Public API Summary
 
-| Function | Purpose |
-|----------|---------|
-| `UART_Open()` | Opens the UART instance, applies handle configuration, and enables RX interrupts |
-| `UART_Close()` | Closes the UART instance so handle configuration can be safely changed |
-| `UART_WriteChar()` | Queues one character into the selected UART transmit buffer |
-| `UART_ReadChar()` | Removes one character from the selected UART receive buffer |
-| `UART_RxAvailable()` | Returns buffered receive bytes, or `0` when the UART is closed |
-| `UART_HandleRxInterrupt()` | Services one receive interrupt for the supplied UART handle |
-| `UART_HandleTxInterrupt()` | Services one transmit interrupt for the supplied UART handle |
-| `UART_SelectPrintfTarget()` | Selects which initialized UART instance `putch()` and `printf()` should use |
-| `putch()` | XC8 runtime hook used by `printf()`, `puts()`, and `putchar()` |
+| Function                    | Purpose                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------- |
+| `UART_Open()`               | Opens the UART instance, applies handle configuration, and enables RX interrupts |
+| `UART_Close()`              | Closes the UART instance so handle configuration can be safely changed           |
+| `UART_WriteChar()`          | Queues one character into the selected UART transmit buffer                      |
+| `UART_ReadChar()`           | Removes one character from the selected UART receive buffer                      |
+| `UART_RxAvailable()`        | Returns buffered receive bytes, or `0` when the UART is closed                   |
+| `UART_HandleRxInterrupt()`  | Services one receive interrupt for the supplied UART handle                      |
+| `UART_HandleTxInterrupt()`  | Services one transmit interrupt for the supplied UART handle                     |
+| `UART_HandleInterrupts()`   | Convenience helper that services RX then TX for one UART handle                  |
+| `UART_SelectPrintfTarget()` | Selects which initialized UART instance `putch()` and `printf()` should use      |
+| `putch()`                   | XC8 runtime hook used by `printf()`, `puts()`, and `putchar()`                   |
 
 ## Integration Checklist
 
@@ -220,10 +222,11 @@ Use this checklist when adding the library to a non-UART project:
    the UARTLIB as a dependent library project. 
 2. Define TX and RX buffers with power-of-2 sizes.
 3. Create and fill one `uart_handle_t` for the desired UART peripheral.
-4. Select `isr_mode` in each handle (`UART_ISR_FLAT` or `UART_ISR_VECTORED`).
+4. Select `isr_mode` in each handle (`UART_ISR_FLAT` or `UART_ISR_VECTORED`) as an application policy marker.
 5. Call `UART_Open()` during startup.
-6. Enable global interrupts in the application.
-7. Call `UART_SelectPrintfTarget()` if the project wants to use `printf()` for debug output.
+6. Define application ISR handler(s) and call the UART interrupt-processing APIs for each UART handle.
+7. Enable global interrupts in the application.
+8. Call `UART_SelectPrintfTarget()` if the project wants to use `printf()` for debug output.
 
 ## Notes
 
@@ -258,41 +261,37 @@ The library will configure PPS, TRIS, and ANSEL for any pin that is not UART_PPS
 
 ## Interrupt Mode (Flat or Vectored)
 
-The library can manage interrupt service routines (ISRs) for you. Set the `isr_mode` field in your `uart_handle_t` to select between flat or vectored interrupt handling:
+The application owns ISR declarations. Set `isr_mode` in your handle to match your
+application's interrupt-routing policy:
 
-- `UART_ISR_FLAT`: One ISR for all UARTs (calls handlers for all open handles in flat mode)
-- `UART_ISR_VECTORED`: One ISR per UART vector (calls handler for that UART only)
+- `UART_ISR_FLAT`: single interrupt entry in application code.
+- `UART_ISR_VECTORED`: one ISR per UART vector in application code.
 
-When you call `UART_Open()`, the library registers your handle and enables the appropriate ISR(s) only for UARTs with open handles.
-
-**Default behavior:** you do not need to write your own UART ISR.
-
-**Flat (legacy) note:** if your project uses one application ISR that must also service non-UART interrupt sources, then the application ISR must dispatch UART handling too (either by calling the library UART ISR path or by calling a UART-only helper function).
+The UART library processes interrupt work when called from those application ISRs.
 
 ### Flat Interrupt Example
 
 ```c
-// No user ISR needed. The library provides UARTLIB_FlatISR().
-// Just set isr_mode = UART_ISR_FLAT in your handle.
-```
-
-### Flat Interrupt With Other Sources
-
-```c
 void __interrupt() ISR(void)
 {
-  // Handle non-UART interrupt sources here.
+  // Handle non-UART sources first if needed.
   // ...
 
-  // Then service UART interrupt sources through the UART library handlers.
-  UART_HandleRxInterrupt(&console_uart);
-  UART_HandleTxInterrupt(&console_uart);
+  // Then service UART for this handle.
+  UART_HandleInterrupts(&console_uart);
 }
 ```
 
 ### Vectored Interrupt Example
 
 ```c
-// No user ISR needed. The library provides UARTLIB_U1RX_ISR(), UARTLIB_U1TX_ISR(), etc.
-// Just set isr_mode = UART_ISR_VECTORED in your handle.
+void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
+{
+  UART_HandleRxInterrupt(&console_uart);
+}
+
+void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
+{
+  UART_HandleTxInterrupt(&console_uart);
+}
 ```

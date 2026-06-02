@@ -27,7 +27,6 @@
 #include <xc.h>
 #include <stdio.h>
 #include "config.h"
-#include "uart.h"
 
 /// @brief Initialize system-level hardware used by the UART demonstration.
 /// @param None
@@ -47,6 +46,7 @@ void SYSTEM_Initialize(void)
     ANSELD = 0x00;  // All Port D pins: digital mode
 
     /* Re-enable interrupts now that hardware registers are stable. */
-    INTCON0bits.GIE = 1;
+      INTCON0bits.GIEL = 1; /* Enable low priority interrupts (required for low_priority vectored ISRs). */
+      INTCON0bits.GIE  = 1; /* Enable high priority interrupts (master enable). */
 }
 

@@ -69,11 +69,7 @@ static volatile bool s_porta_update_pending = false;
 /// @return None
 void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
 {
-    // Handle UART1 Receive Interrupt
-    if ((PIE4bits.U1RXIE != 0U) && (PIR4bits.U1RXIF != 0U))
-    {
-        UART_HandleRxInterrupt(&console_uart);
-    }
+    UART_HandleRxInterrupt(&console_uart);
 }
 
 /// @brief UART1 TX ISR (vectored)
@@ -81,11 +77,7 @@ void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
 /// @return None
 void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
 {
-    // Handle UART1 Transmit Interrupt
-    if ((PIE4bits.U1TXIE != 0U) && (PIR4bits.U1TXIF != 0U))
-    {
-        UART_HandleTxInterrupt(&console_uart);
-    }
+    UART_HandleTxInterrupt(&console_uart);
 }
 
 /// @brief Handle external interrupt on RB2 and defer MCP23017 service to the main loop

@@ -34,25 +34,15 @@ extern uart_handle_t console_uart;
  * called when an IOC event occurs. The function should check which pin triggered the interrupt and
  * handle the event accordingly, then clear the interrupt flag(s) to allow for future interrupts.
  * 
- * This example uses the legacy "flat" interrupt structure.  The application owns ISR declarations
- * and checks if the interrupt is for a UART read or transmit event, then calls the corresponding
- * UART library handler.  The UART handlers check if the interrupt is pending and if the selected
- * UART instance is initialized before processing the event.
+ * This example uses the legacy "flat" interrupt structure. The application owns ISR declarations
+ * and calls the UART library interrupt dispatcher for the selected UART instance.
+ * The UART library checks pending flags and initialization state internally.
  * If the interrupt is not for a UART event, we can check for other IOC events and handle them as 
  * needed.
  */
 void __interrupt() ISR(void)
 {
-
-    if ((PIE4bits.U1RXIE != 0U) && (PIR4bits.U1RXIF != 0U))
-    {
-        UART_HandleRxInterrupt(&console_uart);
-    }
-
-    if ((PIE4bits.U1TXIE != 0U) && (PIR4bits.U1TXIF != 0U))
-    {
-        UART_HandleTxInterrupt(&console_uart);
-    }
+    UART_HandleInterrupts(&console_uart);
 
     if (PIR0bits.IOCIF != 0)
     {

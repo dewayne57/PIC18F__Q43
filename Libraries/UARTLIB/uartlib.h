@@ -1,7 +1,7 @@
 #if !defined(UART_ISR_MODE_T)
 typedef enum {
-    UART_ISR_FLAT = 0,     /**< Flat interrupt: one ISR for all UARTs, calls handler for each handle */
-    UART_ISR_VECTORED = 1  /**< Vectored interrupt: one ISR per UART vector, calls handler for that handle */
+    UART_ISR_FLAT = 0,     /**< Reserved for application policy (library no longer defines ISR functions) */
+    UART_ISR_VECTORED = 1  /**< Reserved for application policy (library no longer defines ISR functions) */
 } uart_isr_mode_t;
 #define UART_ISR_MODE_T
 #endif
@@ -33,8 +33,8 @@ typedef enum {
  *      TX/RX buffers, including TX/RX (and optional CTS/RTS) PPS pin fields.
  *   3. The library configures TRIS and PPS during UART_Open().
  *   4. Call UART_Open(&handle).
- *   5. Route interrupts to UART_HandleRxInterrupt(&handle) and UART_HandleTxInterrupt(&handle),
- *      from application-owned ISR functions.
+ *   5. In application-owned ISR code, call UART_HandleRxInterrupt(&handle),
+ *      UART_HandleTxInterrupt(&handle), or UART_HandleInterrupts(&handle).
  *
  * ***************************************************************************************** */
 
@@ -283,6 +283,16 @@ void UART_HandleRxInterrupt(uart_handle_t *uart);
  * @param uart  UART instance associated with the hardware interrupt.
  */
 void UART_HandleTxInterrupt(uart_handle_t *uart);
+
+/**
+ * @brief Handle both receive and transmit interrupt sources for one UART instance.
+ *
+ * This is a convenience wrapper for application-owned ISRs and calls
+ * UART_HandleRxInterrupt(uart) followed by UART_HandleTxInterrupt(uart).
+ *
+ * @param uart  UART instance associated with the hardware interrupt source(s).
+ */
+void UART_HandleInterrupts(uart_handle_t *uart);
 
 /**
  * @brief Select which UART instance printf() should use through putch().

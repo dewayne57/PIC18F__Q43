@@ -11,5 +11,5 @@ The project should echo back all data sent to it up to a CR+LF (or LF+CR) sequen
 the input data, and a computed CRC value for that string, as well as if it matches the 
 expected CRC or not. 
 
-If you enter the text "This is a demonstration" + CR + LF, the expected CRC should match.
+If you enter the text "This is a demonstration" + CR + LF, the expected CRC is 0xE5EC.
 Any other input should not match.

@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: main.c
- *   Description: Main application for UART 01 Interrupt Echo Console.
+ *   Description: Main application for CRC Stream Verify.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
  ***************************************************************************************** */
@@ -8,65 +8,160 @@
 #include <xc.h>
 #include <stdio.h>
 #include "config.h"
-#include "uart.h"
+#include "../../Libraries/UARTLIB/uartlib.h"
+
+static char console_tx_buffer[64];
+static char console_rx_buffer[64];
+char message[512];
+size_t message_len;
+
+static uart_handle_t console_uart = {
+    .port = UART_PORT_1,
+    .high_speed_baud = false,
+    .baud_rate = 19200U,
+    .fosc = _XTAL_FREQ,
+    .data_bits = 8U,
+    .parity = UART_PARITY_NONE,
+    .stop_bits = UART_STOP_BITS_1,
+    .flow_control = UART_FLOW_NONE,
+    .tx_buffer = console_tx_buffer,
+    .tx_buffer_size = sizeof(console_tx_buffer),
+    .rx_buffer = console_rx_buffer,
+    .rx_buffer_size = sizeof(console_rx_buffer),
+    .tx_head = 0U,
+    .tx_tail = 0U,
+    .rx_head = 0U,
+    .rx_tail = 0U,
+    .initialized = false,
+    .tx_pin = UART_PPS_PIN_RB0,    // TX output pin (set to UART_PPS_PIN_NONE for RX-only)
+    .rx_pin = UART_PPS_PIN_RB1,    // RX input pin (set to UART_PPS_PIN_NONE for TX-only)
+    .rts_pin = UART_PPS_PIN_NONE,  // RTS output pin (set if using hardware flow control)
+    .cts_pin = UART_PPS_PIN_NONE,  // CTS input pin (set if using hardware flow control)
+    .isr_mode = UART_ISR_VECTORED, // App owns ISR routing; this marks intended interrupt policy
+};
+
+#if defined(VECTORED_INTERRUPTS_ENABLED)
+/// @brief UART1 RX interrupt vector owned by the application.
+void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
+{
+    UART_HandleRxInterrupt(&console_uart);
+}
+
+/// @brief UART1 TX interrupt vector owned by the application.
+void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
+{
+    UART_HandleTxInterrupt(&console_uart);
+}
+#else
+/// @brief Single interrupt entry that services both UART RX and TX sources.
+void __interrupt() ISR(void)
+{
+    UART_HandleInterrupts(&console_uart);
+}
+#endif
+
+#define CRC_SEED 0xFFFF
+
+/// @brief  Initialize the CRC module to support the CRC-16-CCITT polynomial.
+/// @param None
+/// @Return None
+void CRC_Initialize(void)
+{
+    CRCCON0 = 0x00;
+    CRCCON0bits.EN = 1;
+    CRCCON1 = 0xFF;
+    CRCXOR = 0x1021;
+    CRCACC = CRC_SEED;
+}
+
+/// @brief  Process a message through the CRC module.
+/// @Note The message is processed in 16-bit chunks.  If the message is an odd length,
+/// the last byte is padded with 0x00 to make it 16-bits in length.
+/// @param message Pointer to the message buffer.
+/// @param message_len Length of the message.
+/// @return Calculated CRC value.
+uint16_t CRC_Process(char *message, size_t message_len)
+{
+    CRCCON0bits.EN = 1; // Ensure CRC module is enabled
+    CRCACC = CRC_SEED;    // Initialize the CCITT output
+    if (message == 0 || message_len < 2)
+    {
+        return CRC_SEED; // Return the default for the CCITT polynomial.
+    }
+    message_len -= 2; // Remove the line endings
+    if (message_len % 2 != 0)
+    {
+        message[message_len] = 0x00;
+        message_len++;
+    }
+    for (size_t i = 0; i < message_len; i += 2)
+    {
+        CRCDATH = (unsigned char)message[i];
+        CRCDATL = (unsigned char)message[i + 1];
+        CRCCON0bits.CRCGO = 1;
+        while (CRCCON0bits.BUSY)
+        {
+        }
+    }
+    return CRCACC;
+}
 
 /// @brief Main application entry point.
 /// @param  None
 /// @return None
-/// @note This application initializes the system and UART1, then enters an infinite loop 
+/// @note This application initializes the system and UART1, then enters an infinite loop
 ///       where it continuously checks for received data and echoes it back if available.
-///       The use of UART1_RxAvailable ensures that we only attempt to read when data is 
+///       The use of UART1_RxAvailable ensures that we only attempt to read when data is
 ///       present, preventing blocking on an empty buffer. The main loop remains responsive,
-///       allowing for other tasks to be added in the future while maintaining efficient 
+///       allowing for other tasks to be added in the future while maintaining efficient
 ///       UART communication.
-/// @param  
+/// @param
 void main(void)
 {
     int counter = 0;
+    char ch;
+    char prev_ch = 0;
 
     SYSTEM_Initialize();
-    UART1_Initialize();
+    CRC_Initialize();
+    if (!UART_Open(&console_uart))
+    {
+        while (1)
+        {
+        }
+    }
+    UART_SelectPrintfTarget(&console_uart);
 
+    printf("CRC 01 Stream Verify\r\n");
+    printf("Enter any message terminated by CR+LF\r\n");
     while (1)
     {
-        // Perform a non-blocking check for received data and echo it back if available. This 
-        // allows the main application to remain responsive while still providing UART communication
-        // capabilities. The use of UART1_RxAvailable ensures that we only attempt to read when data
-        // is present, preventing blocking on an empty buffer.
-        __delay_ms(1000); 
-        printf("Test %i\\r\\n", counter++);
+        if (UART_RxAvailable(&console_uart) > 0)
+        {
+            if (UART_ReadChar(&console_uart, &ch))
+            {
+                // Accumulate the character received as part of a larger message which
+                // will be processed whenever we encounter a CR+LF or LF+CR sequence.
+                // Once the line ending is encountered, process the message through the
+                // CRC module and echo the original message and its CRC value to the
+                // console.
+                if (message_len < sizeof(message))
+                {
+                    message[message_len] = ch;
+                    message_len++;
+                    message[message_len] = 0;
+                }
+
+                if ((ch == '\n' && prev_ch == '\r') || (ch == '\r' && prev_ch == '\n'))
+                {
+                    printf("Original Message: \"%s\"\r\n", message);
+                    printf("CRC: 0x%04X\r\n", CRC_Process(message, message_len));
+                    message_len = 0;
+                    prev_ch = 0;
+                }
+
+                prev_ch = ch;
+            }
+        }
     }
 }
-
-#ifndef UART1_VECTORED_INTERRUPTS
-/// @brief Interrupt Service Routine.
-/// @note This ISR handles all interrupts for the application.  It does not use the VECTORED 
-///       interrupt feature of the PIC18F, so it must call the appropriate handler functions
-///       for each peripheral that generates an interrupt.  In this case, it checks if the 
-///       UART1 receive or transmit interrupts are enabled and if their respective flags are set,
-///       and calls the corresponding handler functions to process the interrupts.  This approach
-///       allows for a centralized ISR that can handle multiple interrupt sources without the need
-///       for separate vector locations, while still ensuring that each interrupt is processed
-///       efficiently and correctly.
-/// @param None
-/// @return None
-/// @note If UART1_VECTORED_INTERRUPTS is set to 1, the UART1 receive and transmit interrupts can be
-///       generated as low priority interrupts, and the corresponding handler functions will be
-///       called directly from the respective ISRs.  If not set, this main ISR will handle all
-///       interrupts, and it is important to ensure that the appropriate handler functions are called
-///       for each interrupt source to ensure proper operation of the application.
-void __interrupt() ISR(void)
-{
-    if (PIR4bits.U1RXIF != 0U)
-    {
-        UART1_RX_ISR();
-    }
-    if (PIR4bits.U1TXIF != 0U)
-    {
-        UART1_TX_ISR();
-    }
-
-}
-#endif
-
-
