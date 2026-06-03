@@ -23,7 +23,7 @@
 #include "config.h"
 #include "app.h"
 #include "spi.h"
-#include "mcp23x17.h"
+#include "../../common/mcp23x17.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 #include "../../Libraries/DEBUGLIB/debuglib.h"
 
