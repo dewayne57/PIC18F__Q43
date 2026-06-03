@@ -7,6 +7,5 @@ This project demonstrates how to initialize the internal fixed voltage reference
 
 ## Expected outcome
 After the microcontroller has initialized, the output should alternate between 
-"FVR enabled" and "FVR disabled" approximately each second.  This text is sent
-to the UART data stream to be displayed on the PC, as well as being indicated 
-by an LED (on = FVR Enabled). 
+1.024, 2.048, and 4.096 volts output at RA2, with appropriate messages indicating 
+when each voltage is output. 
