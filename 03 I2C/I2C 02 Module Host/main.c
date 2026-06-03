@@ -23,8 +23,7 @@
 #include "config.h"
 #include "app.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
-//#include "../../Libraries/I2CLIB/i2clib.h"
-#include "i2clib.h"
+#include "../../Libraries/I2CLIB/i2clib.h"
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];

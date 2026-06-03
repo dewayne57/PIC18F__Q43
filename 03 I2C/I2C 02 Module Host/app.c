@@ -49,9 +49,8 @@
 #include <stdio.h>
 #include "config.h"
 #include "app.h"
-//#include "../../Libraries/I2CLIB/i2clib.h"
-#include "i2clib.h"
-#include "mcp23x17.h"
+#include "../../Libraries/I2CLIB/i2clib.h"
+#include "../../common/mcp23x17.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 
 extern uart_handle_t console_uart;

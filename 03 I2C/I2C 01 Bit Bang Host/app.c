@@ -49,7 +49,7 @@
 #include "config.h"
 #include "app.h"
 #include "i2c.h"
-#include "mcp23x17.h"
+#include "../../common/mcp23x17.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 
 extern uart_handle_t console_uart;

@@ -131,3 +131,4 @@ I2C 01 Bit Bang Master-backups
 /02 IOC/IOC 01 Single/main.d
 /02 IOC/IOC 01 Single/*.p1
 /02 IOC/IOC 02 Vectored/*.d
+/03 I2C/I2C 03 Module Client/I2C 01 Module Slave-backups

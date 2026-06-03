@@ -49,12 +49,6 @@ CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
 
-# Ensure XC8 always receives a device family pack path even if MPLAB omits
-# pack options in generated makefiles.
-DFP_DIR ?= C:/PROGRA~1/Microchip/MPLABX/v6.30/packs/Microchip/PIC18F-Q_DFP/1.28.451
-MP_EXTRA_CC_PRE += -mdfp="$(DFP_DIR)/xc8"
-MP_EXTRA_LD_PRE += -mdfp="$(DFP_DIR)/xc8"
-
 
 # build
 build: .build-post
