@@ -1,7 +1,6 @@
 /* ****************************************************************************************
  *   File Name: ioc.c
- *   Description: This file contains the Interrupt-On-Change (IOC) handling routines for
- *   the IOC Single project.
+ *   Description: IOC demonstration project. 
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-09
  *

@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: config.c
- *   Description: This file contains the configuration settings for the IOC Single project.
+ *   Description: Configuration and initialization for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-09
  *

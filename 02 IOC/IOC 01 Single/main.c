@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: main.c
- *   Description: This file contains the main program for the IOC Single project.
+ *   Description: Main program for the demonstration project. 
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-09
  *

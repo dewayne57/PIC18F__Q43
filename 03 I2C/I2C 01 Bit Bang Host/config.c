@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: config.c
- *   Description: System initialization for I2C 01 Bit Bang Host demonstration.
+ *   Description: System configuration and initialization for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-11
  * 

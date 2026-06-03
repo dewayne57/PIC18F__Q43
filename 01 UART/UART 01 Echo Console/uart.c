@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: uart.c
- *   Description: Module UART 01 Interrupt Echo Console.
+ *   Description: UART communication functions for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
  *

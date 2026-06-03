@@ -128,3 +128,6 @@ I2C 01 Bit Bang Master-backups
 *.d
 *.p1
 *.kicad_prl
+/02 IOC/IOC 01 Single/main.d
+/02 IOC/IOC 01 Single/*.p1
+/02 IOC/IOC 02 Vectored/*.d

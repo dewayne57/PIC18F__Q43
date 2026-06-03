@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: config.c
- *   Description: System initialization for UART 02 DMA TX.
+ *   Description: Configuration and initialization for the demonstration project. 
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
  *

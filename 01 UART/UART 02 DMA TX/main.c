@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: main.c
- *   Description: Main application for UART 02 DMA TX Stream.
+ *   Description: Main application for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
  *

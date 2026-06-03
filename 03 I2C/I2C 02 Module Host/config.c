@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: config.c
- *   Description: System initialization for I2C 02 Module Host demonstration.
+ *   Description: System configuration and initialization for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-19
  * 

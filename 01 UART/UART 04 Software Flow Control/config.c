@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: config.c
- *   Description: System initialization for UART 01 Interrupt Echo Console.
+ *   Description: System configuration and initialization for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
  * 

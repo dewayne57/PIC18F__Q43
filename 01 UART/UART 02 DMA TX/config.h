@@ -1,6 +1,6 @@
 /* *****************************************************************************************
  *   File Name: config.h
- *   Description: This file contains the configuration settings for the demonstration project.
+ *   Description: Configuration header for the demonstration project. 
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
  *
