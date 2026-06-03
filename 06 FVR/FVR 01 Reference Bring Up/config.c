@@ -23,6 +23,8 @@ void SYSTEM_Initialize(void)
       input (ANSEL bit = 1) or a digital I/O (ANSEL bit = 0).  Clearing them ensures that
       the UART TX/RX pins on Port B are in digital mode so the UART module can drive them.
       Ports C and D are cleared for the same reason - no analog inputs are used here. */
+   ANSELA = 0xFF;   // All port A pins are analog
+   TRISAbits.TRISA2 = 1;    // Leave RA2 as high-impedance (no analog output routed in this demo)
    ANSELB = 0x00; // All Port B pins: digital mode
    ANSELC = 0x00; // All Port C pins: digital mode
    ANSELD = 0x00; // All Port D pins: digital mode

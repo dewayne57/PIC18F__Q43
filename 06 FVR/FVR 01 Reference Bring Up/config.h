@@ -27,7 +27,7 @@
 #pragma config FCMEN = OFF            // Fail-safe clock monitor is disabled
 #pragma config PR1WAY = 0             // PRLOCKED Set/Cleared repeatedly
 #pragma config CLKOUTEN = 0           // Clock out is enabled on RA6
-#pragma config BOREN = 3              // Brown-out reset is enabled
+#pragma config BOREN = 0              // Brown-out reset disabled for bring-up stability testing
 #pragma config LPBOREN = OFF          // Low power brown-out reset is disabled
 #pragma config IVT1WAY = 0            // IVTLOCK Set/cleared repeatedly
 #pragma config MVECEN = 1             // Vectored interrupts enabled 
@@ -38,7 +38,7 @@
 #pragma config STVREN = ON            // Stack over/under flow causes reset
 #pragma config PPS1WAY = 0            // PPSLOCK set/reset repeatedly
 #pragma config ZCD = 1                // Zero-cross detection is disabled
-#pragma config BORV = 0               // Brown-out voltage is set to 2.85V
+#pragma config BORV = 0               // Brown-out voltage selection (unused while BOREN is disabled)
 #pragma config WDTE = OFF             // No watch dog timer
 #pragma config SAFEN = OFF            // Storage area flash is disabled
 #pragma config BBEN = OFF             // Boot block is disabled
