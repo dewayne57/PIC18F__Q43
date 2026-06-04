@@ -3275,6 +3275,17 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "Note: The maximum source impedance recommended for the AD inputs is \n10K.  If the source impedance is higher than this, or if faster \nconversions are desired, this input should be buffered.  Note, using\na 10K pot gives us a max input source impedance of 5K since the impedance\nis seen from the input pin to either Vss or Vdd.  The ADC acquisition \ntime configuration MAY need to be adjusted if this value is changed."
+		(exclude_from_sim no)
+		(at 147.574 41.148 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "95732fd8-8def-4590-97b5-7c6081fa3635")
+	)
 	(text "This project uses the ADCC as a window comparator that verifies the input analog \nsignal is between 2 and 3 volts DC.  If it is below the window low threshold, the LOW \nLED is illuminated.  If it is above the window upper threshold, the HIGH LED \nis illuminated.  If it is within the window, the WINDOW LED is illuminated."
 		(exclude_from_sim no)
 		(at 30.734 155.702 0)
