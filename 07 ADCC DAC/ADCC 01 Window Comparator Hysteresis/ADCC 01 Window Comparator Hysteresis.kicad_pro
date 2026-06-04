@@ -437,7 +437,7 @@
         "uuid": "d3b5dd27-4845-413f-badb-7f64f7fb8d77"
       }
     ],
-    "used_designators": "RV1,D103,#PWR110-112,R105",
+    "used_designators": "D104-105,R106-107",
     "variants": []
   },
   "sheets": [
