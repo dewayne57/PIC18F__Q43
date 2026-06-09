@@ -3,6 +3,20 @@
  *   Description: System initialization for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
+ * 
+ *   Copyright (c) 2026, Dewayne Hafenstein.
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *   
  ***************************************************************************************** */
 
 #include <xc.h>
@@ -79,7 +93,7 @@ void SYSTEM_Initialize(void)
    ADPRE = 15;  // 15 clock ticks for pre-charge (15us at 1us TAD)
    ADACQ = 15;  // 15 clock ticks for acquisition time (15us at 1us TAD)
    ADCAP = 0;   // No additional Sample/Hold capacitance
-   ADCRPT = 0;  // Continuous mode does not use the repeat counter, so set it to 0
+   ADRPT = 0;   // Continuous mode does not use the repeat counter, so set it to 0
    ADCNT = 0;   // Not used in legacy mode
    ADFLTRH = 0; // No digital filtering
    ADFLTRL = 0; // No digital filtering

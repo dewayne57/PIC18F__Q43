@@ -3,6 +3,45 @@
  *   Description: Main application for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-04-10
+ * 
+ *   This demonstration project uses the window comparator feature of the ADCC to 
+ *   monitor the voltage applied using a potentiometer connected to RA0.  The 
+ *   ADCC positive reference is set to Vcc and the negative reference is set to GND, 
+ *   so the ADC result represents the voltage at RA0 relative to Vcc and GND.  This 
+ *   allows the potentiometer to be connected between Vcc and GND with the wiper on RA0, 
+ *   so the full range of the potentiometer corresponds to the full ADC range.  The low 
+ *   and high thresholds for the window comparator are defined in config.h and can be 
+ *   adjusted to set the desired voltage range. 
+ * 
+ *   ADCC changes are handled by the interrupt service routine.  It tracks the state 
+ *   of the input as for high, low, or valid and updates the LEDs on Port B accordingly.
+ *   The main loop does not need to read the ADC result directly.  It can perform other 
+ *   tasks or simply sleep while the ADCC ISR handles the window comparator monitoring 
+ *   in the background.
+ * 
+ *   The ADCC conversion rate can be adjusted as needed to balance responsiveness with 
+ *   power consumption or the availability for other processing.  A faster conversion 
+ *   rate provides more immediate feedback on the window comparator status but may 
+ *   consume more power, while a slower rate can reduce power consumption but may 
+ *   introduce more latency in detecting changes.  Also, the faster the conversion
+ *   rate, the more frequently the ISR will run, which could impact the performance 
+ *   of other tasks in the main loop if not managed properly.  It's important to choose 
+ *   a conversion rate that meets the application's requirements for responsiveness 
+ *   while allowing sufficient time for other processing in the main loop.
+ * 
+ *   Copyright (c) 2026, Dewayne Hafenstein.
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *   
  ***************************************************************************************** */
 
 #include <xc.h>
@@ -59,6 +98,19 @@ void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
 void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
 {
     UART_HandleTxInterrupt(&console_uart);
+}
+#else
+/// @brief Non-vectored interrupt handler for PIC16F18855.
+void __interrupt() NonVectoredISR(void)
+{
+    if (PIR4bits.U1RXIF)
+    {
+        UART_HandleRxInterrupt(&console_uart);
+    }
+    if (PIR4bits.U1TXIF)
+    {
+        UART_HandleTxInterrupt(&console_uart);
+    }
 }
 #endif
 

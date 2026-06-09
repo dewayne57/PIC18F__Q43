@@ -51,6 +51,8 @@
 
 #define _XTAL_FREQ 64000000UL         // Define the system clock frequency for delay functions
 
+#define CRLF "\r\n"
+
 void SYSTEM_Initialize(void);
 
 // Define the ADC window thresholds (in mV) for the demonstration project.  The potentiometer
