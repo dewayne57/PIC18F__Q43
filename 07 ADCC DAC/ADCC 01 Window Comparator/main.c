@@ -15,6 +15,9 @@
 #define LED_WINDOW_ON() (LATBbits.LATB4 = 0)
 #define LED_WINDOW_OFF() (LATBbits.LATB4 = 1)
 
+/// @brief Turns on the "LOW" LED and turns off the other LEDs.
+/// @param  None
+/// @return None
 static void LED_ShowLow(void)
 {
     LED_LOW_ON();
@@ -22,6 +25,9 @@ static void LED_ShowLow(void)
     LED_WINDOW_OFF();
 }
 
+/// @brief Turns on the "HIGH" LED and turns off the other LEDs.
+/// @param  None
+/// @return None
 static void LED_ShowHigh(void)
 {
     LED_LOW_OFF();
@@ -29,6 +35,9 @@ static void LED_ShowHigh(void)
     LED_WINDOW_OFF();
 }
 
+/// @brief  Turns on the "IN-WINDOW" LED and turns off the other LEDs.
+/// @param  None
+/// @return None
 static void LED_ShowInWindow(void)
 {
     LED_LOW_OFF();
@@ -36,6 +45,10 @@ static void LED_ShowInWindow(void)
     LED_WINDOW_ON();
 }
 
+/// @brief ADC interrupt service routine. Determines if the ADC result is below, above, or 
+/// within the defined thresholds and updates LEDs accordingly.  
+/// @param  None
+/// @return None
 void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 {
     if (PIR1bits.ADIF)
@@ -61,6 +74,11 @@ void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
     }
 }
 
+/// @brief Main function. Initializes the system and enters an infinite loop.
+/// The ADCC runs continuously, and the LED states are updated in the ADC_ISR 
+/// based on the ADC results.
+/// @param  None
+/// @return None    
 void main(void)
 {
     SYSTEM_Initialize();
