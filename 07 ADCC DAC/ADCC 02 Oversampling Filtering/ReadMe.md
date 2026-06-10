@@ -15,6 +15,6 @@ filtering improve stability, but they also slow the system response to real
 changes at the input. Lighter filtering responds faster, but with less noise
 rejection.
 
-This project uses the same schematic as the window comparator with hysteresis
-example, but without the LED indication. Instead, the firmware reports the
-sampled input voltage over UART for a 0 V to 5 V input range.
+This project uses the same schematic as the window comparator example, but 
+without the LED indication. Instead, the firmware reports the sampled input 
+voltage over UART for a 0 V to 5 V input range.
