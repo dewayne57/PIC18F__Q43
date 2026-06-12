@@ -30,7 +30,11 @@
 #pragma config BOREN = 0              // Brown-out reset disabled for bring-up stability testing
 #pragma config LPBOREN = OFF          // Low power brown-out reset is disabled
 #pragma config IVT1WAY = 0            // IVTLOCK Set/cleared repeatedly
+#ifdef VECTORED_INTERRUPTS_ENABLED
 #pragma config MVECEN = 1             // Vectored interrupts enabled 
+#else
+#pragma config MVECEN = 0             // Vectored interrupts disabled (legacy interrupt controller)
+#endif
 #pragma config PWRTS = 2              // Power up timer at 64mS
 #pragma config MCLRE = 1              // Master clear retains that function
 #pragma config XINST = OFF            // No extended instruction set
@@ -68,22 +72,13 @@ void SYSTEM_Initialize(void);
 
 // Number of samples the ADCC hardware accumulates and averages per result.
 // Must be a power of 2 between 2 and 256.
-#define ADCC_OVERSAMPLE_COUNT  16U
+#define ADCC_OVERSAMPLE_COUNT  32U
 
 // ADCON2.CRS = log2(ADCC_OVERSAMPLE_COUNT).  Right-shifts the accumulator so
 // that ADFLTR holds a 12-bit average (same resolution as a single conversion).
 #define ADCC_OVERSAMPLE_CRS    4U
 
-// ADRPT = ADCC_OVERSAMPLE_COUNT - 1.  The ADCC performs ADRPT+1 conversions
-// per average group.
-#define ADCC_OVERSAMPLE_ADRPT  (ADCC_OVERSAMPLE_COUNT - 1U)
-
-// IIR filter coefficient applied in firmware after each hardware average:
-//   filtered = ((den - num) * old + num * new) / den
-#define ADCC_FILTER_ALPHA_NUM 1U
-#define ADCC_FILTER_ALPHA_DEN 4U
-
-// UART reporting cadence for the filtered value.
-#define ADCC_REPORT_PERIOD_MS 100U
+// Software trigger cadence for starting a new ADCC average conversion group.
+#define ADCC_TRIGGER_PERIOD_MS 1000U
 
 #endif /* CONFIG_H */

@@ -36,7 +36,7 @@ void SYSTEM_Initialize(void)
    /* The ANSEL (Analog SELect) registers control whether each I/O pin acts as an analog
       input (ANSEL bit = 1) or a digital I/O (ANSEL bit = 0).  Clearing them ensures that
       the UART TX/RX pins on Port B are in digital mode so the UART module can drive them.
-      Ports C and D are cleared for the same reason - no analog inputs are used here. */
+      Ports C and D are cleared for the same reason - Analog is used only on port A. */
    ANSELA = 0xFF;        // All port A pins are analog
    TRISAbits.TRISA0 = 1; // RA0 as input for the potentiometer voltage measurement
    ANSELB = 0x00;        // All Port B pins: digital mode
@@ -51,7 +51,7 @@ void SYSTEM_Initialize(void)
       single ADIF interrupt fires after each completed average group, so the
       application ISR simply reads ADFLTR without any software accumulation. */
    ADCON0bits.ADON = 0; // Ensure the ADC is off before configuring
-   ADCON0bits.CONT = 1; // Enable continuous conversion mode for the demonstration project
+   ADCON0bits.CONT = 0; // Single-shot mode: software sets GO each trigger period
    ADCON0bits.CS = 0;   // ADC clock derived from system clock (ADCCLK = FOSC)
    ADCON0bits.FM = 1;   // Right justified result format (full 12-bit resolution)
    ADCON0bits.GO = 0;   // Clear the GO bit to start with a known state
@@ -84,31 +84,31 @@ void SYSTEM_Initialize(void)
    // formula to find suitable values for ADPRE and ADACQ:
    // ADPRE + ADACQ >= (Source Impedance * Sample-and-Hold Capacitance) / TAD.
    // Plugging in the numbers gives us ADPRE + ADACQ >= (5000 * 5e-12) / 1e-6 = 25.
-   // We can choose ADPRE = 15 and ADACQ = 15 to satisfy this requirement while
+   // We can choose ADPRE = 15 and ADACQ = 15 (sum of 30) to satisfy this requirement while
    // keeping acquisition time reasonable.
-   ADPRE = 15;                    // 15 clock ticks for pre-charge (15us at 1us TAD)
-   ADACQ = 15;                    // 15 clock ticks for acquisition time (15us at 1us TAD)
-   ADCAP = 0;                     // No additional Sample/Hold capacitance
-   ADRPT = ADCC_OVERSAMPLE_ADRPT; // Accumulate ADCC_OVERSAMPLE_COUNT conversions per average
-   ADCNT = 0;                     // Conversion counter (cleared by hardware at start of each group)
-   ADFLTRH = 0;                   // Clear the filter/average result register before first run
+   ADPRE = 15;                        // 15 clock ticks for pre-charge (15us at 1us TAD)
+   ADACQ = 15;                        // 15 clock ticks for acquisition time (15us at 1us TAD)
+   ADCAP = 0;                         // No additional Sample/Hold capacitance
+   ADRPT = ADCC_OVERSAMPLE_COUNT - 1; // Accumulate ADCC_OVERSAMPLE_COUNT conversions per average
+   ADCNT = 0;                         // Conversion counter (cleared by hardware at start of each group)
+   ADFLTRH = 0;                       // Clear the filter/average result register before first run
    ADFLTRL = 0;
 
-   ADSTPT = 0;
-   ADLTH = 0;
+   ADSTPT = 0; // No offset for the window comparator (unused in this example)
+   ADLTH = 0;  // No threshold for the window comparator (unused in this example)
    ADUTH = 0;
 
    ADACT = 0; // No auto-conversion trigger source
    ADCP = 0;  // A/D Charge Pump is disabled. This is needed only if the operating
               // voltage is below 5v.
 
-   PIE1bits.ADIE = 1; // Enable ADC conversion complete interrupt
-   PIE2bits.ADTIE = 0;
-   PIR1bits.ADIF = 0; // Clear ADC interrupt flag before enabling interrupts globally
-   PIR2bits.ADTIF = 0;
+   PIE1bits.ADIE = 1;  // Enable ADC conversion complete interrupt
+   PIE2bits.ADTIE = 0; // Disable ADCC threshold interrupt (unused in this example)
+   PIR1bits.ADIF = 0;  // Clear ADC interrupt flag before enabling interrupts globally
+   PIR2bits.ADTIF = 0; // Clear ADCC threshold interrupt flag just in case
 
    ADCON0bits.ADON = 1; // Turn on the ADC after configuration is complete
-   ADCON0bits.GO = 1;   // Start continuous conversions
+   ADCON0bits.GO = 0;   // Wait for software trigger from the main loop
 
    /* Re-enable interrupts now that hardware registers are stable. */
    INTCON0bits.GIEL = 1; /* Enable low priority interrupts (required for low_priority vectored ISRs). */
