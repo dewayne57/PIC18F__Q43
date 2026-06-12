@@ -11,6 +11,129 @@
 		(company "Dewayne Hafenstein")
 	)
 	(lib_symbols
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector:USB_A"
 			(pin_names
 				(offset 1.016)
@@ -3013,9 +3136,9 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "DAC output (RA1) is looped\nback to ADCC input (RA0)"
+	(text "DAC output (RA1)"
 		(exclude_from_sim no)
-		(at 20.32 58.166 0)
+		(at 55.118 39.624 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3023,28 +3146,6 @@
 			(justify left)
 		)
 		(uuid "206d986e-b0ec-4ad9-885c-716f11b4717b")
-	)
-	(text "NOTE:  A common mistake is to wire the controllers TX output to the TX\npin of the FT232.  The  FT232 is labeled from the perspective of a remote\ndevice you want to connect to, so the FT232 TX pin should be connected to\nthe controllers RX input, FT232 RX pin to the controllers TX output, etc. \n\nThis is NOT the case when using an RS232 level shifter such as the \nMAX232, which is simply translating the signals to RS-232 levels. "
-		(exclude_from_sim no)
-		(at 63.246 187.96 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b16dd079-2fbb-4b25-ab5b-a17b3975c937")
-	)
-	(text "Notes:\n1. Implement one or the other interface options, USB or RS-232,\n   but not both.\n2. Place C101 and C102 physically close to U101.\n3. For USB interface, place C109 and C110 physically close to U103.\n4. For RS-232 interface, locate C103 - C107 physically close to U102.\n5. This example does not use hardware or software flow control!"
-		(exclude_from_sim no)
-		(at 30.734 158.242 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "df92f4b9-ed46-45fc-b52c-62b12e15ec86")
 	)
 	(text "USB Interface"
 		(exclude_from_sim no)
@@ -3294,6 +3395,10 @@
 		(uuid "e22393b0-ada8-4935-b02d-93f4c7d5abb6")
 	)
 	(no_connect
+		(at 60.96 57.15)
+		(uuid "f746bde4-8e3e-4f1c-a290-de6e925d0b90")
+	)
+	(no_connect
 		(at 104.14 110.49)
 		(uuid "faa44e38-ace4-4da6-970a-2ec1d2ed0ce3")
 	)
@@ -3527,16 +3632,6 @@
 		)
 		(uuid "4ad72235-2e9d-471e-9194-5de743636066")
 	)
-	(bus
-		(pts
-			(xy 137.16 40.64) (xy 137.16 111.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4bcfb3e7-5e41-4205-8fe5-f37e6c223381")
-	)
 	(wire
 		(pts
 			(xy 185.42 104.14) (xy 180.34 104.14)
@@ -3599,16 +3694,6 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 57.15) (xy 55.88 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "67b7cb91-8e03-4671-b3b3-bff4aaf774c2")
-	)
-	(wire
-		(pts
 			(xy 104.14 57.15) (xy 106.68 57.15)
 		)
 		(stroke
@@ -3636,16 +3721,6 @@
 			(type default)
 		)
 		(uuid "6bdda521-ebfe-496f-96d1-daf5ac014f87")
-	)
-	(wire
-		(pts
-			(xy 60.96 57.15) (xy 55.88 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6c5fc49d-cf5e-4ac5-8f63-92ed87e2ba79")
 	)
 	(wire
 		(pts
@@ -3756,6 +3831,16 @@
 			(type default)
 		)
 		(uuid "82c0bf05-603b-40c1-998b-29eae7103ae4")
+	)
+	(bus
+		(pts
+			(xy 30.48 55.88) (xy 30.48 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "83496a4b-9888-427c-8470-a38e0f2d05d8")
 	)
 	(wire
 		(pts
@@ -3906,6 +3991,16 @@
 			(type default)
 		)
 		(uuid "a7a900de-90ed-492f-bcdd-a04ccd0fb9cf")
+	)
+	(bus
+		(pts
+			(xy 137.16 95.25) (xy 137.16 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a8072a11-c664-4141-9ebf-d2be15b151d2")
 	)
 	(wire
 		(pts
@@ -4096,6 +4191,16 @@
 			(type default)
 		)
 		(uuid "d4f84649-9ef2-44d4-8487-6ea1acf40d68")
+	)
+	(wire
+		(pts
+			(xy 55.88 46.99) (xy 55.88 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d6090fcd-2001-44dd-bd4e-753993479e1c")
 	)
 	(wire
 		(pts
@@ -6804,6 +6909,85 @@
 			(project "DAC 01 Reference Ladder"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C105")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 55.88 46.99 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e50cb494-da43-4b7b-8f79-d09816374725")
+		(property "Reference" "TP1"
+			(at 58.42 42.4179 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "DAC_OUT"
+			(at 58.42 44.9579 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 60.96 46.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 60.96 46.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 55.88 46.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1cef1f7b-35fe-450d-8e18-14e59acfab3e")
+		)
+		(instances
+			(project "DAC 01 Reference Ladder"
+				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
+					(reference "TP1")
 					(unit 1)
 				)
 			)
