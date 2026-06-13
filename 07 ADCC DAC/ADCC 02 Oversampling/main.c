@@ -68,13 +68,13 @@ void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
 }
 
 // @brief ADC interrupt service routine.  Fires once per ADCC_OVERSAMPLE_COUNT
-/// conversions when the hardware Average mode result is ready in ADFLTR.
+/// conversions when the hardware Average mode result is transferred into ADRES.
 /// The ISR copies the hardware-averaged 12-bit value for UART reporting.
 void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 {
     if (PIR1bits.ADIF)
     {
-        adcAveragedCounts = ADFLTR; // Hardware has already averaged ADCC_OVERSAMPLE_COUNT samples
+        adcAveragedCounts = ADRES;
         PIR1bits.ADIF = 0;
         reportAveragedSample = true;
     }
@@ -82,7 +82,7 @@ void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 #else
 /// @brief Legacy (flat) interrupt service routine.  Handles all interrupts, including UART and ADC.
 /// The ADC interrupt fires once per ADCC_OVERSAMPLE_COUNT conversions when the hardware Average mode
-/// result is ready in ADFLTR. The ISR copies the hardware-averaged 12-bit value for UART reporting.
+/// result is transferred into ADRES. The ISR copies the hardware-averaged 12-bit value for UART reporting.
 /// @param  None
 /// @return  None
 void __interrupt() NonVectoredISR(void)
@@ -99,7 +99,7 @@ void __interrupt() NonVectoredISR(void)
 
     if (PIR1bits.ADIF)
     {
-        adcAveragedCounts = ADFLTR; // Hardware has already averaged ADCC_OVERSAMPLE_COUNT samples
+        adcAveragedCounts = ADRES;
         PIR1bits.ADIF = 0;
         reportAveragedSample = true;
     }
@@ -137,27 +137,26 @@ void main(void)
     {
         if (reportAveragedSample)
         {
+            reportAveragedSample = false;
             uint16_t sampleCounts;
             uint32_t sampleMv;
 
             INTCON0bits.GIEH = 0;
             sampleCounts = adcAveragedCounts;
-            reportAveragedSample = false;
             INTCON0bits.GIEH = 1;
 
             sampleMv = ADCC_COUNTS_TO_MV(sampleCounts);
             printf("Averaged Input: %4u counts (%4lu mV)%s", sampleCounts, sampleMv, CRLF);
         }
 
-        // Start a new hardware average conversion group whenever the trigger countdown reaches zero and the
-        // ADC is not already busy with a conversion.  We will not wait for it to complete here - the ADC interrupt
-        // will fire when the result is ready, and the ISR will copy the result for reporting in the main loop.
-        // The main loop just manages the trigger cadence and reporting of completed results, while the ADC hardware
-        // and ISR handle the oversampling and averaging autonomously in the background.
+        // Start one new ADCC hardware-average burst whenever the trigger countdown
+        // reaches zero and the ADC is idle.
         if ((triggerCountdownMs == 0U) && (ADCON0bits.GO == 0))
         {
-            PIR1bits.ADIF = 0; // Ensure we only react to the next completed trigger
-            ADCON0bits.GO = 1; // Start one ADCC hardware-average conversion group
+            PIR1bits.ADIF = 0;
+            ADCON0bits.GO = 1;
+
+            triggerCountdownMs = ADCC_TRIGGER_PERIOD_MS; // Reset the trigger countdown for the next cycle
         }
 
         // Simple software timer for managing the trigger cadence.  The main loop is not doing anything else,
@@ -167,6 +166,5 @@ void main(void)
             __delay_ms(1);
             triggerCountdownMs--;
         }
-        triggerCountdownMs = ADCC_TRIGGER_PERIOD_MS; // Reset the trigger countdown for the next cycle
     }
 }

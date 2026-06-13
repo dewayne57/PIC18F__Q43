@@ -45,11 +45,9 @@ void SYSTEM_Initialize(void)
 
    /* RB0 and RB1 are reserved for UART. No status LEDs are used in ADCC 02. */
 
-   /* Initialize the ADCC in hardware Average mode.  The ADCC accumulates
-      ADCC_OVERSAMPLE_COUNT consecutive conversions, right-shifts the sum by
-      ADCC_OVERSAMPLE_CRS bits, and stores the averaged result in ADFLTR.  A
-      single ADIF interrupt fires after each completed average group, so the
-      application ISR simply reads ADFLTR without any software accumulation. */
+   /* Initialize the ADCC in hardware Average mode. The ADCC accumulates
+      ADCC_OVERSAMPLE_COUNT conversions per trigger and right-shifts by CRS
+      so ADFLTR contains one averaged 12-bit result per burst. */
    ADCON0bits.ADON = 0; // Ensure the ADC is off before configuring
    ADCON0bits.CONT = 0; // Single-shot mode: software sets GO each trigger period
    ADCON0bits.CS = 0;   // ADC clock derived from system clock (ADCCLK = FOSC)
@@ -61,12 +59,13 @@ void SYSTEM_Initialize(void)
    ADCON1bits.GPOL = 0; // Unipolar input
    ADCON1bits.DSEN = 0; // No double sampling
 
-   ADCON2bits.PSIS = 0;                  // ADRES is transferred to ADPREV at start-of-conversion
-   ADCON2bits.CRS = ADCC_OVERSAMPLE_CRS; // Right-shift accumulator to produce 12-bit average
-   ADCON2bits.MD = 0b010;                // Average mode: accumulate ADRPT+1 samples, average into ADFLTR
+   ADCON2bits.PSIS = 0;                   // ADRES is transferred to ADPREV at start-of-conversion
+   ADCON2bits.CRS = ADCC_OVERSAMPLE_CRS;  // Right-shift accumulated sum into 12-bit average
+   ADCON2bits.MD = 0b010;                 // Average mode: accumulate ADRPT+1 samples into ADFLTR
+   ADCON2bits.ACLR = 1;                   // Auto-clear accumulator between bursts to prevent carryover
 
-   ADCON3bits.CALC = 0b000; // No additional post-processing on the averaged result
-   ADCON3bits.TMD = 0b010;  // Interrupt after averaging computation is complete
+   ADCON3bits.CALC = 0b000; // No additional post-processing
+   ADCON3bits.TMD = 0b010;  // Interrupt when averaging computation is complete
 
    ADCLK = 32; // ADC clock derived from system clock divided by 64 (1us TAD)
 
@@ -89,8 +88,8 @@ void SYSTEM_Initialize(void)
    ADPRE = 15;                        // 15 clock ticks for pre-charge (15us at 1us TAD)
    ADACQ = 15;                        // 15 clock ticks for acquisition time (15us at 1us TAD)
    ADCAP = 0;                         // No additional Sample/Hold capacitance
-   ADRPT = ADCC_OVERSAMPLE_COUNT - 1; // Accumulate ADCC_OVERSAMPLE_COUNT conversions per average
-   ADCNT = 0;                         // Conversion counter (cleared by hardware at start of each group)
+   ADRPT = ADCC_OVERSAMPLE_COUNT - 1; // Accumulate ADCC_OVERSAMPLE_COUNT conversions per burst
+   ADCNT = 0;                         // Start conversion counter from known state
    ADFLTRH = 0;                       // Clear the filter/average result register before first run
    ADFLTRL = 0;
 
@@ -102,7 +101,7 @@ void SYSTEM_Initialize(void)
    ADCP = 0;  // A/D Charge Pump is disabled. This is needed only if the operating
               // voltage is below 5v.
 
-   PIE1bits.ADIE = 1;  // Enable ADC conversion complete interrupt
+   PIE1bits.ADIE = 1;  // ADC interrupt reports each completed averaged burst
    PIE2bits.ADTIE = 0; // Disable ADCC threshold interrupt (unused in this example)
    PIR1bits.ADIF = 0;  // Clear ADC interrupt flag before enabling interrupts globally
    PIR2bits.ADTIF = 0; // Clear ADCC threshold interrupt flag just in case

@@ -76,7 +76,7 @@ void SYSTEM_Initialize(void);
 
 // ADCON2.CRS = log2(ADCC_OVERSAMPLE_COUNT).  Right-shifts the accumulator so
 // that ADFLTR holds a 12-bit average (same resolution as a single conversion).
-#define ADCC_OVERSAMPLE_CRS    4U
+#define ADCC_OVERSAMPLE_CRS    5U
 
 // Software trigger cadence for starting a new ADCC average conversion group.
 #define ADCC_TRIGGER_PERIOD_MS 1000U

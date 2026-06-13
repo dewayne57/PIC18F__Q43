@@ -188,7 +188,7 @@ void main(void)
     {
         if (reportWindowState) { 
             reportWindowState = false; 
-            char *state = "UNKNOWN"; 
+            char *state; 
             switch (windowState) { 
                 case WINDOW_LOW:
                     state = "LOW";
@@ -199,6 +199,8 @@ void main(void)
                 case WINDOW_HIGH:
                     state = "HIGH"; 
                     break;
+                default:
+                    state = "UNKNOWN";
             }
             
             printf("Input voltage is %s%s", state, CRLF);
