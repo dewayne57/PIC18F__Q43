@@ -38,7 +38,8 @@ void SYSTEM_Initialize(void)
       the UART TX/RX pins on Port B are in digital mode so the UART module can drive them.
       Ports C and D are cleared for the same reason - Analog is used only on port A. */
    ANSELA = 0xFF;        // All port A pins are analog
-   TRISAbits.TRISA0 = 1; // RA0 as input for the potentiometer voltage measurement
+   TRISA = 0xFF;         // Disable the port driver on all pins
+   WPUA = 0x00;          // Disable weak pull-ups on all Port A pins
    ANSELB = 0x00;        // All Port B pins: digital mode
    ANSELC = 0x00;        // All Port C pins: digital mode
    ANSELD = 0x00;        // All Port D pins: digital mode

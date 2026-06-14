@@ -78,7 +78,7 @@ void SYSTEM_Initialize(void);
 #define DAC_LADDER_STEP_MV 100
 #define DAC_STEP_PERIOD_MS 1000
 
-// Route DAC output to the DAC1OE[2:0] output selection that maps to AN1 on this design.
-#define DAC1_OUTPUT_TO_AN1 0b010
+// Route DAC output to the DAC1OE[2:0] output selection that maps to RA1 / AN1 on this design.
+#define DAC1_OUTPUT_TO_AN2 0b010
 
 #endif /* CONFIG_H */

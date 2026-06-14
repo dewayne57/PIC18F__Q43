@@ -27,23 +27,24 @@ void SYSTEM_Initialize(void)
    INTCON0bits.GIEH = 0;
    INTCON0bits.GIEL = 0;
 
-   // RA1 is used as the DAC analog output and ADCC readback channel.
-   ANSELA = 0xFF;
-   TRISAbits.TRISA1 = 1;
+   // RA2 is used as the DAC analog output and ADCC readback channel.
+   ANSELA = 0xFF; // All port A pins are analog
+   TRISA = 0xff;  // Disable the port driver on all Port A pins
+   WPUA = 0x00;   // Disable weak pull-ups on all Port A pins
    ANSELB = 0x00;
    ANSELC = 0x00;
    ANSELD = 0x00;
 
-   // Configure DAC1 to generate output on AN1 using VDD/VSS references.
+   // Configure DAC1 to generate output on RA2 / AN1 using VDD/VSS references.
    PMD3bits.DAC1MD = 0;
    DAC1CON = 0;
    DAC1CONbits.NSS = 0b00;
    DAC1CONbits.PSS = 0b00;
-   DAC1CONbits.OE = DAC1_OUTPUT_TO_AN1;
+   DAC1CONbits.OE = DAC1_OUTPUT_TO_AN2;
    DAC1DATL = (uint8_t)DAC_MV_TO_COUNTS(DAC_LADDER_MIN_MV);
    DAC1CONbits.EN = 1;
 
-   // Configure ADCC single-shot average mode to sample AN1 after each DAC update.
+   // Configure ADCC single-shot average mode to sample RA2 / AN2 after each DAC update.
    ADCON0bits.ADON = 0;
    ADCON0bits.CONT = 0;
    ADCON0bits.CS = 0;
@@ -65,7 +66,7 @@ void SYSTEM_Initialize(void)
    ADCLK = 32;
    ADREFbits.NREF = 0;
    ADREFbits.PREF = 0b00;
-   ADPCHbits.PCH = 0b00001;
+   ADPCHbits.PCH = 0b00010; // Select AN2 as the input channel for ADCC
 
    ADPRE = 15;
    ADACQ = 15;

@@ -11,7 +11,7 @@ sweep repeats indefinitely.
 After each step, the ADCC samples the DAC output and reports the measured
 voltage over UART.
 
-The DAC output is presented on AN1 for external measurement if desired.
+The DAC output is presented on RA1 (AN1) for external measurement if desired.
 
 ## How It Works
 1. The main loop updates DAC1 by 100 mV every 1000 ms.

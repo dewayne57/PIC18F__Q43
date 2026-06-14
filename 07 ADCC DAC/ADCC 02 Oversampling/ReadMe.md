@@ -15,8 +15,8 @@ reported value. The tradeoff is response time: larger sample counts improve
 stability, but they also slow the system response to real changes at the input.
 
 This project uses the same schematic as the window comparator example, but
-without the LED indication. Instead, the firmware reports the sampled input
-voltage over UART for a 0 V to 5 V input range.
+without the LED indication. RA0 is the sampled analog input. The firmware
+reports that input voltage over UART for a 0 V to 5 V range.
 
 The ADCC conversion sequence is started in software about every 1 second.
 The main loop does not wait for conversion completion. When the hardware
