@@ -107,15 +107,25 @@ void __interrupt() NonVectoredISR(void)
 #endif
 
 /// @brief Main application entry point.
+/// Initializes the ADCC for hardware oversampling and averaging, sets up the UART for console 
+/// reporting, and then enters a loop where it triggers ADCC conversions at a regular interval 
+/// and reports the averaged results over UART when they are ready.
+/// @Note This code uses the ADCC hardware averaging feature, which means the ADC interrupt 
+/// fires only once per ADCC_OVERSAMPLE_COUNT conversions, when the average result is transferred
+/// into ADRES.  This means that the main loop is free to perform other tasks or enter a 
+/// low-power state between samples if desired, since it does not need to service an interrupt 
+/// for every single conversion.  In this demonstration, the main loop simply waits for the 
+/// averaged sample to be ready and then prints it over UART, while also managing the timing 
+/// of the ADCC triggers with a simple software timer.
 /// @param  None
 /// @return  None
 void main(void)
 {
     uint16_t triggerCountdownMs;
 
-    adcAveragedCounts = 0U;
+    adcAveragedCounts = 0;
     reportAveragedSample = false;
-    triggerCountdownMs = 0U; // Trigger immediately at startup, then every ADCC_TRIGGER_PERIOD_MS
+    triggerCountdownMs = 0; // Trigger immediately at startup, then every ADCC_TRIGGER_PERIOD_MS
 
     SYSTEM_Initialize();
     if (!UART_Open(&console_uart))
@@ -133,6 +143,8 @@ void main(void)
            ADCC_TRIGGER_PERIOD_MS,
            CRLF);
 
+    // Main loop: wait for averaged sample to be ready, print it, and trigger the next
+    // burst when the timer expires.
     while (1)
     {
         if (reportAveragedSample)
@@ -159,9 +171,9 @@ void main(void)
             triggerCountdownMs = ADCC_TRIGGER_PERIOD_MS; // Reset the trigger countdown for the next cycle
         }
 
-        // Simple software timer for managing the trigger cadence.  The main loop is not doing anything else,
-        // so a blocking delay is sufficient.
-        while (triggerCountdownMs > 0U)
+        // Simple software timer for managing the trigger cadence.  The main loop is not doing 
+        // anything else, so a blocking delay is sufficient.
+        while (triggerCountdownMs > 0)
         {
             __delay_ms(1);
             triggerCountdownMs--;

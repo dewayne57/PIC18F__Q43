@@ -47,7 +47,11 @@ void SYSTEM_Initialize(void)
 
    /* Initialize the ADCC in hardware Average mode. The ADCC accumulates
       ADCC_OVERSAMPLE_COUNT conversions per trigger and right-shifts by CRS
-      so ADFLTR contains one averaged 12-bit result per burst. */
+      so ADFLTR contains one averaged 12-bit result per burst. Right shifting
+      is essentially a division by 2^CRS.  Since the result is the sum of
+      multiple samples, the division calculates the average value.  This
+      means the division must be the same number as the number of accumulated
+      samples, and because we are using shifting, must be a power of 2. */
    ADCON0bits.ADON = 0; // Ensure the ADC is off before configuring
    ADCON0bits.CONT = 0; // Single-shot mode: software sets GO each trigger period
    ADCON0bits.CS = 0;   // ADC clock derived from system clock (ADCCLK = FOSC)
@@ -59,10 +63,10 @@ void SYSTEM_Initialize(void)
    ADCON1bits.GPOL = 0; // Unipolar input
    ADCON1bits.DSEN = 0; // No double sampling
 
-   ADCON2bits.PSIS = 0;                   // ADRES is transferred to ADPREV at start-of-conversion
-   ADCON2bits.CRS = ADCC_OVERSAMPLE_CRS;  // Right-shift accumulated sum into 12-bit average
-   ADCON2bits.MD = 0b010;                 // Average mode: accumulate ADRPT+1 samples into ADFLTR
-   ADCON2bits.ACLR = 1;                   // Auto-clear accumulator between bursts to prevent carryover
+   ADCON2bits.PSIS = 0;                  // ADRES is transferred to ADPREV at start-of-conversion
+   ADCON2bits.CRS = ADCC_OVERSAMPLE_CRS; // Right-shift accumulated sum into 12-bit average
+   ADCON2bits.MD = 0b010;                // Average mode: accumulate ADRPT+1 samples into ADFLTR
+   ADCON2bits.ACLR = 1;                  // Auto-clear accumulator between bursts to prevent carryover
 
    ADCON3bits.CALC = 0b000; // No additional post-processing
    ADCON3bits.TMD = 0b010;  // Interrupt when averaging computation is complete
@@ -89,6 +93,9 @@ void SYSTEM_Initialize(void)
    ADACQ = 15;                        // 15 clock ticks for acquisition time (15us at 1us TAD)
    ADCAP = 0;                         // No additional Sample/Hold capacitance
    ADRPT = ADCC_OVERSAMPLE_COUNT - 1; // Accumulate ADCC_OVERSAMPLE_COUNT conversions per burst
+   // Note, since ADRPT is zero-indexed, we set it to one less than the desired count. Or, said
+   // another way, ADRPT is the number of additional conversions after the first one, so it is 
+   // total count minus one.
    ADCNT = 0;                         // Start conversion counter from known state
    ADFLTRH = 0;                       // Clear the filter/average result register before first run
    ADFLTRL = 0;
@@ -110,6 +117,6 @@ void SYSTEM_Initialize(void)
    ADCON0bits.GO = 0;   // Wait for software trigger from the main loop
 
    /* Re-enable interrupts now that hardware registers are stable. */
-   INTCON0bits.GIEL = 1; /* Enable low priority interrupts (required for low_priority vectored ISRs). */
-   INTCON0bits.GIEH = 1; /* Enable high priority interrupts (master enable). */
+   INTCON0bits.GIEL = 1; /* Enable low priority interrupts. */
+   INTCON0bits.GIEH = 1; /* Enable high priority interrupts. */
 }
