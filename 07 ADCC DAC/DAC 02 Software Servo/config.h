@@ -1,8 +1,8 @@
 /* *****************************************************************************************
  *   File Name: config.h
- *   Description: Configuration header for DAC 01 Reference Ladder.
+ *   Description: Configuration header for DAC 02 Software Servo Threshold.
  *   Author: Dewayne Hafenstein
- *   Date: 2026-06-12
+ *   Date: 2026-06-14
  *
  *   Copyright (c) 2026, Dewayne Hafenstein.
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,13 +72,19 @@ void SYSTEM_Initialize(void);
 #define ADCC_OVERSAMPLE_COUNT 16
 #define ADCC_OVERSAMPLE_CRS 4
 
-// DAC ladder behavior.
-#define DAC_LADDER_MIN_MV 0
-#define DAC_LADDER_MAX_MV 5000
-#define DAC_LADDER_STEP_MV 100
-#define DAC_STEP_PERIOD_MS 1000
+// ADCC channels for this design.
+#define ADCC_CHANNEL_SETPOINT_AN0 0b00000
+#define ADCC_CHANNEL_FEEDBACK_AN1 0b00001
 
-// Route DAC output to the DAC1OE[2:0] output selection that maps to AN1 on this design.
+// Servo loop behavior.
+#define SERVO_SAMPLE_PERIOD_MS 2
+#define SERVO_REPORT_PERIOD_MS 100
+#define SERVO_DEADBAND_COUNTS 3
+#define SERVO_STEP_COUNTS 1
+#define SERVO_FILTER_SHIFT 2
+
+// DAC startup/output settings.
+#define DAC_STARTUP_MV 0
 #define DAC1_OUTPUT_TO_AN1 0b010
 
 #endif /* CONFIG_H */

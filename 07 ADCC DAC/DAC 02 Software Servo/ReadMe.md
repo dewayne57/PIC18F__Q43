@@ -10,7 +10,8 @@ action (an adjustment that drives the output toward the setpoint).
 
 This example implements a simple software servo using the PIC 18F Q43 DAC and ADCC.
 A 10 kOhm potentiometer connected between +5 V and GND provides the setpoint voltage
-on one ADCC channel. The DAC output is looped back to a second ADCC channel to
+on one ADCC (AN0) channel.  The ADCC value is oversampled and filtered to reduce the 
+jitter.  The DAC output is looped back to a second ADCC channel to
 provide feedback. The firmware reads both channels, compares the setpoint to the
 feedback, and increments or decrements the DAC register to drive the DAC output
 toward the potentiometer voltage.

@@ -58,6 +58,15 @@ static uart_handle_t console_uart = {
     .isr_mode = UART_ISR_VECTORED,
 };
 
+/// @brief Set the DAC output to the specified millivolt value.
+/// This function updates the DAC output and also stores the current setpoint in both
+/// millivolts and raw DAC counts for later reference in the main loop when reporting samples.
+/// The conversion from millivolts to DAC counts uses the DAC_MV_TO_COUNTS macro defined in config.h,
+/// which includes rounding for better accuracy.
+/// @note The caller should ensure that the targetMv value is within the valid range defined by the
+/// DAC and the application (e.g., 0 to APP_VREF_MV).
+/// @param targetMv The target output voltage in millivolts.
+/// @return None.
 static void DAC1_WriteMillivolts(uint16_t targetMv)
 {
     uint8_t dacCounts = (uint8_t)DAC_MV_TO_COUNTS(targetMv);
@@ -67,17 +76,28 @@ static void DAC1_WriteMillivolts(uint16_t targetMv)
     dacSetpointCounts = dacCounts;
 }
 
+/// Interrupt Service Routines
 #if defined(VECTORED_INTERRUPTS_ENABLED)
+
+/// @brief Handle UART1 receive interrupts.
+/// @param None.
+/// @return None.
 void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
 {
     UART_HandleRxInterrupt(&console_uart);
 }
 
+/// @brief Handle UART1 transmit interrupts.
+/// @param None.
+/// @return None.
 void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
 {
     UART_HandleTxInterrupt(&console_uart);
 }
 
+/// @brief Handle ADC interrupts.
+/// @param None.
+/// @return None.
 void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 {
     if (PIR1bits.ADIF)
@@ -88,6 +108,9 @@ void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
     }
 }
 #else
+/// @brief Handle all non-vectored interrupts.
+/// @param None.
+/// @return None.
 void __interrupt() NonVectoredISR(void)
 {
     if (PIR4bits.U1RXIF)
@@ -109,6 +132,9 @@ void __interrupt() NonVectoredISR(void)
 }
 #endif
 
+/// @brief Main application entry point.
+/// @param None.
+/// @return None.
 void main(void)
 {
     uint16_t triggerCountdownMs = 0U;
@@ -161,7 +187,7 @@ void main(void)
                    CRLF);
         }
 
-        if ((triggerCountdownMs == 0U) && (ADCON0bits.GO == 0))
+        if ((triggerCountdownMs == 0) && (ADCON0bits.GO == 0))
         {
             DAC1_WriteMillivolts(nextDacMv);
 
@@ -196,7 +222,7 @@ void main(void)
         }
 
         __delay_ms(1);
-        if (triggerCountdownMs > 0U)
+        if (triggerCountdownMs > 0)
         {
             triggerCountdownMs--;
         }
