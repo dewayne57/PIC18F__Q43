@@ -5,7 +5,7 @@
 	(uuid "d3b5dd27-4845-413f-badb-7f64f7fb8d77")
 	(paper "A")
 	(title_block
-		(title "DAC 02 Software Servo Threshold")
+		(title "Temp 02 Thermistor Linearization")
 		(date "2026-04-11")
 		(rev "1")
 		(company "Dewayne Hafenstein")
@@ -2001,268 +2001,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:R_Potentiometer_US"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "RV"
-				(at -4.445 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "R_Potentiometer_US"
-				(at -2.54 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Potentiometer, US symbol"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Sim.Device" "R"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Sim.Type" "POT"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Sim.Pins" "1=r0 2=wiper 3=r1"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "resistor variable"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Potentiometer*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "R_Potentiometer_US_0_1"
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0 2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.286) (xy 1.016 1.905) (xy 0 1.524) (xy -1.016 1.143) (xy 0 0.762)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0.762) (xy 1.016 0.381) (xy 0 0) (xy -1.016 -0.381) (xy 0 -0.762)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -0.762) (xy 1.016 -1.143) (xy 0 -1.524) (xy -1.016 -1.905) (xy 0 -2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -2.286) (xy 0 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.143 0) (xy 2.286 0.508) (xy 2.286 -0.508) (xy 1.143 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 0) (xy 1.524 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "R_Potentiometer_US_1_1"
-				(pin passive line
-					(at 0 3.81 270)
-					(length 1.27)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 0 180)
-					(length 1.27)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -3.81 90)
-					(length 1.27)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:R_US"
 			(pin_numbers
 				(hide yes)
@@ -2413,6 +2151,208 @@
 				)
 			)
 			(symbol "R_US_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:Thermistor_US"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TH"
+				(at 2.54 1.27 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Thermistor_US"
+				(at -2.54 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Thermistor, temperature dependent resistor, US symbol"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res thermistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_* RV_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Thermistor_US_0_1"
+				(polyline
+					(pts
+						(xy -1.905 2.54) (xy -1.905 1.27) (xy 1.905 -1.27) (xy 1.905 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.286) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.286) (xy 1.016 1.905) (xy 0 1.524) (xy -1.016 1.143) (xy 0 0.762)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0.762) (xy 1.016 0.381) (xy 0 0) (xy -1.016 -0.381) (xy 0 -0.762)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -0.762) (xy 1.016 -1.143) (xy 0 -1.524) (xy -1.016 -1.905) (xy 0 -2.286)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -2.286) (xy 0 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Thermistor_US_1_1"
 				(pin passive line
 					(at 0 3.81 270)
 					(length 1.27)
@@ -3275,27 +3215,38 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "NOTE:  A common mistake is to wire the controllers TX output to the TX\npin of the FT232.  The  FT232 is labeled from the perspective of a remote\ndevice you want to connect to, so the FT232 TX pin should be connected to\nthe controllers RX input, FT232 RX pin to the controllers TX output, etc. \n\nThis is NOT the case when using an RS232 level shifter such as the \nMAX232, which is simply translating the signals to RS-232 levels. "
+	(text "Note: There are several more ways to linearize a thermistor that are not shown.  One \napproach (not shown) is to use a resistor in parallel with the thermistor that corrects\nits resistance at the center of the range your interested in.  As you get further away \nfrom this central correction, the error will increase.  This approach is convenient and \neasy, but reduces the dynamic range of the thermistor and does not provide true linearization \nacross the full scale."
 		(exclude_from_sim no)
-		(at 63.246 187.96 0)
+		(at 157.48 24.384 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "b16dd079-2fbb-4b25-ab5b-a17b3975c937")
+		(uuid "2417860a-92d2-4a9f-aa71-6d233b36e676")
 	)
-	(text "Notes:\n1. Implement one or the other interface options, USB or RS-232,\n   but not both.\n2. Place C101 and C102 physically close to U101.\n3. For USB interface, place C109 and C110 physically close to U103.\n4. For RS-232 interface, locate C103 - C107 physically close to U102.\n5. This example does not use hardware or software flow control!"
+	(text "Use a thermistor that reads about 10K at room temperature and has a negative temperature coefficient.  This allows \nthe sensed voltage to increase as the temperature increases (the NTC thermistor decreases in value).  Calibrate the \nsensor at several temperatures if possible, such as freezing (0C or 32F), room temperature (25C or 77F), and boiling \nwater (100C or 212F).  This 3 point calibration should provide a good linearization of the thermistor.  Alternatively, \nif you have access to the linearization tables of the thermistor you are using, these can be entered directly.\n\nAlternatively, you can also use the thermistors \"beta\" value and the software can correct the temperature reading, if you \nknow the beta of the thermistor you are using.\n\nIn the example circuit I used a TDK NTCDS3HG103HC3NB. The beta for this part is 3400K, has a resistance of 10K at 25C, and a \nB tolerance of 2%.  It is a relatively inexpensive part.  You can use any thermistor you like (including PTC) but the software \nwill need to be adjusted appropriately.\n\nThe software has different symbols that can be defined to demonstrate using the calibration points, the linearization \ntables, or the beta values and tolerances.  The code must be compiled with one of these macros enabled to demonstrate a \nspecific approach."
 		(exclude_from_sim no)
-		(at 30.734 158.242 0)
+		(at 128.778 77.47 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "df92f4b9-ed46-45fc-b52c-62b12e15ec86")
+		(uuid "642e58c7-a9ea-43b6-9145-14005e99f82b")
+	)
+	(text "The value of R105 is chosen to produce a voltage at the junction of less than 4.096V\nwhen the thermistor is at it's lowest resistance.  For the values shown, using TDK \nNTCDS3HG103HC3NB, the range of voltages from 0C to 100C are approx 0.69V to 4.08V.  \nAdjust the resistor for the thermistor you are using to produce a voltage less than \n4.096V at full scale."
+		(exclude_from_sim no)
+		(at 157.226 48.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9f06061f-9943-4b68-871a-5025750738cb")
 	)
 	(text "USB Interface"
 		(exclude_from_sim no)
@@ -3325,6 +3276,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "15e97951-b35e-413d-b490-fcc9c7050cc3")
+	)
+	(junction
+		(at 147.32 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "207e1de9-1705-4c40-826e-b8861e348bc1")
 	)
 	(junction
 		(at 234.95 157.48)
@@ -3493,6 +3450,10 @@
 		(uuid "a9db1791-2275-443c-95fd-ddc446692905")
 	)
 	(no_connect
+		(at 60.96 59.69)
+		(uuid "aafd4d27-162e-4710-82aa-7e5c74058e40")
+	)
+	(no_connect
 		(at 162.56 127)
 		(uuid "ab7db557-1c44-413b-9dff-753bfd69ec71")
 	)
@@ -3529,6 +3490,10 @@
 		(uuid "ce8eb70a-9c11-42a3-a461-a9547607d379")
 	)
 	(no_connect
+		(at 60.96 62.23)
+		(uuid "d7979d58-3976-415d-8b81-aac8e82d1e36")
+	)
+	(no_connect
 		(at 104.14 107.95)
 		(uuid "d8db1b2b-f9a3-49ae-9356-730a5e998a4c")
 	)
@@ -3547,15 +3512,6 @@
 	(no_connect
 		(at 60.96 92.71)
 		(uuid "fb452e32-ea43-4364-85c7-edfdb0afb810")
-	)
-	(bus_entry
-		(at 30.48 54.61)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1756f1c7-02af-4ce4-a493-19ce74a859d0")
 	)
 	(bus_entry
 		(at 30.48 82.55)
@@ -3593,15 +3549,6 @@
 		)
 		(uuid "a0b9626f-d609-499e-893b-c8ee8e2babd9")
 	)
-	(bus_entry
-		(at 137.16 43.18)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e71ae5f5-33e5-4363-9b91-d3402d16203a")
-	)
 	(wire
 		(pts
 			(xy 238.76 134.62) (xy 238.76 135.89)
@@ -3611,16 +3558,6 @@
 			(type default)
 		)
 		(uuid "00e71737-8734-49bd-8bd1-9b1e205fa637")
-	)
-	(bus
-		(pts
-			(xy 30.48 52.07) (xy 30.48 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "05fc9198-07b8-421b-a0c7-b21da39c9e46")
 	)
 	(wire
 		(pts
@@ -3651,16 +3588,6 @@
 			(type default)
 		)
 		(uuid "170775a8-4e97-45e0-b977-265016fae9da")
-	)
-	(wire
-		(pts
-			(xy 160.02 39.37) (xy 160.02 41.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "26d6801e-e7ba-40c3-a145-82b3f5470221")
 	)
 	(wire
 		(pts
@@ -3812,16 +3739,6 @@
 		)
 		(uuid "4ad72235-2e9d-471e-9194-5de743636066")
 	)
-	(bus
-		(pts
-			(xy 137.16 40.64) (xy 137.16 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4bcfb3e7-5e41-4205-8fe5-f37e6c223381")
-	)
 	(wire
 		(pts
 			(xy 185.42 104.14) (xy 180.34 104.14)
@@ -3864,16 +3781,6 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 62.23) (xy 60.96 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5d57ef88-0508-446e-b22a-1146b9112f09")
-	)
-	(wire
-		(pts
 			(xy 139.7 116.84) (xy 162.56 116.84)
 		)
 		(stroke
@@ -3891,6 +3798,16 @@
 			(type default)
 		)
 		(uuid "63f76f59-2935-41c9-bf53-0e9cd46ba288")
+	)
+	(wire
+		(pts
+			(xy 60.96 57.15) (xy 57.15 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "667eea3b-8144-4d29-824b-a8f234520e51")
 	)
 	(wire
 		(pts
@@ -3954,16 +3871,6 @@
 	)
 	(wire
 		(pts
-			(xy 160.02 49.53) (xy 160.02 52.07)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "77129bdc-0b9d-4bc2-b8f7-c803f65e672d")
-	)
-	(wire
-		(pts
 			(xy 219.71 114.3) (xy 214.63 114.3)
 		)
 		(stroke
@@ -4014,16 +3921,6 @@
 	)
 	(wire
 		(pts
-			(xy 33.02 57.15) (xy 60.96 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "809c6345-d862-4aca-9820-d63ace020394")
-	)
-	(wire
-		(pts
 			(xy 114.3 52.07) (xy 114.3 53.34)
 		)
 		(stroke
@@ -4051,6 +3948,16 @@
 			(type default)
 		)
 		(uuid "82c0bf05-603b-40c1-998b-29eae7103ae4")
+	)
+	(bus
+		(pts
+			(xy 30.48 55.88) (xy 30.48 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "83496a4b-9888-427c-8470-a38e0f2d05d8")
 	)
 	(wire
 		(pts
@@ -4202,16 +4109,6 @@
 		)
 		(uuid "a7a900de-90ed-492f-bcdd-a04ccd0fb9cf")
 	)
-	(bus
-		(pts
-			(xy 137.16 43.18) (xy 137.16 111.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a857b22e-1f8c-425a-b77d-6ff52bab2888")
-	)
 	(wire
 		(pts
 			(xy 140.97 142.24) (xy 143.51 142.24)
@@ -4232,16 +4129,6 @@
 		)
 		(uuid "ac00129d-b357-41b0-ade2-bf50b59ee6c8")
 	)
-	(bus
-		(pts
-			(xy 137.16 111.76) (xy 137.16 114.3)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ac3f892d-3adf-4e4f-a5bf-8e0a6f5b6c3f")
-	)
 	(wire
 		(pts
 			(xy 106.68 57.15) (xy 106.68 54.61)
@@ -4251,6 +4138,16 @@
 			(type default)
 		)
 		(uuid "aeeb9d09-4403-4a57-8544-8b8a7e9f36d2")
+	)
+	(wire
+		(pts
+			(xy 147.32 41.91) (xy 147.32 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aff96369-f54d-44fe-9db9-f883fa69f835")
 	)
 	(wire
 		(pts
@@ -4264,16 +4161,6 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 59.69) (xy 55.88 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b587bf88-9c7d-4f7c-bf47-5d7a8ca84342")
-	)
-	(wire
-		(pts
 			(xy 106.68 123.19) (xy 106.68 125.73)
 		)
 		(stroke
@@ -4281,16 +4168,6 @@
 			(type default)
 		)
 		(uuid "b5f22fde-080a-4e0a-a28f-75cb59eb7b47")
-	)
-	(wire
-		(pts
-			(xy 139.7 45.72) (xy 156.21 45.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b8ee7190-4ce7-4bcf-a9ce-018595d7dd78")
 	)
 	(wire
 		(pts
@@ -4384,16 +4261,6 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 59.69) (xy 60.96 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c99f74c5-7abb-4756-a309-ba0883dd8e84")
-	)
-	(wire
-		(pts
 			(xy 203.2 121.92) (xy 231.14 121.92)
 		)
 		(stroke
@@ -4431,6 +4298,26 @@
 			(type default)
 		)
 		(uuid "d72edea3-3543-4e8b-bd77-1ad7261d371f")
+	)
+	(wire
+		(pts
+			(xy 57.15 57.15) (xy 57.15 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d766aa3e-ecb7-4e2f-bb9a-9e50c00f22eb")
+	)
+	(wire
+		(pts
+			(xy 147.32 39.37) (xy 147.32 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d8b4c515-d0ae-4048-81a7-69e8a4c9dd75")
 	)
 	(wire
 		(pts
@@ -4494,6 +4381,16 @@
 	)
 	(wire
 		(pts
+			(xy 57.15 41.91) (xy 147.32 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f43984c4-3048-4d60-8231-024e96f03feb")
+	)
+	(wire
+		(pts
 			(xy 180.34 102.87) (xy 180.34 104.14)
 		)
 		(stroke
@@ -4534,7 +4431,7 @@
 	)
 	(bus
 		(pts
-			(xy 137.16 114.3) (xy 137.16 143.51)
+			(xy 137.16 111.76) (xy 137.16 143.51)
 		)
 		(stroke
 			(width 0)
@@ -4554,6 +4451,16 @@
 	)
 	(wire
 		(pts
+			(xy 147.32 27.94) (xy 147.32 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "faba4120-f7f6-4920-a9bd-5cecb2719e67")
+	)
+	(wire
+		(pts
 			(xy 203.2 114.3) (xy 207.01 114.3)
 		)
 		(stroke
@@ -4561,6 +4468,16 @@
 			(type default)
 		)
 		(uuid "fd63b3d4-a459-47c9-9b33-5b19a7f16fb7")
+	)
+	(wire
+		(pts
+			(xy 147.32 52.07) (xy 147.32 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fd741671-0af8-4312-b5ae-b321130c8241")
 	)
 	(label "UART1_RX"
 		(at 33.02 85.09 0)
@@ -4572,16 +4489,6 @@
 		)
 		(uuid "2909d565-2d57-4f00-a2b5-8dc487087f58")
 	)
-	(label "SERVO_IN"
-		(at 34.29 57.15 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2fd63a51-fc83-42bd-b9ad-6a51d56818c5")
-	)
 	(label "UART1_TX"
 		(at 33.02 82.55 0)
 		(effects
@@ -4591,16 +4498,6 @@
 			(justify left bottom)
 		)
 		(uuid "3360aeaa-a0ed-4bfb-9fc3-bff936e020da")
-	)
-	(label "SERVO_IN"
-		(at 140.97 45.72 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a376d0e8-773a-49fa-9b24-ac64c976fa27")
 	)
 	(label "UART1_TX"
 		(at 139.7 116.84 0)
@@ -4704,7 +4601,7 @@
 			(uuid "01c6494b-3ea7-4c12-9784-7b360d274608")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "D102")
 					(unit 1)
@@ -4781,86 +4678,9 @@
 			(uuid "85cc652b-a08d-4ba3-98c8-1c12eeaf67e4")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0117")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 160.02 39.37 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "16c0d93a-30c5-46d9-bbe4-2725d91e59fa")
-		(property "Reference" "#PWR0110"
-			(at 160.02 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 160.02 34.29 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 160.02 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 160.02 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 160.02 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "bcc4920c-082b-45a5-92a5-9b77a6499867")
-		)
-		(instances
-			(project "DAC 02 Software Servo Threshold"
-				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
@@ -4935,7 +4755,7 @@
 			(uuid "e0cfd2c7-1968-4174-997b-e97b8b55a277")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0106")
 					(unit 1)
@@ -5016,7 +4836,7 @@
 			(uuid "c9bb861a-b767-4fb8-b0de-4ae1f94057cc")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C102")
 					(unit 1)
@@ -5094,7 +4914,7 @@
 			(uuid "b1cad2d5-ccce-4bd8-a492-bd7a06399009")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0101")
 					(unit 1)
@@ -5171,7 +4991,7 @@
 			(uuid "3423853f-c2fb-4b44-b2df-034e089b47de")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0116")
 					(unit 1)
@@ -5249,7 +5069,7 @@
 			(uuid "b5110850-7a3e-45d9-9020-e5d4fef9b8bb")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0114")
 					(unit 1)
@@ -5340,9 +5160,91 @@
 			(uuid "8a21586d-aefa-4fcb-83a4-446d5e4c4504")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J101")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_US")
+		(at 147.32 48.26 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "28ecdeff-52c9-4c27-a235-70e0b714737e")
+		(property "Reference" "R105"
+			(at 149.86 46.9899 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.42K"
+			(at 149.86 49.5299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 148.336 48.514 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 147.32 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, US symbol"
+			(at 147.32 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "4d1161b3-7100-4d60-bb44-26b134183ace")
+		)
+		(pin "1"
+			(uuid "0685508c-733d-4291-8f12-43eee6078cc7")
+		)
+		(instances
+			(project "Temp 02 Thermistor Linearization"
+				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
+					(reference "R105")
 					(unit 1)
 				)
 			)
@@ -5418,7 +5320,7 @@
 			(uuid "0dd67a1b-978c-4dd8-8b82-112fdf29114b")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0102")
 					(unit 1)
@@ -5496,7 +5398,7 @@
 			(uuid "8c86baf7-4508-4bf1-a205-6b350e93adbd")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0103")
 					(unit 1)
@@ -5574,7 +5476,7 @@
 			(uuid "1e603256-d571-41c7-b6b8-5ac627b4968d")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0108")
 					(unit 1)
@@ -5651,7 +5553,7 @@
 			(uuid "87ddfb8e-ccdd-492b-b4f9-6f17b2b9de21")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0109")
 					(unit 1)
@@ -5729,7 +5631,7 @@
 			(uuid "c5a4f2fc-74a3-4b83-b925-a54374564508")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0107")
 					(unit 1)
@@ -5811,7 +5713,7 @@
 			(uuid "9ea68326-a057-4f5b-b2ed-d0d537e98cb1")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R103")
 					(unit 1)
@@ -5901,7 +5803,7 @@
 			(uuid "16623f67-e322-44d6-b051-bcf8024b3dee")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "D101")
 					(unit 1)
@@ -5982,7 +5884,7 @@
 			(uuid "b1b9a0dd-3bf9-4006-884e-560c85c752c3")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C101")
 					(unit 1)
@@ -6059,7 +5961,7 @@
 			(uuid "6954f414-a480-46a8-ac77-789ab5ce9bc0")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0105")
 					(unit 1)
@@ -6138,7 +6040,7 @@
 			(uuid "e382acfb-6bb1-49f6-8fc9-cc7ce1015267")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R101")
 					(unit 1)
@@ -6220,7 +6122,7 @@
 			(uuid "58295e2f-0e89-418b-9f6d-81c37e27458e")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R104")
 					(unit 1)
@@ -6297,7 +6199,7 @@
 			(uuid "f0784c50-be2a-44f7-8e76-0bd8079ec0fb")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0115")
 					(unit 1)
@@ -6386,7 +6288,7 @@
 			(uuid "2e120da4-8403-44f7-8087-6a3ae6576c6d")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "J102")
 					(unit 1)
@@ -6592,86 +6494,9 @@
 			(uuid "7f4af101-21ed-4a9e-b7f4-7a2088390afc")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U101")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 160.02 52.07 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "a4a3b01f-14f2-461c-baf4-b17f655a323f")
-		(property "Reference" "#PWR0111"
-			(at 160.02 58.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 160.02 55.88 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 160.02 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 160.02 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 160.02 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "faa763a8-b51e-4a6b-b96c-b525ffaadd90")
-		)
-		(instances
-			(project "DAC 02 Software Servo Threshold"
-				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0111")
 					(unit 1)
 				)
 			)
@@ -6747,9 +6572,168 @@
 			(uuid "45262e46-97b8-4b5b-959f-99d5568ec56b")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0104")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 147.32 27.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "b3f0ea85-a8fd-437d-b6b5-7eec8610febf")
+		(property "Reference" "#PWR0111"
+			(at 147.32 31.75 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+5V"
+			(at 147.32 22.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 147.32 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 147.32 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 147.32 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "85d83d67-f954-4e71-959e-5686cb3dd681")
+		)
+		(instances
+			(project "Temp 02 Thermistor Linearization"
+				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
+					(reference "#PWR0111")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Thermistor_US")
+		(at 147.32 35.56 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b5ec10b7-f04c-432d-bea7-2ab0e5d35cfb")
+		(property "Reference" "TH1"
+			(at 149.86 34.2899 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "NTCDS3HG103HC3NB"
+			(at 149.86 36.8299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 147.32 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 147.32 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Thermistor, temperature dependent resistor, US symbol"
+			(at 147.32 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e22cb158-c3b0-451e-95fe-cdb961b885d2")
+		)
+		(pin "2"
+			(uuid "dc78b2df-c738-4709-bf0f-71ee92d18fd0")
+		)
+		(instances
+			(project "Temp 02 Thermistor Linearization"
+				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
+					(reference "TH1")
 					(unit 1)
 				)
 			)
@@ -6828,127 +6812,9 @@
 			(uuid "6f8f03af-f5d3-42ee-8866-b15d594e30a7")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C110")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R_Potentiometer_US")
-		(at 160.02 45.72 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "bf30023a-1106-4a7e-8efc-c3f4c237843a")
-		(property "Reference" "RV1"
-			(at 162.56 44.4499 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "10K"
-			(at 162.56 46.9899 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 160.02 45.72 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 160.02 45.72 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Potentiometer, US symbol"
-			(at 160.02 45.72 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Device" "R"
-			(at 160.02 45.72 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Type" "POT"
-			(at 160.02 45.72 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Pins" "1=r0 2=wiper 3=r1"
-			(at 160.02 45.72 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "253803f3-5d41-4608-9b93-0aacc2237aa7")
-		)
-		(pin "1"
-			(uuid "bcecae53-11ce-44e6-8400-ee54414b04f3")
-		)
-		(pin "3"
-			(uuid "303cc7a9-d78c-4266-860e-f6fc720cc047")
-		)
-		(instances
-			(project "DAC 02 Software Servo Threshold"
-				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "RV1")
 					(unit 1)
 				)
 			)
@@ -7027,7 +6893,7 @@
 			(uuid "2b59259a-dd89-4ecd-9783-63ab4dc9fd05")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C109")
 					(unit 1)
@@ -7181,7 +7047,7 @@
 			(uuid "fe133c98-969a-4eb9-bfe3-c5191f6550ef")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "U103")
 					(unit 1)
@@ -7260,7 +7126,7 @@
 			(uuid "326d1c27-7f9d-4667-aa86-a8e99ca359b3")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "R102")
 					(unit 1)
@@ -7338,7 +7204,7 @@
 			(uuid "f69d8aed-1b03-4f2e-b4da-4392e5659e57")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "#PWR0113")
 					(unit 1)
@@ -7418,9 +7284,86 @@
 			(uuid "b2df6edb-24a6-4fb1-b7aa-efcc627f7c6e")
 		)
 		(instances
-			(project "DAC 02 Software Servo Threshold"
+			(project "Temp 02 Thermistor Linearization"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
 					(reference "C105")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 147.32 54.61 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e44e6202-1a7c-468f-b1af-4107d4e8b1bf")
+		(property "Reference" "#PWR0110"
+			(at 147.32 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 147.32 58.42 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 147.32 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 147.32 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 147.32 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "19905962-2258-4896-b26c-48bfdfbb6d9f")
+		)
+		(instances
+			(project "Temp 02 Thermistor Linearization"
+				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
+					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
