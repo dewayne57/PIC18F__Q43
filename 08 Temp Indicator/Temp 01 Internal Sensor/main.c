@@ -27,6 +27,8 @@
 static char console_tx_buffer[256];
 static char console_rx_buffer[128];
 
+static long temperature = 0;
+
 static uart_handle_t console_uart = {
     .port = UART_PORT_1,
     .high_speed_baud = false,
@@ -73,24 +75,9 @@ void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 {
     if (PIR1bits.ADIF)
     {
-        uint16_t adc_result = ADRES;
-        uint16_t low_threshold = ADLTH;
-        uint16_t high_threshold = ADUTH;
+        temperature = ADRES;
 
         PIR1bits.ADIF = 0;
-
-        if (adc_result < low_threshold)
-        {
-            LED_ShowLow();
-        }
-        else if (adc_result > high_threshold)
-        {
-            LED_ShowHigh();
-        }
-        else
-        {
-            LED_ShowInWindow();
-        }
     }
 }
 #else
@@ -125,5 +112,7 @@ void main(void)
     printf("Temp 01 Internal Sensor%s", CRLF);
     while (1)
     {
+        __delay_ms(1000); 
+        printf("Temperature %li%s", temperature, CRLF);
     }
 }
