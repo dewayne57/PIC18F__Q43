@@ -28,6 +28,8 @@ static char console_tx_buffer[256];
 static char console_rx_buffer[128];
 static float systemTemperature = 0.0;
 
+static long temperature = 0;
+
 static uart_handle_t console_uart = {
     .port = UART_PORT_1,
     .high_speed_baud = false,
