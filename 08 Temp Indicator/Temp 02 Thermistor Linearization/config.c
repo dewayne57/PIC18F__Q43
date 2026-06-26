@@ -42,14 +42,15 @@ void SYSTEM_Initialize(void)
    ANSELD = 0x00; // All Port D pins: digital mode
 
    FVRCON = 0x00;                                // Reset FVR control register to default state (disabled)
-   FVRCONbits.ADFVR = FVR_FIXED_VOLTAGE_4_096V;  // ADC FVR default: 4.096V
-   FVRCONbits.CDAFVR = FVR_FIXED_VOLTAGE_4_096V; // DAC/Comparator FVR default: 4.096V
+   FVRCONbits.ADFVR = FVR_FIXED_VOLTAGE_2_048V;  // ADC FVR default: 2.048V
+   FVRCONbits.CDAFVR = FVR_FIXED_VOLTAGE_2_048V; // DAC/Comparator FVR default: 2.048V
    FVRCONbits.EN = 1;                            // Enable the FVR module
    while (!FVRCONbits.RDY)
    {
       // Wait for the ready bit to be set, indicating the FVR is now enabled and stable
    }
 
+   
    /* Re-enable interrupts now that hardware registers are stable. */
    INTCON0bits.GIEL = 1; /* Enable low priority interrupts (required for low_priority vectored ISRs). */
    INTCON0bits.GIEH = 1; /* Enable high priority interrupts (master enable). */

@@ -53,18 +53,15 @@
 
 #define CRLF "\r\n"
 
-#define EXTERNAL_THERMISTOR_SERIES_RESISTOR 3600 // Value of the series resistor used with the external thermistor 
-#define EXTERNAL_THERMISTOR_BETA 3400     // Beta value for the external thermistor
-#define EXTERNAL_THERMISTOR_BETA_TOL 2   // Tolerance of the beta value for the external thermistor (±2%)
-#define EXTERNAL_THERMISTOR_R25 10000    // Resistance of the external thermistor at 25°C (10K)
-#define EXTERNAL_THERMISTOR_R0 21180     // Resistance of the external thermistor at 0°C (21.18K)
-#define EXTERNAL_THERMISTOR_R100 998     // Resistance of the external thermistor at 100°C (0.998K)
+#define EXTERNAL_THERMISTOR_SERIES_RESISTOR 3600 // Value of the series resistor used with the external thermistor
+#define EXTERNAL_THERMISTOR_BETA 3400            // Beta value for the external thermistor
+#define EXTERNAL_THERMISTOR_BETA_TOL 2           // Tolerance of the beta value for the external thermistor (±2%)
+#define EXTERNAL_THERMISTOR_R25 10000            // Resistance of the external thermistor at 25°C (10K)
+#define EXTERNAL_THERMISTOR_R0 21180             // Resistance of the external thermistor at 0°C (21.18K)
+#define EXTERNAL_THERMISTOR_R100 998             // Resistance of the external thermistor at 100°C (0.998K)
 
-// Number of samples to average for oversampling (must be a power of 2)
-#define ADCC_OVERSAMPLE_COUNT 16
-
-// The setting for the ADC FVR voltage reference (4.096V in this case) is defined as a macro for 
-// clarity and maintainability when configuring the FVRCON register in config.c. The value 0b11 
+// The setting for the ADC FVR voltage reference (4.096V in this case) is defined as a macro for
+// clarity and maintainability when configuring the FVRCON register in config.c. The value 0b11
 // corresponds to the setting for 4.096V in the FVRCONbits.ADFVR field according to the datasheet.
 #define FVR_FIXED_VOLTAGE_4_096V 0b11
 

@@ -53,6 +53,38 @@ void SYSTEM_Initialize(void)
       // Wait for the ready bit to be set, indicating the FVR is now enabled and stable
    }
 
+   // setup the ADCC module for continuous conversion with oversampling and averaging, with
+   // the FVR as the reference voltage, and a conversion completion interrupt enabled.
+   ADCCON0 = 0x00;       // Reset ADCCON0 to default
+   ADCCON0bits.CONT = 1; // Continuous conversion mode
+   ADCCON0bits.FM = 1;   // Right justified result format
+   ADCCON0bits.CS = 0;   // Clock source = FOSC/64 (default)
+
+   ADCCON1 = 0; // Reset ADCCON1 to default (no precharge or guard rings)
+
+   ADCCON2 = 0;                                  // Reset ADCCON2 to default
+   ADCCON2bits.CRS = ADCC_AVERAGE_DIVISOR_SHIFT; // Set the shift amount for averaging
+
+   ADCCON3 = 0x00;             // Reset ADCON3 to default
+   ADSTAT = 0x00;              // Reset ADSTAT to default
+   ADCLK = ADCC_CLOCK_DIVISOR; // Set the ADC clock source divisor
+   ADREFbits.ADNREF = 0;       // Set ADC negative reference to VSS
+   ADREFbits.ADPREF = 0b11;    // Set ADC positive reference to FVR (2.048V)
+   ADPCHbits.PCH = 0b111100;   // Set ADC positive channel to temperature sensor (channel 60)
+
+   ADCRPT = ADCC_OVERSAMPLE_COUNT - 1; // Set oversample count for averaging
+   ADCNT = 0;                          // Clear the ADC conversion count
+   ADCCON2bits.MD = 0b010;             // Set ADC mode to continuous conversion with oversampling
+                                       // and averaging
+   ADPRE = ADCC_PRECHARGE_INTERVAL;    // Set precharge interval for ADC
+   APACQ = ADCC_ACQUISITION_INTERVAL;  // Set acquisition interval for ADC
+   ADCAP = 0;                          // No additional sample-and-hold capacitance
+   ADACT = 0;                          // No external triggering for ADC conversion
+   ADCP = 0;                           // No charge pump for ADC (operating at 5V)
+
+   ADCCON0bits.ON = 1; // Enable the ADC module
+   ADCCON0bits.GO = 1; // Start the first ADC conversion
+
    /* Re-enable interrupts now that hardware registers are stable. */
    INTCON0bits.GIEL = 1; /* Enable low priority interrupts (required for low_priority vectored ISRs). */
    INTCON0bits.GIEH = 1; /* Enable high priority interrupts (master enable). */

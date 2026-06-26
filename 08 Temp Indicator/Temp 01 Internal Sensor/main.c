@@ -26,6 +26,7 @@
 
 static char console_tx_buffer[256];
 static char console_rx_buffer[128];
+static float systemTemperature = 0.0;
 
 static uart_handle_t console_uart = {
     .port = UART_PORT_1,
@@ -52,6 +53,34 @@ static uart_handle_t console_uart = {
     .isr_mode = UART_ISR_VECTORED, // App owns ISR routing; this marks intended interrupt policy
 };
 
+/// @brief Compute the system temperature based on the filtered ADC result.
+/// @param adcc_result The filtered ADC result from the ADCC module.
+/// @return None
+/// The temperature is calculated using the formula: 
+///
+///       Temperature (°C) = (ADCCAverage * gain) / 256 + offset
+///
+/// where gain and offset are defined for the internal temperature sensor and are stored in 
+/// the device information area. The gain is in mV/°C and the offset is in °C. The ADCCAverage 
+/// is the filtered ADC result from the ADCC module.
+void computeSystemTemperature(size_t adcc_result) {
+
+    // The address of a 16-bit calibration value stored in program memory that represents the gain
+    // for the high temperature range of the internal temperature sensor. This value is device-specific
+    // and must be determined through calibration during device manufacturing.  The value is in
+    // millivolts per degree Celsius (mV/°C) and is used to convert the raw ADC reading into a temperature
+    // value in degrees Celsius.
+    size_t gain = TSHR1;                   // Gain in mV/°C for the internal temperature sensor
+
+    // The address of a 16-bit calibration value stored in program memory that represents the offset
+    // for the high temperature range of the internal temperature sensor. This value is device-specific
+    // and must be determined through calibration during device manufacturing. The value is in degrees
+    // Celsius (°C).
+    size_t offset = TSHR3; // Offset in °C for the internal temperature sensor
+
+    systemTemperature = ((float)adcc_result * gain) / 256.0f + (float)offset;
+}
+
 #if defined(VECTORED_INTERRUPTS_ENABLED)
 /// @brief UART1 RX interrupt vector owned by the application.
 void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
@@ -73,26 +102,9 @@ void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 {
     if (PIR1bits.ADIF)
     {
-        uint16_t adc_result = ADRES;
-        uint16_t low_threshold = ADLTH;
-        uint16_t high_threshold = ADUTH;
-
-        PIR1bits.ADIF = 0;
-
-        if (adc_result < low_threshold)
-        {
-            LED_ShowLow();
-        }
-        else if (adc_result > high_threshold)
-        {
-            LED_ShowHigh();
-        }
-        else
-        {
-            LED_ShowInWindow();
-        }
+        computeSystemTemperature(ADFLTR); // Read the filtered ADC result from the ADCC module
     }
-}
+ }
 #else
 /// @brief Non-vectored interrupt handler for PIC16F18855.
 void __interrupt() NonVectoredISR(void)
@@ -104,6 +116,10 @@ void __interrupt() NonVectoredISR(void)
     if (PIR4bits.U1TXIF)
     {
         UART_HandleTxInterrupt(&console_uart);
+    }
+    if (PIR1bits.ADIF)
+    {
+        computeSystemTemperature(ADFLTR); // Read the filtered ADC result from the ADCC module
     }
 }
 #endif
@@ -125,5 +141,7 @@ void main(void)
     printf("Temp 01 Internal Sensor%s", CRLF);
     while (1)
     {
+        __delay_ms(1000);
+        printf("Temperature: %.1f °C%s", systemTemperature, CRLF);
     }
 }

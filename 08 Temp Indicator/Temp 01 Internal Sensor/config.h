@@ -63,16 +63,6 @@
 // internal temperature sensor in the high temperature range and stored it in program memory. This
 // factory-calibrated gain value can then be used to improve the accuracy of temperature readings.
 
-// The address of a 16-bit calibration value stored in program memory that represents the gain 
-// for the high temperature range of the internal temperature sensor. This value is device-specific 
-// and must be determined through calibration.
-#define DIA_HIGH_RANGE_GAIN  2C002Ah
-
-// The address of a 16-bit calibration value stored in program memory that represents the offset
-// for the high temperature range of the internal temperature sensor. This value is device-specific
-// and must be determined through calibration.
-#define DIA_HIGH_RANGE_OFFSET 2C002Eh
-
 // The data sheet recommends at least 10 samples averaged of the internal temperature sensor for 
 // stable readings.  It also suggested calculating the temperature by applying the gain and
 // offset calibration values to the raw ADC reading for each sample, then averaging the calculated 
@@ -92,6 +82,24 @@
 // using signed variables (+ and -) to avoid the overhead of floating point operations.
 
 #define FVR_FIXED_VOLTAGE_2_048V 0b10
+
+// Number of samples to average for oversampling (must be a power of 2). Also calculate the amount of shifting
+// needed to divide the oversampled result by the number of samples to get the average.
+#define ADCC_OVERSAMPLE_COUNT 16
+#define ADCC_AVERAGE_DIVISOR_SHIFT     \
+  ((ADCC_OVERSAMPLE_COUNT) == 1    ? 0 \
+   : (ADCC_OVERSAMPLE_COUNT) == 2  ? 1 \
+   : (ADCC_OVERSAMPLE_COUNT) == 4  ? 2 \
+   : (ADCC_OVERSAMPLE_COUNT) == 8  ? 3 \
+   : (ADCC_OVERSAMPLE_COUNT) == 16 ? 4 \
+   : (ADCC_OVERSAMPLE_COUNT) == 32 ? 5 \
+   : (ADCC_OVERSAMPLE_COUNT) == 64 ? 6 \
+                                   : 0)
+#define ADCC_CLOCK_DIVISOR 16 // ADC clock source divisor (FOSC/4 divided by this value)
+
+#define ADCC_PRECHARGE_INTERVAL 64
+#define ADCC_ACQUISITION_INTERVAL 64
+
 void SYSTEM_Initialize(void);
 
 #endif /* CONFIG_H */
