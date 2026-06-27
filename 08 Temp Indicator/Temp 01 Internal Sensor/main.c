@@ -27,8 +27,7 @@
 static char console_tx_buffer[256];
 static char console_rx_buffer[128];
 static float systemTemperature = 0.0;
-
-static long temperature = 0;
+static float vout = 0.0;
 
 static uart_handle_t console_uart = {
     .port = UART_PORT_1,
@@ -55,6 +54,10 @@ static uart_handle_t console_uart = {
     .isr_mode = UART_ISR_VECTORED, // App owns ISR routing; this marks intended interrupt policy
 };
 
+unsigned short gain; 
+unsigned short offset; 
+unsigned int adcc_value; 
+
 /// @brief Compute the system temperature based on the filtered ADC result.
 /// @param adcc_result The filtered ADC result from the ADCC module.
 /// @return None
@@ -65,22 +68,14 @@ static uart_handle_t console_uart = {
 /// where gain and offset are defined for the internal temperature sensor and are stored in 
 /// the device information area. The gain is in mV/°C and the offset is in °C. The ADCCAverage 
 /// is the filtered ADC result from the ADCC module.
-void computeSystemTemperature(size_t adcc_result) {
-
-    // The address of a 16-bit calibration value stored in program memory that represents the gain
-    // for the high temperature range of the internal temperature sensor. This value is device-specific
-    // and must be determined through calibration during device manufacturing.  The value is in
-    // millivolts per degree Celsius (mV/°C) and is used to convert the raw ADC reading into a temperature
-    // value in degrees Celsius.
-    size_t gain = TSHR1;                   // Gain in mV/°C for the internal temperature sensor
-
-    // The address of a 16-bit calibration value stored in program memory that represents the offset
-    // for the high temperature range of the internal temperature sensor. This value is device-specific
-    // and must be determined through calibration during device manufacturing. The value is in degrees
-    // Celsius (°C).
-    size_t offset = TSHR3; // Offset in °C for the internal temperature sensor
-
-    systemTemperature = ((float)adcc_result * gain) / 256.0f + (float)offset;
+void computeSystemTemperature(unsigned int adcc_result) {
+    // Vout = (ADCresult * Vref) / 4096
+    // Where Vref = 2.048V
+    vout = (adcc_result * 2.048) / 4096;
+    adcc_value = adcc_result; 
+    systemTemperature = ((float)(adcc_result * gain) / 256.0) ; //+ offset;
+    ADFLTR = 0;
+    ADRES = 0;
 }
 
 #if defined(VECTORED_INTERRUPTS_ENABLED)
@@ -104,7 +99,7 @@ void __interrupt(irq(IRQ_AD), high_priority) ADC_ISR(void)
 {
     if (PIR1bits.ADIF)
     {
-        computeSystemTemperature(ADFLTR); // Read the filtered ADC result from the ADCC module
+        computeSystemTemperature(ADRESH << 8 + ADRESL); // Read the filtered ADC result from the ADCC module
     }
  }
 #else
@@ -121,7 +116,8 @@ void __interrupt() NonVectoredISR(void)
     }
     if (PIR1bits.ADIF)
     {
-        computeSystemTemperature(ADFLTR); // Read the filtered ADC result from the ADCC module
+        unsigned int x = (unsigned int) ((ADRESH << 8) + ADRESL); 
+        computeSystemTemperature(x); // Read the filtered ADC result from the ADCC module
     }
 }
 #endif
@@ -139,11 +135,24 @@ void main(void)
         }
     }
     UART_SelectPrintfTarget(&console_uart);
+    // The address of a 16-bit calibration value stored in program memory that represents the gain
+    // for the high temperature range of the internal temperature sensor. This value is device-specific
+    // and must be determined through calibration during device manufacturing.  The value is in
+    // millivolts per degree Celsius (mV/°C) and is used to convert the raw ADC reading into a temperature
+    // value in degrees Celsius.
+    gain = _DIA_TSHR1;                   // Gain in mV/C for the internal temperature sensor
+
+    // The address of a 16-bit calibration value stored in program memory that represents the offset
+    // for the high temperature range of the internal temperature sensor. This value is device-specific
+    // and must be determined through calibration during device manufacturing. The value is in degrees
+    // Celsius (°C).
+    offset = _DIA_TSHR2; // Offset in C for the internal temperature sensor
 
     printf("Temp 01 Internal Sensor%s", CRLF);
     while (1)
     {
         __delay_ms(1000);
-        printf("Temperature: %.1f °C%s", systemTemperature, CRLF);
+        printf("ADCC Result %u, Vout %f, Gain %u, Offset %u %s", adcc_value, vout, gain, offset, CRLF);
+        printf("Temperature: %.1fC%s", systemTemperature, CRLF);
     }
 }
