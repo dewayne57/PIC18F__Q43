@@ -24,7 +24,7 @@
 #include "config.h"
 #include "lcd.h"
 
-/// @brief This function reads the busy flag and returns true if the LCD is busy, 
+/// @brief This function reads the busy flag and returns true if the LCD is busy,
 /// or false if it is ready to accept the next command or data byte. This function
 /// must be called before every command or data write to ensure the LCD is ready, and
 /// it must also be called after initialization before the first command or data write.
@@ -33,29 +33,79 @@
 /// reconfigured as outputs and the RW pin is set back to write mode.
 /// @param  None
 /// @return true if the LCD is busy, false if it is ready for the next command or data byte
-static bool LCD_ReadBusyFlag(void) {
+static bool LCD_ReadBusyFlag(void)
+{
     LCD_DATA_TRIS = 0xFF; // Configure data pins as inputs
-    LCD_RW = 1; // Set RW to read mode
-    LCD_E = 1; // Set E high to latch the busy flag on the data pins
-    __delay_us(1); // Short delay to allow data to stabilize
+    LCD_RS = 0;           // Set RS low for command mode
+    LCD_RW = 1;           // Set RW to read mode
+    LCD_E = 1;            // Set E high to latch the busy flag on the data pins
+    __delay_us(1);        // Short delay to allow data to stabilize
 
     bool busy = LCD_BUSY_FLAG; // Read the busy flag from the data pins (D7)
-    
-    LCD_E = 0; // Set E low to complete the read cycle
-    LCD_RW = 0; // Set RW back to write mode
+
+    LCD_E = 0;            // Set E low to complete the read cycle
+    LCD_RW = 0;           // Set RW back to write mode
     LCD_DATA_TRIS = 0x00; // Configure data pins as outputs
     return busy;
 }
 
-/// @brief  Control the LCD backlight. The backlight is connected to RB2, which is 
-/// configured as a digital output.  This output pin drives a transistor that controls 
-/// power to the LCD backlight, so setting the pin high turns on the backlight and 
+/// @brief  A simple self-test function that prints several different data
+/// patterns to the LCD to verify that it is working. The LCD should be initialized
+/// before calling this function, and the backlight should be turned on for best
+/// results.  This function also demonstrates the use of the LCD_SetCursor()
+/// function to position the text on the display. It also exercises the
+/// scrolling behavior of the display by printing more than 20 characters on
+/// the first line, and wrapping to the second line.
+/// @param  None
+/// @return None
+void LCD_SelfTest(void)
+{
+    LCD_Clear();
+    LCD_SetCursor(0, 0);
+    for (int j = 0; j < 4; j++)
+    {
+        for (int i = 0; i < 20; i++)
+        {
+            LCD_SetCursor(j, i); // Move cursor to column i of the j line
+            __delay_ms(250);
+        }
+    }
+    LCD_SetCursor(0, 0);
+    LCD_Print("LCD Self Test");
+    LCD_SetCursor(1, 0);
+    LCD_Print("Line 2 text here");
+    __delay_ms(2000);
+
+    LCD_Clear();
+    LCD_SetCursor(0, 0);
+    LCD_Print("12345678901234567890"); // Print 20 chars on first line
+    LCD_SetCursor(1, 0);
+    LCD_Print("Line 2"); // Print on second line
+    __delay_ms(2000);
+
+    LCD_Clear();
+    LCD_SetCursor(0, 5);
+    LCD_Print("Centered");
+    __delay_ms(2000);
+
+    LCD_Clear();
+    LCD_SetCursor(1, 10);
+    LCD_Print("Right");
+    __delay_ms(2000);
+}
+/// @brief  Control the LCD backlight. The backlight is connected to RB2, which is
+/// configured as a digital output.  This output pin drives a transistor that controls
+/// power to the LCD backlight, so setting the pin high turns on the backlight and
 /// setting it low turns it off.
 /// @param state  true to turn on the backlight, false to turn it off
-void LCD_BackLight(bool state) {
-    if (state) {
+void LCD_BackLight(bool state)
+{
+    if (state)
+    {
         LATBbits.LATB2 = 1; // Turn on backlight
-    } else {
+    }
+    else
+    {
         LATBbits.LATB2 = 0; // Turn off backlight
     }
 }
@@ -63,7 +113,8 @@ void LCD_BackLight(bool state) {
 /// @brief  Initialize the LCD display. This function must be called before any other LCD functions are used.
 /// @param  None
 /// @return None
-void LCD_Init(void) {
+void LCD_Init(void)
+{
     // Wait for LCD to power up and become ready (busy flag will be high)
     while (LCD_ReadBusyFlag());
 
@@ -72,48 +123,51 @@ void LCD_Init(void) {
     while (LCD_ReadBusyFlag());
 
     // Display control: display on, cursor on, blink off
-    LCD_SendCommand(LCD_CMD_DISPLAY_CONTROL | LCD_DISPLAY_ON | LCD_CURSOR_ON );
+    LCD_SendCommand(LCD_CMD_DISPLAY_CONTROL | LCD_DISPLAY_ON | LCD_CURSOR_ON);
     while (LCD_ReadBusyFlag());
 
     // Clear display
     LCD_Clear();
-    
+
     // Entry mode set: increment cursor, no display shift
     LCD_SendCommand(LCD_CMD_ENTRY_MODE_SET | LCD_ENTRY_MODE_INCREMENT);
     while (LCD_ReadBusyFlag());
 }
 
-/// @brief  Send a command to the LCD. 
+/// @brief  Send a command to the LCD.
 /// @param  cmd  The command byte to send to the LCD
 /// @return None
-void LCD_SendCommand(uint8_t cmd) {
+void LCD_SendCommand(uint8_t cmd)
+{
     while (LCD_ReadBusyFlag()); // Wait until LCD is not busy
-    LCD_RS = 0; // Set RS low for command mode
-    LCD_RW = 0; // Set RW low for write mode
+    LCD_RS = 0;          // Set RS low for command mode
+    LCD_RW = 0;          // Set RW low for write mode
     LCD_DATA_PORT = cmd; // Put the command byte on the data pins
-    LCD_E = 1; // Set E high to latch the command
-    __delay_us(1); // Short delay to allow data to be latched
-    LCD_E = 0; // Set E low to complete the write cycle
+    LCD_E = 1;           // Set E high to latch the command
+    __delay_us(1);       // Short delay to allow data to be latched
+    LCD_E = 0;           // Set E low to complete the write cycle
 }
 
-/// @brief  Send a data byte to the LCD. 
+/// @brief  Send a data byte to the LCD.
 /// @param  data  The data byte to send to the LCD
 /// @return None
-void LCD_SendData(uint8_t data) {
-    while (LCD_ReadBusyFlag()); // Wait until LCD is not busy
-    LCD_RS = 1; // Set RS high for data mode
-    LCD_RW = 0; // Set RW low for write mode
+void LCD_SendData(uint8_t data)
+{
+    while (LCD_ReadBusyFlag());                 // Wait until LCD is not busy
+    LCD_RS = 1;           // Set RS high for data mode
+    LCD_RW = 0;           // Set RW low for write mode
     LCD_DATA_PORT = data; // Put the data byte on the data pins
-    LCD_E = 1; // Set E high to latch the data
-    __delay_us(1); // Short delay to allow data to be latched
-    LCD_E = 0; // Set E low to complete the write cycle
+    LCD_E = 1;            // Set E high to latch the data
+    __delay_us(1);        // Short delay to allow data to be latched
+    LCD_E = 0;            // Set E low to complete the write cycle
 }
 
-/// @brief  Clear the LCD display and return the cursor to the home 
+/// @brief  Clear the LCD display and return the cursor to the home
 /// position (0,0).
 /// @param  None
 /// @return None
-void LCD_Clear(void) {
+void LCD_Clear(void)
+{
     LCD_SendCommand(LCD_CMD_CLEAR_DISPLAY);
     __delay_ms(2); // Clear command takes longer time to execute
 }
@@ -122,21 +176,23 @@ void LCD_Clear(void) {
 /// @param  row  The row number (0 or 1)
 /// @param  col  The column number (0 to 15)
 /// @return None
-void LCD_SetCursor(uint8_t row, uint8_t col) {
+void LCD_SetCursor(uint8_t row, uint8_t col)
+{
     uint8_t address = (row == 0) ? col : (0x40 + col);
     LCD_SendCommand(LCD_CMD_SET_DDRAM_ADDR | address);
 }
 
-/// @brief  Print a string on the LCD. The string will be printed 
-/// starting at the current cursor position. The cursor will 
+/// @brief  Print a string on the LCD. The string will be printed
+/// starting at the current cursor position. The cursor will
 /// automatically move to the right after each character is printed.
 /// @param str  The string to print
-/// @return None    
-void LCD_Print(const char *str) {
+/// @return None
+void LCD_Print(const char *str)
+{
     printf("LCD String being sent: %s%s", str, CRLF); // Debug print to console
-    while (*str) {
+    while (*str)
+    {
         LCD_SendData((uint8_t)(*str)); // Send each character as data
-        str++; // Move to the next character in the string
+        str++;                         // Move to the next character in the string
     }
 }
-

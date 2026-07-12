@@ -59,6 +59,7 @@
 #define LCD_2_LINE 0x08
 #define LCD_5x10_DOTS 0x04
 
+void LCD_SelfTest(void); 
 void LCD_BackLight(bool state);
 void LCD_Init(void);
 void LCD_SendCommand(uint8_t cmd);

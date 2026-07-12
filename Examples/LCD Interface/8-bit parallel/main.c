@@ -82,47 +82,6 @@ void __interrupt() NonVectoredISR(void)
 }
 #endif
 
-/// @brief  A simple self-test function that prints several different data 
-/// patterns to the LCD to verify that it is working. The LCD should be initialized
-/// before calling this function, and the backlight should be turned on for best 
-///results.  This function also demonstrates the use of the LCD_SetCursor() 
-/// function to position the text on the display. It also exercises the 
-/// scrolling behavior of the display by printing more than 20 characters on 
-/// the first line, and wrapping to the second line. 
-/// @param  None
-/// @return None
-void LCD_SelfTest(void)
-{
-    LCD_Clear();
-    LCD_SetCursor(0, 0);
-    for (int i = 0; i < 20; i++) {
-        LCD_SetCursor(0, i); // Move cursor to column i of the first line
-        __delay_ms(250);
-    }
-    LCD_SetCursor(0, 0); 
-    LCD_Print("LCD Self Test");
-    LCD_SetCursor(1, 0);
-    LCD_Print("Line 2 text here");
-    __delay_ms(2000);
-
-    LCD_Clear();
-    LCD_SetCursor(0, 0);
-    LCD_Print("12345678901234567890"); // Print 20 chars on first line
-    LCD_SetCursor(1, 0);
-    LCD_Print("Line 2"); // Print on second line
-    __delay_ms(2000);
-
-    LCD_Clear();
-    LCD_SetCursor(0, 5);
-    LCD_Print("Centered");
-    __delay_ms(2000);
-
-    LCD_Clear();
-    LCD_SetCursor(1, 10);
-    LCD_Print("Right");
-    __delay_ms(2000);
-}
-
 /// @brief Main function. Initializes the system and enters an infinite loop.
 /// @param  None
 /// @return None    
