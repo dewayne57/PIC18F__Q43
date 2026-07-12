@@ -30,6 +30,18 @@
 #define LCD_RW_TRIS TRISEbits.TRISE1
 #define LCD_E_TRIS TRISEbits.TRISE2
 
+// Define symbolic names for the LCD Line indecies (0-based)
+#define LCD_LINE_1 0
+#define LCD_LINE_2 1
+#define LCD_LINE_3 2
+#define LCD_LINE_4 3
+
+// Define the DDRAM addresses for the start of each line on a 20x4 LCD
+#define LCD_LINE_1_ADDR 0x00
+#define LCD_LINE_2_ADDR 0x40
+#define LCD_LINE_3_ADDR 0x14
+#define LCD_LINE_4_ADDR 0x54
+
 // Define LCD command codes
 #define LCD_CMD_CLEAR_DISPLAY 0x01
 #define LCD_CMD_RETURN_HOME 0x02
@@ -59,12 +71,16 @@
 #define LCD_2_LINE 0x08
 #define LCD_5x10_DOTS 0x04
 
+void LCD_SelfTest(void);
 void LCD_BackLight(bool state);
 void LCD_Init(void);
 void LCD_SendCommand(uint8_t cmd);
 void LCD_SendData(uint8_t data);
 void LCD_Clear(void);
 void LCD_SetCursor(uint8_t row, uint8_t col);
+void LCD_StartAtLine(uint8_t line);
+void LCD_ClearLine(uint8_t line);
 void LCD_Print(const char* str);
+void LCD_Printf(const char* format, ...);
 
 #endif /* LCD_H */
