@@ -20,8 +20,9 @@
 #ifndef LCD_H
 #define LCD_H
 
-#define LCD_DATA_PORT LATD
+#define LCD_DATA_PORT PORTD
 #define LCD_DATA_TRIS TRISD
+#define LCD_BUSY_FLAG PORTDbits.RD7
 #define LCD_RS LATEbits.LATE0
 #define LCD_RW LATEbits.LATE1
 #define LCD_E LATEbits.LATE2
@@ -58,6 +59,7 @@
 #define LCD_2_LINE 0x08
 #define LCD_5x10_DOTS 0x04
 
+void LCD_BackLight(bool state);
 void LCD_Init(void);
 void LCD_SendCommand(uint8_t cmd);
 void LCD_SendData(uint8_t data);

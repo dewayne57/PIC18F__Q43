@@ -30,7 +30,7 @@
 static char console_tx_buffer[256];
 static char console_rx_buffer[128];
 
-static uart_handle_t console_uart = {
+uart_handle_t console_uart = {
     .port = UART_PORT_1,
     .high_speed_baud = false,
     .baud_rate = 19200U,
@@ -82,13 +82,53 @@ void __interrupt() NonVectoredISR(void)
 }
 #endif
 
+/// @brief  A simple self-test function that prints several different data 
+/// patterns to the LCD to verify that it is working. The LCD should be initialized
+/// before calling this function, and the backlight should be turned on for best 
+///results.  This function also demonstrates the use of the LCD_SetCursor() 
+/// function to position the text on the display. It also exercises the 
+/// scrolling behavior of the display by printing more than 20 characters on 
+/// the first line, and wrapping to the second line. 
+/// @param  None
+/// @return None
+void LCD_SelfTest(void)
+{
+    LCD_Clear();
+    LCD_SetCursor(0, 0);
+    for (int i = 0; i < 20; i++) {
+        LCD_SetCursor(0, i); // Move cursor to column i of the first line
+        __delay_ms(250);
+    }
+    LCD_SetCursor(0, 0); 
+    LCD_Print("LCD Self Test");
+    LCD_SetCursor(1, 0);
+    LCD_Print("Line 2 text here");
+    __delay_ms(2000);
+
+    LCD_Clear();
+    LCD_SetCursor(0, 0);
+    LCD_Print("12345678901234567890"); // Print 20 chars on first line
+    LCD_SetCursor(1, 0);
+    LCD_Print("Line 2"); // Print on second line
+    __delay_ms(2000);
+
+    LCD_Clear();
+    LCD_SetCursor(0, 5);
+    LCD_Print("Centered");
+    __delay_ms(2000);
+
+    LCD_Clear();
+    LCD_SetCursor(1, 10);
+    LCD_Print("Right");
+    __delay_ms(2000);
+}
+
 /// @brief Main function. Initializes the system and enters an infinite loop.
 /// @param  None
 /// @return None    
 void main(void)
 {
     SYSTEM_Initialize();
-    LCD_Init(); 
     if (!UART_Open(&console_uart))
     {
         while (1)
@@ -97,6 +137,9 @@ void main(void)
     }
     UART_SelectPrintfTarget(&console_uart);
     printf("8-bit LCD Interface Example%s", CRLF);
+    LCD_Init(); 
+    LCD_BackLight(true);
+    LCD_SelfTest();
     while (1)
     {
         __delay_ms(1000);

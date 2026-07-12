@@ -20,6 +20,7 @@
 
 #include <xc.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "config.h"
 #include "lcd.h"
 
@@ -38,11 +39,25 @@ static bool LCD_ReadBusyFlag(void) {
     LCD_E = 1; // Set E high to latch the busy flag on the data pins
     __delay_us(1); // Short delay to allow data to stabilize
 
-    bool busy = LCD_DATA_PORT & 0x80; // Read the busy flag (D7)
+    bool busy = LCD_BUSY_FLAG; // Read the busy flag from the data pins (D7)
+    
     LCD_E = 0; // Set E low to complete the read cycle
     LCD_RW = 0; // Set RW back to write mode
     LCD_DATA_TRIS = 0x00; // Configure data pins as outputs
     return busy;
+}
+
+/// @brief  Control the LCD backlight. The backlight is connected to RB2, which is 
+/// configured as a digital output.  This output pin drives a transistor that controls 
+/// power to the LCD backlight, so setting the pin high turns on the backlight and 
+/// setting it low turns it off.
+/// @param state  true to turn on the backlight, false to turn it off
+void LCD_BackLight(bool state) {
+    if (state) {
+        LATBbits.LATB2 = 1; // Turn on backlight
+    } else {
+        LATBbits.LATB2 = 0; // Turn off backlight
+    }
 }
 
 /// @brief  Initialize the LCD display. This function must be called before any other LCD functions are used.
@@ -56,8 +71,8 @@ void LCD_Init(void) {
     LCD_SendCommand(LCD_CMD_FUNCTION_SET | LCD_8_BIT_MODE | LCD_2_LINE | LCD_5x10_DOTS);
     while (LCD_ReadBusyFlag());
 
-    // Display control: display on, cursor off, blink off
-    LCD_SendCommand(LCD_CMD_DISPLAY_CONTROL | LCD_DISPLAY_ON);
+    // Display control: display on, cursor on, blink off
+    LCD_SendCommand(LCD_CMD_DISPLAY_CONTROL | LCD_DISPLAY_ON | LCD_CURSOR_ON );
     while (LCD_ReadBusyFlag());
 
     // Clear display
@@ -118,6 +133,7 @@ void LCD_SetCursor(uint8_t row, uint8_t col) {
 /// @param str  The string to print
 /// @return None    
 void LCD_Print(const char *str) {
+    printf("LCD String being sent: %s%s", str, CRLF); // Debug print to console
     while (*str) {
         LCD_SendData((uint8_t)(*str)); // Send each character as data
         str++; // Move to the next character in the string
