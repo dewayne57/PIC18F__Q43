@@ -55,22 +55,11 @@ static bool checkIfInitialized(lcd_handle_t *lcd)
     return true; // LCD is initialized, return true
 }
 
-/// @brief  Check if a given lcd_pin_t structure represents a valid pin configuration. 
-/// This function checks that the pointer is not NULL, that the lat, port, and tris 
-/// pointers are not NULL, and that the bit value is within the valid range (0-7).
-/// @param  pin Pointer to the lcd_pin_t structure that defines the pin configuration
-/// @return true if the pin configuration is valid, false if it is invalid
 static bool isPinValid(const lcd_pin_t *pin)
 {
     return (pin != NULL) && (pin->lat != NULL) && (pin->port != NULL) && (pin->tris != NULL) && (pin->bit < 8U);
 }
 
-/// @brief  Write a logic level to a pin defined by an lcd_pin_t structure. This function
-/// checks if the pin configuration is valid, and if so, it sets or clears the appropriate
-/// bit in the LAT register to drive the pin high or low.
-/// @param  pin Pointer to the lcd_pin_t structure that defines the pin configuration
-/// @param  level The logic level to write to the pin (true for high, false for low)
-/// @return None
 static void pinWrite(const lcd_pin_t *pin, bool level)
 {
     uint8_t mask;
@@ -90,11 +79,6 @@ static void pinWrite(const lcd_pin_t *pin, bool level)
     }
 }
 
-/// @brief  Read the logic level from a pin defined by an lcd_pin_t structure. This function
-/// checks if the pin configuration is valid, and if so, it reads the appropriate bit from the
-/// PORT register to determine if the pin is high or low.
-/// @param  pin Pointer to the lcd_pin_t structure that defines the pin configuration
-/// @return The logic level read from the pin (true for high, false for low)
 static bool pinRead(const lcd_pin_t *pin)
 {
     uint8_t mask;
@@ -107,13 +91,6 @@ static bool pinRead(const lcd_pin_t *pin)
     return ((*(pin->port) & mask) != 0U);
 }
 
-/// @brief  Configure a pin defined by an lcd_pin_t structure as an input or output. 
-/// This function checks if the pin configuration is valid, and if so, it sets or 
-/// clears the appropriate bit in the TRIS register to configure the pin as an input 
-/// (high) or output (low).
-/// @param  pin Pointer to the lcd_pin_t structure that defines the pin configuration
-/// @param  input true to configure the pin as an input, false to configure it as an output
-/// @return None
 static void pinSetInput(const lcd_pin_t *pin, bool input)
 {
     uint8_t mask;
@@ -133,10 +110,6 @@ static void pinSetInput(const lcd_pin_t *pin, bool input)
     }
 }
 
-/// @brief  Check if the lcd_handle_t structure has valid pin configurations for the 
-/// required control and data pins.
-/// @param  lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
-/// @return true if all required pins are valid, false if any required pin is invalid
 static bool hasRequiredPins(const lcd_handle_t *lcd)
 {
     uint8_t i;
@@ -159,12 +132,6 @@ static bool hasRequiredPins(const lcd_handle_t *lcd)
     return true;
 }
 
-/// @brief  Configure the data pins of the LCD as either inputs or outputs based on 
-/// the input parameter.
-/// @param  lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
-/// @param  input true to configure the data pins as inputs, false to configure them as
-/// outputs
-/// @return None
 static void setDataDirection(lcd_handle_t *lcd, bool input)
 {
     uint8_t i;
@@ -175,12 +142,6 @@ static void setDataDirection(lcd_handle_t *lcd, bool input)
     }
 }
 
-/// @brief  Write a byte of data to the LCD data bus in 8-bit mode. This function assumes that the
-/// data pins have already been configured as outputs, and it writes the bits of the value to
-/// the appropriate LAT registers based on the pin mapping defined in the lcd_handle_t structure.
-/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
-/// @param value The byte of data to write to the LCD data bus. 
-/// @return None
 static void writeDataBus8(lcd_handle_t *lcd, uint8_t value)
 {
     uint8_t i;
@@ -190,14 +151,6 @@ static void writeDataBus8(lcd_handle_t *lcd, uint8_t value)
     }
 }
 
-/// @brief  Write a 4-bit nibble to the LCD data bus in 4-bit mode. This function assumes that the
-/// data pins have already been configured as outputs, and it writes the bits of the nibble
-/// to the appropriate LAT registers based on the pin mapping defined in the lcd_handle_t structure.
-/// In 4-bit mode, only the high nibble (D4..D7) is used, so the function shifts the bits of the nibble to align with the data pins.
-/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
-/// @param nibble The 4-bit nibble to write to the LCD data bus. The lower 4 bits of the 
-/// value are used, and they are shifted to align with the data pins D4..D7.
-/// @return None
 static void writeNibble4(lcd_handle_t *lcd, uint8_t nibble)
 {
     uint8_t i;
@@ -207,12 +160,6 @@ static void writeNibble4(lcd_handle_t *lcd, uint8_t nibble)
     }
 }
 
-/// @brief  Generate a pulse on the LCD Enable pin to latch in the command or data. This function
-/// sets the Enable pin high, waits for a short delay (1 microsecond), and then sets it low again.
-/// This pulse is required to tell the LCD to read the command or data from the data bus after
-/// the RS and RW pins have been set appropriately.
-/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
-/// @return None
 static void pulseEnable(lcd_handle_t *lcd)
 {
     pinWrite(&lcd->e, true);
