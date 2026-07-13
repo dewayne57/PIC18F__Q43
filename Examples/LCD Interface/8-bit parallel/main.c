@@ -29,6 +29,7 @@
 
 static char console_tx_buffer[256];
 static char console_rx_buffer[128];
+static char lcd_display_buffer[80]; // Buffer for storing the current contents of the LCD (20 cols x 4 rows = 80 chars)
 
 uart_handle_t console_uart = {
     .port = UART_PORT_1,
@@ -53,6 +54,28 @@ uart_handle_t console_uart = {
     .rts_pin = UART_PPS_PIN_NONE,  // RTS output pin (set if using hardware flow control)
     .cts_pin = UART_PPS_PIN_NONE,  // CTS input pin (set if using hardware flow control)
     .isr_mode = UART_ISR_VECTORED, // App owns ISR routing; this marks intended interrupt policy
+};
+
+lcd_handle_t lcd = {
+    .interface_mode = LCD_INTERFACE_8_BIT,
+    .num_rows = 4,
+    .num_cols = 20,
+    .data = {
+        {&LATD, &PORTD, &TRISD, 0},
+        {&LATD, &PORTD, &TRISD, 1},
+        {&LATD, &PORTD, &TRISD, 2},
+        {&LATD, &PORTD, &TRISD, 3},
+        {&LATD, &PORTD, &TRISD, 4},
+        {&LATD, &PORTD, &TRISD, 5},
+        {&LATD, &PORTD, &TRISD, 6},
+        {&LATD, &PORTD, &TRISD, 7},
+    },
+    .rs = {&LATE, &PORTE, &TRISE, 0},
+    .rw = {&LATE, &PORTE, &TRISE, 1},
+    .e = {&LATE, &PORTE, &TRISE, 2},
+    .backlight = {&LATB, &PORTB, &TRISB, 2},
+    .buffer = lcd_display_buffer,
+    .buffer_size = sizeof(lcd_display_buffer)
 };
 
 #if defined(VECTORED_INTERRUPTS_ENABLED)
@@ -96,11 +119,13 @@ void main(void)
     }
     UART_SelectPrintfTarget(&console_uart);
     printf("8-bit LCD Interface Example%s", CRLF);
-    LCD_Init(); 
-    LCD_BackLight(true);
+    if (!LCD_Init(&lcd) ) { 
+        while(1); // LCD initialization failed, enter infinite loop to prevent further execution
+    }
+    LCD_BackLight(&lcd, true);
     while (1)
     {
-        LCD_SelfTest();
+        LCD_SelfTest(&lcd);
         __delay_ms(1000);
     }
 }
