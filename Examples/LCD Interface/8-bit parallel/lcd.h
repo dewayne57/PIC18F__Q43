@@ -19,6 +19,8 @@
 ***************************************************************************************** */
 #ifndef LCD_H
 #define LCD_H
+#include <stdbool.h>
+#include <stdint.h>
 
 #define LCD_DATA_PORT PORTD
 #define LCD_DATA_TRIS TRISD
