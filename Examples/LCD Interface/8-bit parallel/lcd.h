@@ -30,12 +30,6 @@
 #define LCD_RW_TRIS TRISEbits.TRISE1
 #define LCD_E_TRIS TRISEbits.TRISE2
 
-// Define symbolic names for the LCD Line indecies (0-based)
-#define LCD_LINE_1 0
-#define LCD_LINE_2 1
-#define LCD_LINE_3 2
-#define LCD_LINE_4 3
-
 // Define the DDRAM addresses for the start of each line on a 20x4 LCD
 #define LCD_LINE_1_ADDR 0x00
 #define LCD_LINE_2_ADDR 0x40
@@ -71,16 +65,32 @@
 #define LCD_2_LINE 0x08
 #define LCD_5x10_DOTS 0x04
 
-void LCD_SelfTest(void);
-void LCD_BackLight(bool state);
-void LCD_Init(void);
+// The following functions can be overridden by the user to provide custom 
+// implementations for sending commands and data, and reading the busy flag.  
+// This allows the user to customize the low-level interface with the LCD, 
+// for example if they want to use a different pinout or a different method 
+// of communication (e.g. I2C or SPI instead of parallel).  The higher level 
+// functions like LCD_Print and LCD_SetCursor will call these lower level 
+// functions, so by overriding them, you can change how all of the LCD 
+// functions work without having to modify the higher level code.
 void LCD_SendCommand(uint8_t cmd);
 void LCD_SendData(uint8_t data);
+bool LCD_ReadBusyFlag(void);
+
+// The following are the main functions for controlling the LCD.  These functions
+// provide a convenient interface for initializing the LCD, clearing the display,
+// setting the cursor position, and printing text.  The LCD_SelfTest function is a
+// demonstration function that shows how to use the other functions to perform a
+// series of tests on the LCD to verify that it is working correctly.
+void LCD_SelfTest(void); 
+void LCD_BackLight(bool state);
+void LCD_Init(void);
 void LCD_Clear(void);
 void LCD_SetCursor(uint8_t row, uint8_t col);
-void LCD_StartAtLine(uint8_t line);
 void LCD_ClearLine(uint8_t line);
 void LCD_Print(const char* str);
+void LCD_PrintAt(uint8_t row, uint8_t col, const char* str);
 void LCD_Printf(const char* format, ...);
+void LCD_PrintfAt(uint8_t row, uint8_t col, const char* format, ...);
 
 #endif /* LCD_H */
