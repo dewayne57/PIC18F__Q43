@@ -1,6 +1,6 @@
 /* *****************************************************************************************
- *   File Name: lcd.c
- *   Description: Source file for 8-bit LCD interface functions.
+ *   File Name: hd44780.c
+ *   Description: Source file for HD44780 LCD interface functions.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-06-04
  *
@@ -24,17 +24,17 @@
 #include "string.h"
 #include "stdarg.h"
 #include "config.h"
-#include "lcd.h"
+#include "hd44780.h"
 
 #define LCD_PRINTF_FALLBACK_BUFFER_SIZE 64U
 
-/// @brief  Check if the LCD has been initialized by checking the initialized flag in 
-/// the lcd_handle_t structure. This function can be used at the beginning of each LCD 
-/// function to ensure that the LCD has been initialized before attempting to send 
-/// commands or data. If the LCD has not been initialized, the function will return 
+/// @brief  Check if the LCD has been initialized by checking the initialized flag in
+/// the lcd_handle_t structure. This function can be used at the beginning of each LCD
+/// function to ensure that the LCD has been initialized before attempting to send
+/// commands or data. If the LCD has not been initialized, the function will return
 /// false. If the LCD has been initialized, it will return true. This helps prevent errors
 /// caused by calling LCD functions before initialization, and it also allows the LCD
-/// functions to be more robust and self-contained by handling the initialization check 
+/// functions to be more robust and self-contained by handling the initialization check
 /// internally.
 /// @param  lcd Pointer to the lcd_handle_t structure that contains the configuration for the LCD
 /// interface. This structure must be properly initialized with the correct interface mode,
@@ -55,11 +55,31 @@ static bool checkIfInitialized(lcd_handle_t *lcd)
     return true; // LCD is initialized, return true
 }
 
+/// @brief  Check if the given lcd_pin_t structure represents a valid pin configuration.
+/// A valid pin configuration must have non-NULL pointers for the lat, port, and tris
+/// registers, and the bit field must be between 0 and 7 (inclusive). This function can
+/// be used to validate the pin configurations in the lcd_handle_t structure before
+/// attempting to use them to control the LCD. If any of the required pins are invalid,
+/// the LCD functions can return an error or take appropriate action to prevent undefined
+/// behavior.
+/// @param  pin Pointer to the lcd_pin_t structure that represents a single LCD pin
+/// configuration.
+/// @return true if the pin configuration is valid, false if it is invalid
 static bool isPinValid(const lcd_pin_t *pin)
 {
     return (pin != NULL) && (pin->lat != NULL) && (pin->port != NULL) && (pin->tris != NULL) && (pin->bit < 8U);
 }
 
+/// @brief  Write a logic level to the specified LCD pin. This function will set the output
+/// state of the pin based on the level parameter. The function will first validate the pin
+/// configuration using the isPinValid function, and if the pin is valid, it will write the
+/// specified level to the pin's lat register. If the level is true, the function will
+/// set the corresponding bit in the lat register; if the level is false, it will clear the
+/// corresponding bit. This function abstracts the low-level details of controlling the LCD pins
+/// and provides a simple interface for setting the state of the control and data pins.
+/// @param  pin Pointer to the lcd_pin_t structure that represents the LCD pin to write to.
+/// @param  level The logic level to write to the pin (true for high, false for low)
+/// @return None
 static void pinWrite(const lcd_pin_t *pin, bool level)
 {
     uint8_t mask;
@@ -79,6 +99,15 @@ static void pinWrite(const lcd_pin_t *pin, bool level)
     }
 }
 
+/// @brief  Read the logic level from the specified LCD pin. This function will return the
+/// current state of the pin based on the value in the port register. The function will first
+/// validate the pin configuration using the isPinValid function, and if the pin is valid, it
+/// will read the state of the pin from the port register. If the pin is high, the function
+/// will return true; if the pin is low, the function will return false. This function
+/// abstracts the low-level details of reading the LCD pins and provides a simple interface
+/// for getting the state of the control and data pins.
+/// @param  pin Pointer to the lcd_pin_t structure that represents the LCD pin to read from.
+/// @return true if the pin is high, false if the pin is low
 static bool pinRead(const lcd_pin_t *pin)
 {
     uint8_t mask;
@@ -91,6 +120,15 @@ static bool pinRead(const lcd_pin_t *pin)
     return ((*(pin->port) & mask) != 0U);
 }
 
+/// @brief  Set the direction of the specified LCD pin. This function will configure the pin
+/// as an input or output based on the input parameter. The function will first validate the
+/// pin configuration using the isPinValid function, and if the pin is valid, it will set
+/// the direction of the pin by modifying the tris register. If the input parameter is true,
+/// the pin will be configured as an input; if the input parameter is false, the pin will be
+/// configured as an output.
+/// @param  pin Pointer to the lcd_pin_t structure that represents the LCD pin to configure.
+/// @param  input true to configure the pin as an input, false to configure it as an output.
+/// @return None
 static void pinSetInput(const lcd_pin_t *pin, bool input)
 {
     uint8_t mask;
@@ -110,12 +148,17 @@ static void pinSetInput(const lcd_pin_t *pin, bool input)
     }
 }
 
+/// @brief  Check if the lcd_handle_t structure has all the required pins configured for
+/// the specified interface mode. This function will validate that the rs, rw, and e
+/// control pins are valid, as well as the data pins required for the selected interface mode.
+/// @param lcd Pointer to the lcd_handle_t structure to check.
+/// @return true if all required pins are valid, false otherwise.
 static bool hasRequiredPins(const lcd_handle_t *lcd)
 {
     uint8_t i;
     uint8_t start;
 
-    if ((lcd == NULL) || !isPinValid(&lcd->rs) || !isPinValid(&lcd->e))
+    if ((lcd == NULL) || !isPinValid(&lcd->rs) || !isPinValid(&lcd->rw) || !isPinValid(&lcd->e))
     {
         return false;
     }
@@ -132,11 +175,13 @@ static bool hasRequiredPins(const lcd_handle_t *lcd)
     return true;
 }
 
-static bool canReadBusyFlag(const lcd_handle_t *lcd)
-{
-    return (lcd != NULL) && isPinValid(&lcd->rw);
-}
-
+/// @brief  Set the direction of the data pins based on the interface mode. This function will
+/// configure the data pins as inputs or outputs based on the input parameter. The function will
+/// determine which data pins to configure based on the interface mode (8-bit or 4-bit) and will
+/// call the pinSetInput function for each data pin to set the direction accordingly.
+/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
+/// @param input true to configure the data pins as inputs, false to configure them as outputs.
+/// @return None
 static void setDataDirection(lcd_handle_t *lcd, bool input)
 {
     uint8_t i;
@@ -147,6 +192,12 @@ static void setDataDirection(lcd_handle_t *lcd, bool input)
     }
 }
 
+/// @brief  Write an 8-bit value to the LCD data bus. This function will write the specified
+/// value to the data pins D0..D7 based on the interface mode. In 8-bit mode, all 8 data pins
+/// will be used; in 4-bit mode, only the high nibble (D4..D7) will be used.
+/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
+/// @param value The 8-bit value to write to the data bus.
+/// @return None
 static void writeDataBus8(lcd_handle_t *lcd, uint8_t value)
 {
     uint8_t i;
@@ -156,6 +207,12 @@ static void writeDataBus8(lcd_handle_t *lcd, uint8_t value)
     }
 }
 
+/// @brief  Write a 4-bit nibble to the LCD data bus. This function will write the specified
+/// nibble to the high data pins D4..D7 based on the interface mode.
+/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
+/// @param nibble The 4-bit nibble to write to the data bus (should be in the lower 4 bits
+/// of the byte).
+/// @return None
 static void writeNibble4(lcd_handle_t *lcd, uint8_t nibble)
 {
     uint8_t i;
@@ -165,6 +222,9 @@ static void writeNibble4(lcd_handle_t *lcd, uint8_t nibble)
     }
 }
 
+/// @brief  Pulse the enable pin to latch data into the LCD.
+/// @param lcd Pointer to the lcd_handle_t structure that contains the LCD pin mapping.
+/// @return None
 static void pulseEnable(lcd_handle_t *lcd)
 {
     pinWrite(&lcd->e, true);
@@ -181,7 +241,7 @@ LCD_WEAK bool LCD_ReadBusyFlag(lcd_handle_t *lcd)
 {
     bool busy;
 
-    if ((lcd == NULL) || !hasRequiredPins(lcd) || !canReadBusyFlag(lcd))
+    if ((lcd == NULL) || !hasRequiredPins(lcd))
     {
         return false;
     }
@@ -210,16 +270,16 @@ LCD_WEAK bool LCD_ReadBusyFlag(lcd_handle_t *lcd)
         pinWrite(&lcd->e, false);
     }
 
-    pinWrite(&lcd->rw, false);   // Set RW back to write mode
+    pinWrite(&lcd->rw, false);    // Set RW back to write mode
     setDataDirection(lcd, false); // Restore data pins as outputs
     return busy;
 }
 
 /// @brief  Send a command to the LCD.
-/// @param  lcd Pointer to the lcd_handle_t structure that contains the configuration for 
+/// @param  lcd Pointer to the lcd_handle_t structure that contains the configuration for
 /// the LCD interface. This structure must be properly initialized with the correct interface
-/// mode, number of rows and columns, data port and control pin configurations, and a buffer 
-/// for storing the current display contents. The function will use this information to send 
+/// mode, number of rows and columns, data port and control pin configurations, and a buffer
+/// for storing the current display contents. The function will use this information to send
 /// the command byte to the LCD and update the display buffer accordingly.
 /// @param  cmd  The command byte to send to the LCD
 /// @return None
@@ -230,7 +290,7 @@ LCD_WEAK void LCD_SendCommand(lcd_handle_t *lcd, uint8_t cmd)
         return;
     }
 
-    if (lcd->initialized && canReadBusyFlag(lcd))
+    if (lcd->initialized)
     {
         while (LCD_ReadBusyFlag(lcd))
             ; // Wait until LCD is not busy
@@ -251,25 +311,13 @@ LCD_WEAK void LCD_SendCommand(lcd_handle_t *lcd, uint8_t cmd)
         writeNibble4(lcd, (uint8_t)(cmd & 0x0FU));
         pulseEnable(lcd);
     }
-
-    if (!canReadBusyFlag(lcd))
-    {
-        if ((cmd == LCD_CMD_CLEAR_DISPLAY) || (cmd == LCD_CMD_RETURN_HOME))
-        {
-            __delay_ms(2);
-        }
-        else
-        {
-            __delay_us(40);
-        }
-    }
 }
 
 /// @brief  Send a data byte to the LCD.
-/// @param  lcd Pointer to the lcd_handle_t structure that contains the configuration 
-/// for the LCD interface. This structure must be properly initialized with the correct 
-/// interface mode, number of rows and columns, data port and control pin configurations, 
-/// and a buffer for storing the current display contents. The function will use this 
+/// @param  lcd Pointer to the lcd_handle_t structure that contains the configuration
+/// for the LCD interface. This structure must be properly initialized with the correct
+/// interface mode, number of rows and columns, data port and control pin configurations,
+/// and a buffer for storing the current display contents. The function will use this
 /// information to send the data byte to the LCD and update the display buffer accordingly.
 /// @param  data  The data byte to send to the LCD
 /// @return None
@@ -280,7 +328,7 @@ LCD_WEAK void LCD_SendData(lcd_handle_t *lcd, uint8_t data)
         return;
     }
 
-    if (lcd->initialized && canReadBusyFlag(lcd))
+    if (lcd->initialized)
     {
         while (LCD_ReadBusyFlag(lcd))
             ; // Wait until LCD is not busy
@@ -301,11 +349,20 @@ LCD_WEAK void LCD_SendData(lcd_handle_t *lcd, uint8_t data)
         writeNibble4(lcd, (uint8_t)(data & 0x0FU));
         pulseEnable(lcd);
     }
+}
 
-    if (!canReadBusyFlag(lcd))
+/// @brief  Control the LCD backlight. The backlight is connected to RB2, which is
+/// configured as a digital output.  This output pin drives a transistor that controls
+/// power to the LCD backlight, so setting the pin high turns on the backlight and
+/// setting it low turns it off.
+/// @param state  true to turn on the backlight, false to turn it off
+LCD_WEAK void LCD_BackLight(lcd_handle_t *lcd, bool state)
+{
+    if ((lcd == NULL) || !isPinValid(&lcd->backlight))
     {
-        __delay_us(40);
+        return;
     }
+    pinWrite(&lcd->backlight, state);
 }
 
 /// @brief  Initialize the LCD display. This function must be called before any other LCD functions are used.
@@ -408,20 +465,6 @@ bool LCD_Init(lcd_handle_t *lcd)
     return true;
 }
 
-/// @brief  Control the LCD backlight. The backlight is connected to RB2, which is
-/// configured as a digital output.  This output pin drives a transistor that controls
-/// power to the LCD backlight, so setting the pin high turns on the backlight and
-/// setting it low turns it off.
-/// @param state  true to turn on the backlight, false to turn it off
-LCD_WEAK void LCD_BackLight(lcd_handle_t *lcd, bool state)
-{
-    if ((lcd == NULL) || !isPinValid(&lcd->backlight))
-    {
-        return;
-    }
-    pinWrite(&lcd->backlight, state);
-}
-
 /// @brief  Clear all characters on the specified line by writing spaces to
 /// every position on the line.  Leaves the cursor at the beginning of the line
 /// after clearing. This is a helper function that simplifies clearing a specific line.
@@ -475,9 +518,9 @@ void LCD_Clear(lcd_handle_t *lcd)
 /// the row and column they want to move the cursor to, without having to worry
 /// about how the LCD maps its memory addresses to the display lines.
 /// @param  lcd Pointer to the lcd_handle_t structure that contains the configuration
-/// for the LCD interface. This structure must be properly initialized with the 
-/// correct interface mode, number of rows and columns, data port and control 
-/// pin configurations, and a buffer for storing the current display contents. 
+/// for the LCD interface. This structure must be properly initialized with the
+/// correct interface mode, number of rows and columns, data port and control
+/// pin configurations, and a buffer for storing the current display contents.
 /// The function will use this information to calculate the correct DDRAM address
 /// based on the specified row and column, and then send the appropriate command
 /// to set the cursor position on the LCD.
@@ -499,11 +542,11 @@ void LCD_SetCursor(lcd_handle_t *lcd, uint8_t row, uint8_t col)
 /// starting at the current cursor position. The cursor will
 /// automatically move to the right after each character is printed.
 /// @param lcd Pointer to the lcd_handle_t structure that contains the configuration
-/// for the LCD interface. This structure must be properly initialized with the 
-/// correct interface mode, number of rows and columns, data port and control pin 
-/// configurations, and a buffer for storing the current display contents. The 
-/// function will use this information to send each character of the string to the 
-/// LCD as data, and it will also update the display buffer accordingly. The 
+/// for the LCD interface. This structure must be properly initialized with the
+/// correct interface mode, number of rows and columns, data port and control pin
+/// configurations, and a buffer for storing the current display contents. The
+/// function will use this information to send each character of the string to the
+/// LCD as data, and it will also update the display buffer accordingly. The
 /// function will continue to print characters until the end of the string is reached.
 /// @param str  The string to print
 /// @return None
@@ -512,7 +555,7 @@ void LCD_Print(lcd_handle_t *lcd, const char *str)
     while (*str)
     {
         LCD_SendData(lcd, (uint8_t)(*str)); // Send each character as data
-        str++;                         // Move to the next character in the string
+        str++;                              // Move to the next character in the string
     }
 }
 
@@ -520,11 +563,11 @@ void LCD_Print(lcd_handle_t *lcd, const char *str)
 /// format string and additional arguments, formats the string using
 /// vsnprintf, and then prints it on the LCD.
 /// @param lcd Pointer to the lcd_handle_t structure that contains the configuration
-/// for the LCD interface. This structure must be properly initialized with the 
-/// correct interface mode, number of rows and columns, data port and control pin 
-/// configurations, and a buffer for storing the current display contents. The 
-/// function will use this information to send each character of the string to the 
-/// LCD as data, and it will also update the display buffer accordingly. The 
+/// for the LCD interface. This structure must be properly initialized with the
+/// correct interface mode, number of rows and columns, data port and control pin
+/// configurations, and a buffer for storing the current display contents. The
+/// function will use this information to send each character of the string to the
+/// LCD as data, and it will also update the display buffer accordingly. The
 /// function will continue to print characters until the end of the string is reached.
 /// @param format The format string
 /// @param ... Additional arguments for the format string
@@ -566,11 +609,11 @@ void LCD_Printf(lcd_handle_t *lcd, const char *format, ...)
 /// convenient way to print text at a specific location on the display without
 /// having to manually set the cursor position before calling LCD_Print().
 /// @param lcd Pointer to the lcd_handle_t structure that contains the configuration
-/// for the LCD interface. This structure must be properly initialized with the 
-/// correct interface mode, number of rows and columns, data port and control pin 
-/// configurations, and a buffer for storing the current display contents. The 
-/// function will use this information to send each character of the string to the 
-/// LCD as data, and it will also update the display buffer accordingly. The 
+/// for the LCD interface. This structure must be properly initialized with the
+/// correct interface mode, number of rows and columns, data port and control pin
+/// configurations, and a buffer for storing the current display contents. The
+/// function will use this information to send each character of the string to the
+/// LCD as data, and it will also update the display buffer accordingly. The
 /// function will continue to print characters until the end of the string is reached.
 /// @param row The row number (1-based) where the string should start
 /// @param col The column number (1-based) where the string should start
@@ -589,11 +632,11 @@ void LCD_PrintAt(lcd_handle_t *lcd, uint8_t row, uint8_t col, const char *str)
 /// convenient way to print formatted text at a specific location on the display
 /// without having to manually set the cursor position before calling LCD_Printf().
 /// @param lcd Pointer to the lcd_handle_t structure that contains the configuration
-/// for the LCD interface. This structure must be properly initialized with the 
-/// correct interface mode, number of rows and columns, data port and control pin 
-/// configurations, and a buffer for storing the current display contents. The 
-/// function will use this information to send each character of the string to the 
-/// LCD as data, and it will also update the display buffer accordingly. The 
+/// for the LCD interface. This structure must be properly initialized with the
+/// correct interface mode, number of rows and columns, data port and control pin
+/// configurations, and a buffer for storing the current display contents. The
+/// function will use this information to send each character of the string to the
+/// LCD as data, and it will also update the display buffer accordingly. The
 /// function will continue to print characters until the end of the string is reached.
 /// @param row The row number (1-based) where the formatted string should start
 /// @param col The column number (1-based) where the formatted string should start
@@ -637,11 +680,11 @@ void LCD_PrintfAt(lcd_handle_t *lcd, uint8_t row, uint8_t col, const char *forma
 /// demonstrates the backlight control function by toggling the backlight on and
 /// off during the test.
 /// @param lcd Pointer to the lcd_handle_t structure that contains the configuration
-/// for the LCD interface. This structure must be properly initialized with the 
-/// correct interface mode, number of rows and columns, data port and control pin 
-/// configurations, and a buffer for storing the current display contents. The 
-/// function will use this information to send each character of the string to the 
-/// LCD as data, and it will also update the display buffer accordingly. The 
+/// for the LCD interface. This structure must be properly initialized with the
+/// correct interface mode, number of rows and columns, data port and control pin
+/// configurations, and a buffer for storing the current display contents. The
+/// function will use this information to send each character of the string to the
+/// LCD as data, and it will also update the display buffer accordingly. The
 /// function will continue to print characters until the end of the string is reached.
 /// @param  None
 /// @return None

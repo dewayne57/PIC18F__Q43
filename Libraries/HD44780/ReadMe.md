@@ -236,4 +236,4 @@ Always verify against your specific LCD module datasheet and oscillator toleranc
 2. `LCD_Clear()` visibly clears the display.
 3. `LCD_PrintAt()` writes expected text and positions correctly.
 4. `LCD_PrintfAt()` works for your formatted strings.
-5. Backlight control behaves as intended (or no-op by design).
+5. Backlight control behaves as intended.

@@ -1,6 +1,6 @@
 /* *******************************************************************************
- *   File Name: lcd.h
- *   Description: Header file for 8-bit LCD interface functions.
+ *   File Name: hd44780.h
+ *   Description: Header file for HD44780 LCD interface functions.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-06-04
  *
@@ -17,8 +17,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  ***************************************************************************************** */
-#ifndef LCD_H
-#define LCD_H
+#ifndef HD44780_H  
+#define HD44780_H
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -121,7 +121,12 @@ typedef struct
 // of communication (e.g. I2C or SPI instead of parallel).  The higher level
 // functions like LCD_Print and LCD_SetCursor will call these lower level
 // functions, so by overriding them, you can change how all of the LCD
-// functions work without having to modify the higher level code.
+// functions work without having to modify the higher level code. 
+// 
+// Note, you may want to override the LCD_BackLight function as well if 
+// your LCD has a backlight control pin. By default, the LCD_Backlight 
+// function checks if the backlight pin is not null and drives that pin 
+// high or low based on the desired state. 
 LCD_WEAK void LCD_SendCommand(lcd_handle_t *lcd, uint8_t cmd);
 LCD_WEAK void LCD_SendData(lcd_handle_t *lcd, uint8_t data);
 LCD_WEAK bool LCD_ReadBusyFlag(lcd_handle_t *lcd);
@@ -142,4 +147,4 @@ void LCD_PrintAt(lcd_handle_t *lcd, uint8_t row, uint8_t col, const char *str);
 void LCD_Printf(lcd_handle_t *lcd, const char *format, ...);
 void LCD_PrintfAt(lcd_handle_t *lcd, uint8_t row, uint8_t col, const char *format, ...);
 
-#endif /* LCD_H */
+#endif /* HD44780_H */
