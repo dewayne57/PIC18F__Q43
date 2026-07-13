@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>app.h</itemPath>
       <itemPath>config.h</itemPath>
+      <itemPath>i2clib.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -22,6 +23,7 @@
       <itemPath>app.c</itemPath>
       <itemPath>config.c</itemPath>
       <itemPath>main.c</itemPath>
+      <itemPath>i2clib.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -80,23 +82,6 @@
                             FL="dist/default/production/UARTLIB.a"
                             PD="dist/default/production/UARTLIB.a"
                             DD="dist/default/debug/UARTLIB.a">
-              </makeArtifact>
-            </linkerLibProjectItem>
-            <linkerLibProjectItem>
-              <makeArtifact PL="../../Libraries/I2CLIB"
-                            CT="3"
-                            CN="default"
-                            AC="true"
-                            BL="true"
-                            WD="../../Libraries/I2CLIB"
-                            BC="${MAKE}  -f Makefile CONF=default"
-                            DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
-                            CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"
-                            OP="dist/default/production/I2CLIB.a"
-                            DOP="dist/default/debug/I2CLIB.a"
-                            FL="dist/default/production/I2CLIB.a"
-                            PD="dist/default/production/I2CLIB.a"
-                            DD="dist/default/debug/I2CLIB.a">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

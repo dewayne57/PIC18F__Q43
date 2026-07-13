@@ -49,7 +49,9 @@
 #include <stdio.h>
 #include "config.h"
 #include "app.h"
-#include "../../Libraries/I2CLIB/i2clib.h"
+#include "i2clib.h"
+
+// #include "../../Libraries/I2CLIB/i2clib.h"
 #include "../../common/mcp23x17.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 
@@ -63,6 +65,7 @@ static volatile bool s_porta_value_valid = false;
 static volatile bool s_porta_report_pending = false;
 static volatile bool s_porta_update_pending = false;
 
+#ifdef VECTORED_INTERRUPTS_ENABLED
 /// @brief UART1 RX ISR (vectored)
 /// @param  None
 /// @return None
@@ -91,6 +94,41 @@ void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
     // Clear the INT1 interrupt flag
     PIR6bits.INT1IF = 0;
 }
+#else 
+void __interrupt() ISR(void)
+{
+    if (PIR6bits.INT1IF && PIE6bits.INT1IE)
+    {
+        s_porta_update_pending = true;
+
+        // Clear the INT1 interrupt flag
+        PIR6bits.INT1IF = 0;
+    }
+
+    if (PIR4bits.U1RXIF && PIE4bits.U1RXIE)
+    {
+        UART_HandleRxInterrupt(&console_uart);
+    }
+
+    if (PIR4bits.U1TXIF && PIE4bits.U1TXIE)
+    {
+        UART_HandleTxInterrupt(&console_uart);
+    }
+}
+#endif 
+
+static i2c_status_t i2c_waitComplete(i2c_handle_t *i2c) { 
+    bool waiting = true; 
+    i2c_status_t status;
+    do { 
+        status = i2c_getStatus(i2c); 
+        if (status == I2C_IDLE) { 
+            waiting = false;
+        }
+    } while (waiting); 
+    
+    return status;
+}
 
 /// @brief Initialize the MCP23017 I/O expander.
 /// The MCP23017 is configured in banked addressing mode so Port A registers are
@@ -108,13 +146,11 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
     status = i2c_writeClient(handle, MCP23017_ADDR, i2c_buffer, 2);
     if (status != I2C_SUCCESS)
     {
-        i2c_printDiagnostics(handle, "Error writing IOCON during MCP23017 initialization");
         return status;
     }
     status = i2c_waitComplete(handle);
     if (status != I2C_SUCCESS)
     {
-        i2c_printDiagnostics(handle, "Error waiting for IOCON write completion during MCP23017 initialization"  );
         return status;
     }
 
@@ -133,13 +169,11 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
     status = i2c_writeClient(handle, MCP23017_ADDR, i2c_buffer, 11);
     if (status != I2C_SUCCESS)
     {
-        i2c_printDiagnostics(handle, "Error writing Port A configuration during MCP23017 initialization");
         return status;
     }
     status = i2c_waitComplete(handle);
     if (status != I2C_SUCCESS)
     {
-        i2c_printDiagnostics(handle, "Error waiting for Port A configuration write completion during MCP23017 initialization");
         return status;
     }
 
@@ -158,13 +192,11 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
         status = i2c_writeClient(handle, MCP23017_ADDR, i2c_buffer, 11);
     if (status != I2C_SUCCESS)
     {
-        i2c_printDiagnostics(handle, "Error writing Port B configuration during MCP23017 initialization");
         return status;
     }
     status = i2c_waitComplete(handle);
     if (status != I2C_SUCCESS)
     {
-        i2c_printDiagnostics(handle, "Error waiting for Port B configuration write completion during MCP23017 initialization");
         return status;
     }
 

@@ -40,6 +40,12 @@ void SYSTEM_Initialize(void)
     ANSELC = 0x00;  // All Port C pins: digital mode
     ANSELD = 0x00;  // All Port D pins: digital mode
 
+    WPUA = 0x00;  // All Port A pins: weak pull-ups disabled
+    WPUB = 0x00;  // All Port B pins: weak pull-ups
+    WPUC = 0x00;  // All Port C pins: weak pull-ups disabled
+    WPUD = 0x00;  // All Port D pins: weak pull-ups
+    WPUE = 0x00;  // All Port E pins: weak pull-ups disabled
+
     /*
      * Enable peripheral modules that are required.
      */
@@ -49,21 +55,10 @@ void SYSTEM_Initialize(void)
     PMD6bits.U1MD   = 0; // UART1 enabled
     __delay_ms(10); // Short delay to allow modules to stabilize after power-up
 
-    // Port D diagnostic LEDs are active-low outputs.
-    TRISDbits.TRISD0 = 0;
-    TRISDbits.TRISD1 = 0;
-    TRISDbits.TRISD2 = 0;
-    TRISDbits.TRISD3 = 0;
-    LATDbits.LATD0 = 1;
-    LATDbits.LATD1 = 1;
-    LATDbits.LATD2 = 1;
-    LATDbits.LATD3 = 1;
-
     // External INT1 on RB2 for MCP23017 interrupt input
     TRISBbits.TRISB2 = 1;   // RB2 is input
-    ANSELBbits.ANSELB2 = 0; // RB2 is digital
-    WPUBbits.WPUB2 = 0;     // Weak pull-up disabled on RB2
-
+    TRISBbits.TRISB3 = 0;   // RB3 is output (reset for MCP23017)
+    
     PPS_Unlock();
     // INT1 input <- RB2 (port B=0b01, pin2=0b010 -> 0x0A)
     INT1PPS = 0x0A;

@@ -5821,12 +5821,6 @@
 		(uuid "6f3f3b8e-7b8b-4505-9117-7a615798b8cb")
 	)
 	(junction
-		(at 107.95 113.03)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "071e392e-658e-47f7-8b17-958ce37e5809")
-	)
-	(junction
 		(at 232.41 154.94)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6039,10 +6033,6 @@
 		(uuid "3ce68ca1-60a2-42fb-a428-297413f96a70")
 	)
 	(no_connect
-		(at 58.42 87.63)
-		(uuid "3d751f6f-9d66-469e-90cf-abfcbba55e88")
-	)
-	(no_connect
 		(at 58.42 123.19)
 		(uuid "3dbdd313-4c04-46e9-bfbf-bf863e7a9c5b")
 	)
@@ -6175,6 +6165,15 @@
 		(uuid "ff9945ac-eaed-4bca-8359-ef3b06cbb841")
 	)
 	(bus_entry
+		(at 27.94 85.09)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "27daafcc-2d53-4d62-b11b-8208ba7a8383")
+	)
+	(bus_entry
 		(at 27.94 77.47)
 		(size 2.54 2.54)
 		(stroke
@@ -6245,15 +6244,6 @@
 			(type default)
 		)
 		(uuid "b8d255cf-da16-4c69-86ac-84b16589cc0a")
-	)
-	(bus_entry
-		(at 132.08 113.03)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ce12e30f-466f-4b8f-84df-593ab372083e")
 	)
 	(bus_entry
 		(at 27.94 113.03)
@@ -6634,7 +6624,7 @@
 	)
 	(bus
 		(pts
-			(xy 134.62 111.76) (xy 134.62 115.57)
+			(xy 134.62 111.76) (xy 134.62 140.97)
 		)
 		(stroke
 			(width 0)
@@ -7014,6 +7004,16 @@
 	)
 	(wire
 		(pts
+			(xy 30.48 87.63) (xy 58.42 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "64bbd711-8e24-481e-93fa-6d4c03061734")
+	)
+	(wire
+		(pts
 			(xy 148.59 139.7) (xy 151.13 139.7)
 		)
 		(stroke
@@ -7141,16 +7141,6 @@
 			(type default)
 		)
 		(uuid "71927796-d153-4f12-85f9-48a07988c770")
-	)
-	(bus
-		(pts
-			(xy 134.62 115.57) (xy 134.62 140.97)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7500f455-bbe3-4168-9155-676c9d35f550")
 	)
 	(wire
 		(pts
@@ -7664,16 +7654,6 @@
 	)
 	(wire
 		(pts
-			(xy 107.95 113.03) (xy 132.08 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d8cc265c-35d7-4b5b-bf82-0778b8c48863")
-	)
-	(wire
-		(pts
 			(xy 119.38 52.07) (xy 119.38 50.8)
 		)
 		(stroke
@@ -8003,7 +7983,7 @@
 		(uuid "78dae83d-4413-4a23-ac35-b8d5a08f28de")
 	)
 	(label "~{RESET}"
-		(at 125.73 113.03 0)
+		(at 31.75 87.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)

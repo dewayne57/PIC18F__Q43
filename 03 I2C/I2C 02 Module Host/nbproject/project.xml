@@ -10,7 +10,6 @@
             <make-dep-projects>
                 <make-dep-project>../../Libraries/PPSLIB</make-dep-project>
                 <make-dep-project>../../Libraries/UARTLIB</make-dep-project>
-                <make-dep-project>../../Libraries/I2CLIB</make-dep-project>
             </make-dep-projects>
             <sourceRootList>
                 <sourceRootElem>.</sourceRootElem>
