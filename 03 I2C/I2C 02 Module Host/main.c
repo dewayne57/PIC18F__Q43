@@ -22,13 +22,16 @@
 #include <xc.h>
 #include "config.h"
 #include "app.h"
-#include "i2clib.h" 
+#include "i2c.h" 
 
 #include "../../Libraries/UARTLIB/uartlib.h"
 //#include "../../Libraries/I2CLIB/i2clib.h"
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
+static char i2c_tx_buffer[16]; 
+static char i2c_rx_buffer[16]; 
+
 uint8_t i2c_buffer[16];
 
 uart_handle_t console_uart = {
@@ -56,6 +59,10 @@ uart_handle_t console_uart = {
     .initialized = false};
 
 i2c_handle_t i2c_host = {
+     .tx_buffer = i2c_tx_buffer,
+     .tx_buffer_size = sizeof(i2c_tx_buffer),
+     .rx_buffer = i2c_rx_buffer, 
+     .rx_buffer_size = sizeof(i2c_rx_buffer),
      .speed_khz = 100,
      .channel = 1,
      .mode = I2C_MODE_HOST_7BIT,

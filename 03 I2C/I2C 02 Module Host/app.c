@@ -49,7 +49,7 @@
 #include <stdio.h>
 #include "config.h"
 #include "app.h"
-#include "i2clib.h"
+#include "i2c.h"
 
 // #include "../../Libraries/I2CLIB/i2clib.h"
 #include "../../common/mcp23x17.h"

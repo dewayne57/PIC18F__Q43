@@ -32,8 +32,8 @@
  *    of I2C operations.
  *
  ***************************************************************************************** */
-#ifndef I2CLIB_H
-#define I2CLIB_H
+#ifndef I2C_H
+#define I2C_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -141,23 +141,19 @@ typedef union
 /// fields are reserved for use by the driver implementation.
 typedef struct
 {
-    i2c_mode_t mode;     // I2C operating mode
-    uint8_t channel;     // I2C channel number (if multiple channels
-                         // are supported, 1-based index)
-    uint16_t speed_khz;  // I2C clock speed in kHz
-    uint8_t retry_count; // Number of retries for the current operation
+    i2c_mode_t mode;      // I2C operating mode
+    uint8_t channel;      // I2C channel number (if multiple channels
+                          // are supported, 1-based index)
+    uint16_t speed_khz;   // I2C clock speed in kHz
+    uint8_t retry_count;  // Number of retries for the current operation
+    uint8_t *tx_buffer;   // Pointer to the transmit buffer
+    uint8_t *rx_buffer;   // Pointer to the receive buffer
 
     // Everything below this line is for internal driver use and should not
     // be modified by the application.  It will be cleared and initialized
     // during the i2c_init() function processing.
-    uint16_t signature;       // Unique signature to verify handle integrity
-    uint16_t tx_buffer_size;  // Max size of the transmit buffer in bytes
-    uint16_t rx_buffer_size;  // Max size of the receive buffer in bytes
-    const uint8_t *tx_buffer; // Pointer to the transmit buffer
-    uint8_t *rx_buffer;       // Pointer to the receive buffer
-    uint8_t tx_buffer_pos;    // Position in the transmit buffer
-    uint8_t rx_buffer_pos;    // Position in the receive buffer
-    i2c_status_t status;      // I2C status
+    uint16_t signature;  // Unique signature to verify handle integrity
+    i2c_status_t status; // I2C status
 
     union
     {
@@ -222,29 +218,19 @@ i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8
 i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *data,
                             uint8_t length);
 
-/// @brief Performs a combined write followed by a read operation on the I2C bus.
-/// This function is useful for client devices that require a register address to be
-/// specified before reading data. The function will first perform a write
-/// operation to send the register address or command, followed by a read operation
-/// to receive the requested data. The function will handle the necessary I2C
-/// protocol steps, including generating the start condition, transmitting the address
-/// and data bytes for the write operation, generating a restart condition,
-/// transmitting the address with the read bit set for the read operation, receiving
-/// the data bytes, and generating the stop condition. The status of the operation
-/// will be returned to indicate success or any errors that may have occurred during
-/// the transaction.
+/// @brief This function is used to read a specific register value from the
+/// addressed client.
 /// @param handle Pointer to the I2C handle structure.
 /// @param address The 7-bit I2C address of the target device.
-/// @param write_data Pointer to the data buffer to be transmitted in the write phase.
-/// @param write_length Number of bytes to be transmitted in the write phase.
+/// @param client_register The register address of the client to be read.
 /// @param read_data Pointer to the data buffer to be received in the read phase.
 /// @param max_read_length Maximum number of bytes to be received in the read phase.
 /// @param received_length Pointer to a variable where the actual number of bytes
 /// received will be stored.
 /// @return The status of the combined I2C write-read operation.
-i2c_status_t i2c_writeReadClient(i2c_handle_t *handle, uint16_t address,
-                                 const uint8_t *write_data, uint8_t write_length,
-                                 uint8_t *read_data, uint8_t read_length);
+i2c_status_t i2c_readClientRegister(i2c_handle_t *handle, uint16_t address,
+                                    const uint8_t client_register,
+                                    uint8_t *read_data, uint8_t read_length);
 
 /// @brief  Gets the current status of the I2C operation. This function allows
 /// the application code to query the status of the I2C bus and determine if any
@@ -256,25 +242,4 @@ i2c_status_t i2c_writeReadClient(i2c_handle_t *handle, uint16_t address,
 /// @param handle Pointer to the I2C handle structure.
 /// @return The current status of the I2C operation.
 i2c_status_t i2c_getStatus(i2c_handle_t *handle);
-
-/// @brief This function is used by client devices to send data back to the host
-/// in response to a read request.
-/// @param handle Pointer to the I2C handle structure.
-/// @param data Pointer to the data buffer to be transmitted.
-/// @param length Number of bytes to be transmitted.
-/// @return The status of the I2C write operation.
-i2c_status_t i2c_writeHost(i2c_handle_t *handle, const uint8_t *data,
-                           uint8_t length);
-
-/// @brief This function is used by client devices to receive data from the host
-/// in response to a write request.
-/// @param handle Pointer to the I2C handle structure.
-/// @param data Pointer to the data buffer to be received.
-/// @param max_length Maximum number of bytes to be received.
-/// @param received_length Pointer to a variable where the actual number of
-/// bytes received will be stored.
-/// @return The status of the I2C read operation.
-i2c_status_t i2c_readHost(i2c_handle_t *handle, uint8_t *data,
-                          uint8_t max_length, uint8_t *received_length);
-
-#endif // I2CLIB_H
+#endif // I2C_H

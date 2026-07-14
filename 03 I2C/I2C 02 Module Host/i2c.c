@@ -24,7 +24,7 @@
  ***************************************************************************************** */
 #include <xc.h>
 #include <string.h>
-#include "i2clib.h"
+#include "i2c.h"
 
 #include "../../Libraries/PPSLIB/pps.h"
 
@@ -75,8 +75,8 @@ static i2c_address10_t format_10bit_address(uint16_t device_address, bool read)
 /// must be called before any I2C operations can be performed. It sets up the I2C
 /// peripheral with the desired configuration, including the addressing mode and channel.
 /// @param handle Pointer to the I2C handle structure.
-/// @param mode The I2C mode to be used (e.g., host, client, multi-host).
-/// @param channel The I2C channel to be used.
+/// @param channel The I2C channel to be used (if the microcontroller has more than one i2c
+/// channel) as an ordinal 0, 1, 2, ...
 /// @param mode The I2C mode to be used (e.g., host, client, multi-host).
 /// @param speed The I2C clock speed in kHz. This parameter is used to calculate the
 /// appropriate timing for I2C operations. The driver will compute the necessary clock
@@ -94,6 +94,7 @@ i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, ui
     {
         return I2C_ERROR_ALREADY_INITIALIZED; // Handle is already initialized, do not reinitialize
     }
+
     if (speed < 100 || speed > 5000)
     {
         return I2C_ERROR_INVALID_SPEED; // Invalid speed parameter, must be between 100 and 5000 kHz
@@ -107,7 +108,7 @@ i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, ui
     handle->current_operation = I2C_OP_NONE; // Set the initial operation state
 
     // Common hardware initialization regardless of mode
-    I2C1CON0 = 0x00;   // Clear the control register to start with a known state
+    I2C1CON0 = 0x00;        // Clear the control register to start with a known state
     TRISCbits.TRISC3 = 0;   // set to output pin
     TRISCbits.TRISC4 = 0;   // set to output pin
     ANSELCbits.ANSELC3 = 0; // Digital mode
@@ -138,7 +139,7 @@ i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, ui
     PIE7bits.I2C1IE = 0;   // General/event IRQ stays disabled for host byte progression
     PIE7bits.I2C1EIE = 1;  // Enable vectored error interrupts
 
-    I2C1CON0bits.MODE = (uint8_t) mode;
+    I2C1CON0bits.MODE = (uint8_t)mode;
     switch (mode)
     {
     // Configure the I2C peripheral for host mode
@@ -204,7 +205,7 @@ i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, ui
 /// @param length Number of bytes to be transmitted.
 /// @return The status of the I2C write operation.
 i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8_t *data,
-                            uint8_t length)
+                             uint8_t length)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -219,8 +220,7 @@ i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8
     // Track the users buffer and length in the handle for use in the ISR.
     // The actual transmission of data will be handled by the ISR.
     handle->tx_buffer = data;
-    handle->tx_buffer_size = length;
-    handle->tx_buffer_pos = 0;
+    handle->tx_pos = 0;
     handle->current_operation = I2C_OP_WRITE; // Set the current operation to write
 
     // Initiate the I2C write transaction to the specified address
@@ -232,18 +232,27 @@ i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8
     {
     case I2C_MODE_HOST_7BIT:
     {
-        i2c_address7_t addr7 = format_7bit_address((uint8_t)address, false); // Format the 7-bit address with the write bit
-        active_handle->device_address.address7 = addr7;                      // Store the formatted address in the handle for ISR access
-        I2C1ADB1 = addr7.address_l;                                          // Load the 7-bit address into ADB1, ensuring the R/W bit is cleared for write
-        I2C1ADB0 = 0x00;                                                     // Clear ADB0 since we're using ADB1 for the address in 7-bit host mode
+        i2c_address7_t addr7 = format_7bit_address((uint8_t)address, false); // Format the 7-bit address with
+                                                                             // the write bit
+        active_handle->device_address.address7 = addr7;                      // Store the formatted address
+                                                                             // in the handle for ISR access
+        I2C1ADB1 = addr7.address_l;                                          // Load the 7-bit address into ADB1,
+                                                                             // ensuring the R/W bit is cleared
+                                                                             // for write
+        I2C1ADB0 = 0x00;                                                     // Clear ADB0 since we're using ADB1 for
+                                                                             // the address in 7-bit host mode
         break;
     }
     case I2C_MODE_HOST_10BIT:
     {
-        i2c_address10_t addr10 = format_10bit_address(address, false); // Format the 10-bit address with the write bit
-        active_handle->device_address.address10 = addr10;              // Store the formatted address in the handle for ISR access
-        I2C1ADB0 = addr10.address_l;                                   // Load the low byte of the 10-bit address into ADB0
-        I2C1ADB1 = addr10.address.address_h;                           // Load the high part of the 10-bit address into ADB1
+        i2c_address10_t addr10 = format_10bit_address(address, false); // Format the 10-bit address with
+                                                                       // the write bit
+        active_handle->device_address.address10 = addr10;              // Store the formatted address in
+                                                                       // the handle for ISR access
+        I2C1ADB0 = addr10.address_l;                                   // Load the low byte of the 10-bit
+                                                                       // address into ADB0
+        I2C1ADB1 = addr10.address.address_h;                           // Load the high part of the 10-bit
+                                                                       // address into ADB1
         break;
     }
     default:
@@ -270,7 +279,7 @@ i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8
 /// @param length Number of bytes to be received.
 /// @return The status of the I2C read operation.
 i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *data,
-                           uint8_t length)
+                            uint8_t length)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
@@ -285,8 +294,7 @@ i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *dat
     // Track the users buffer and length in the handle for use in the ISR.
     // The actual reception of data will be handled by the ISR.
     handle->rx_buffer = data;
-    handle->rx_buffer_size = length;
-    handle->rx_buffer_pos = 0;
+    handle->rx_pos = 0;
     handle->current_operation = I2C_OP_READ; // Set the current operation to read
 
     // Initiate the I2C write transaction to the specified address
@@ -316,14 +324,20 @@ i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *dat
         return I2C_ERROR_ILLEGAL_STATE;
     }
     I2C1CNT = (uint8_t)length; // Load the byte count (not including address)
-    handle->rx_pos = 0;        // Set the position for the next byte to receive
     I2C1CON0bits.S = 1;        // Assert the start condition to begin the transfer
 
     return I2C_SUCCESS; // Return success status for now (actual implementation needed)
 }
 
-i2c_status_t i2c_writeReadClient(i2c_handle_t *handle, uint16_t address, const uint8_t *write_data,
-                                uint8_t write_length, uint8_t *read_data, uint8_t read_length)
+/// @brief
+/// @param handle
+/// @param address
+/// @param client_register
+/// @param read_data
+/// @param read_length
+/// @return
+i2c_status_t i2c_readClientRegister(i2c_handle_t *handle, uint16_t address, const uint8_t client_register,
+                                    uint8_t *read_data, uint8_t read_length)
 {
     if ((handle == NULL) || (!handle->initialized))
     {
