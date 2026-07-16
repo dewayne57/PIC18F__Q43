@@ -34,7 +34,7 @@ uart_handle_t console_uart = {.port = UART_PORT_1,
                               .high_speed_baud = false,
                               .baud_rate = 19200U,
                               .fosc = _XTAL_FREQ,
-                              .data_bits = 8U,
+                              .data_bits = 8U,.history
                               .parity = UART_PARITY_NONE,
                               .stop_bits = UART_STOP_BITS_1,
                               .flow_control = UART_FLOW_NONE,
@@ -78,8 +78,8 @@ void main(void)
     }
 
     UART_SelectPrintfTarget(&console_uart);
-    I2C_Status_t status =
-        I2C_Init(&i2c_host, I2C_CHANNEL_1, I2C_CLOCK_FOSC_DIV_4, I2C_MODE_MASTER_7, 0U, NONE);
+    I2C_Status_t status = I2C_Init(&i2c_host, I2C_CHANNEL_1, 
+                                   I2C_CLOCK_FOSC_DIV_4, I2C_MODE_MASTER_7, 0U, NONE);
     if (status != I2C_OK)
     {
         printf("I2C initialization failed with status: %d\n", status);
