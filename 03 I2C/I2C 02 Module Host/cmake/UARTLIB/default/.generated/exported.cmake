@@ -1,0 +1,1 @@
+set(CMAKE_LIBRARY_TO_LINK_VARUARTLIB_default_0YYJo8c4 "${CMAKE_CURRENT_LIST_DIR}/../../../../out/UARTLIB/default.elf")

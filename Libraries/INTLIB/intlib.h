@@ -26,16 +26,16 @@
 
 #ifndef CRITICAL_SECTION_START
 #define CRITICAL_SECTION_START() \
-    uint8_t intlib_saved_primask_h = INTCON0bits.GIEH; \
+    uint8_t intlib_saved_intmask_h = INTCON0bits.GIEH; \
     INTCON0bits.GIEH = 0; \
-    uint8_t intlib_saved_primask_l = INTCON0bits.GIEL; \
+    uint8_t intlib_saved_intmask_l = INTCON0bits.GIEL; \
     INTCON0bits.GIEL = 0;
 #endif
 
 #ifndef CRITICAL_SECTION_END
 #define CRITICAL_SECTION_END() \
-    INTCON0bits.GIEH = intlib_saved_primask_h; \
-    INTCON0bits.GIEL = intlib_saved_primask_l;
+    INTCON0bits.GIEH = intlib_saved_intmask_h; \
+    INTCON0bits.GIEL = intlib_saved_intmask_l;
 #endif
 
 #endif /* INTLIB_H */

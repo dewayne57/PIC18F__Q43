@@ -1,0 +1,4 @@
+C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/I2C_02_Module_Host_default_default_XC8_compile.dir
+C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/I2C_02_Module_Host_default_image_OpOTjqAD.dir
+C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/edit_cache.dir
+C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/rebuild_cache.dir

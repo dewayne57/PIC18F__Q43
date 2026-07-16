@@ -1,10 +1,6 @@
 /* *****************************************************************************************
- *   File Name: i2clib.c
- *   Description: Hardware I2C library source file for PIC18 series Q43 microcontrollers.
- *   This library provides an interface for performing I2C operations, including reading
- *   and writing data as either a host or client device. The library is designed to be
- *   used with the I2C1 module provided by the PIC18___Q43, and it supports both 7-bit
- *   and 10-bit addressing modes.
+ *   File Name: i2c.h
+ *   Description: I2C hardware module interface for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-19
  *
@@ -21,519 +17,731 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  *
+ *   This include file provides the data structures, constants, and function prototypes
+ *   for the I2C hardware module interface.  The I2C module is used to communicate with
+ *   external devices that support the I2C protocol, such as the MCP23017 I/O expander
+ *   used in this demonstration project.  These functions are the basis for a reusable
+ *   I2C library that can be used in other projects.
  ***************************************************************************************** */
+
 #include <xc.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
+#include "config.h"
 #include "i2c.h"
+#include "../../Libraries/INTLIB/intlib.h"
 
-#include "../../Libraries/PPSLIB/pps.h"
+/// @brief Array of I2C handle structures for each channel.  This array is used to store the
+/// configuration and state of the I2C module for each channel.  The array is indexed
+/// by the I2C channel number (0 or 1).  The array is initialized to zero.  The array is
+/// used to record the addresses of each handle so that the interrupt service routines
+/// can update the appropriate buffers and handles. The array is defined as follows:
+static I2C_Handle_t i2cHandles[2]; // Array of I2C handle structures for each channel
 
-#ifndef _XTAL_FREQ
-#define _XTAL_FREQ 64000000UL
-#endif
+// Forward definitions of all the internal functions that are not exposed to the user.
+// These functions are used to validate the I2C handle structure and to perform the
+// actual I2C read and write operations.  The functions are defined as follows:
+static bool isHandleValid(I2C_Handle_t* handle);
+static void setupDeviceAddress(I2C_Handle_t* handle, uint16_t deviceAddress, bool read);
+static void handleErrorInterrupt(I2C_Handle_t* handle);
+static void handleReceiveInterrupt(I2C_Handle_t* handle);
+static void handleTransmitInterrupt(I2C_Handle_t* handle);
 
-static i2c_handle_t *active_handle = NULL; // Active handle for ISR access
-
-/// @brief Clears all I2C interrupt flags.
+#ifdef VECTORED_INTERRUPTS_ENABLED
+#ifdef I2C1CON0
+/// @brief I2C1 error interrupt service routine.
 /// @param None
 /// @return None
-static void i2c_clearInterruptFags(void)
+void __interrupt(irq(I2C1E), high_priority) I2C1_Error_ISR(void)
 {
-    PIR7bits.I2C1RXIF = 0;
-    PIR7bits.I2C1TXIF = 0;
-    PIR7bits.I2C1IF = 0;
-    PIR7bits.I2C1EIF = 0;
+    I2C_Handle_t* handle = &i2cHandles[0]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is not valid, exit the ISR
+    }
+
+    handleErrorInterrupt(handle); // Call the error interrupt handler
 }
 
-/// @brief Formats a 7-bit I2C address with the read/write bit.
-/// @param device_address The 7-bit I2C device address.
-/// @param read True for a read operation, false for a write operation.
-/// @return The formatted 7-bit I2C address structure.
-static i2c_address7_t format_7bit_address(uint8_t device_address, bool read)
+/// @brief I2C1 Receive interrupt service routine.
+/// @param None
+/// @return None
+void __interrupt(irq(I2C1RX), high_priority) I2C1_Receive_ISR(void)
 {
-    i2c_address7_t addr;
-    addr.bits.value = device_address & 0x7F; // Ensure the address is 7 bits
-    addr.bits.rw = read ? 1 : 0;             // Set the R/W bit based on the read parameter
-    return addr;
+    I2C_Handle_t* handle = &i2cHandles[0]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is not valid, exit the ISR
+    }
+
+    handleReceiveInterrupt(handle); // Call the receive interrupt handler
 }
 
-/// @brief Formats a 10-bit I2C address with the read/write bit.
-/// @param device_address The 10-bit I2C device address.
-/// @param read True for a read operation, false for a write operation.
-/// @return The formatted 10-bit I2C address structure.
-static i2c_address10_t format_10bit_address(uint16_t device_address, bool read)
+/// @brief  I2C1 Transmit interrupt service routine.  This interrupt is triggered when the
+/// data count > 0 and the transmit buffer is empty.  The interrupt service routine should
+/// load the next byte of data into the transmit buffer.  If the data count is 0, the interrupt
+/// service routine should disable the transmit interrupt and set the I2C bus state to idle.
+/// @param None
+/// @return None
+void __interrupt(irq(I2C1TX), high_priority) I2C1_Transmit_ISR(void)
 {
-    i2c_address10_t addr;
-    addr.address.bits.reserved = 0b11110;                     // Reserved bits
-    addr.address.bits.value = (device_address >> 8U) & 0x03U; // High 2 address bits
-    addr.address.bits.rw = read ? 1U : 0U;                    // Set the R/W bit based on the read parameter
-    addr.address_l = (uint8_t)(device_address & 0xFFU);       // Get the low byte of the address
-    return addr;
+    I2C_Handle_t* handle = &i2cHandles[0]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is not valid, exit the ISR
+    }
+    handleTransmitInterrupt(handle); // Call the transmit interrupt handler
+}
+#endif
+#else
+#ifdef I2C2CON0
+/// @brief I2C2 error interrupt service routine.
+/// @param None
+/// @return None
+void __interrupt(irq(I2C2E), high_priority) I2C2_Error_ISR(void)
+{
+    I2C_Handle_t* handle = &i2cHandles[0]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is not valid, exit the ISR
+    }
+
+    handleErrorInterrupt(handle); // Call the error interrupt handler
 }
 
-/// @brief Initializes the I2C handle with the specified mode and channel. This function
-/// must be called before any I2C operations can be performed. It sets up the I2C
-/// peripheral with the desired configuration, including the addressing mode and channel.
+/// @brief I2C2 Receive interrupt service routine.
+/// @param None
+/// @return None
+void __interrupt(irq(I2C2RX), high_priority) I2C2_Receive_ISR(void)
+{
+    I2C_Handle_t* handle = &i2cHandles[0]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is not valid, exit the ISR
+    }
+
+    handleReceiveInterrupt(handle); // Call the receive interrupt handler
+}
+
+/// @brief  I2C2 Transmit interrupt service routine.  This interrupt is triggered when the
+/// data count > 0 and the transmit buffer is empty.  The interrupt service routine should
+/// load the next byte of data into the transmit buffer.  If the data count is 0, the interrupt
+/// service routine should disable the transmit interrupt and set the I2C bus state to idle.
+/// @param None
+/// @return None
+void __interrupt(irq(I2C2TX), high_priority) I2C2_Transmit_ISR(void)
+{
+    I2C_Handle_t* handle = &i2cHandles[1]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is not valid, exit the ISR
+    }
+    handleTransmitInterrupt(handle); // Call the transmit interrupt handler
+}
+#endif
+#endif
+
+/// @brief Get the last status code for the specified I2C handle.
 /// @param handle Pointer to the I2C handle structure.
-/// @param channel The I2C channel to be used (if the microcontroller has more than one i2c
-/// channel) as an ordinal 0, 1, 2, ...
-/// @param mode The I2C mode to be used (e.g., host, client, multi-host).
-/// @param speed The I2C clock speed in kHz. This parameter is used to calculate the
-/// appropriate timing for I2C operations. The driver will compute the necessary clock
-/// settings based on the provided speed and will select the appropriate clock source
-/// for the I2C peripheral to achieve the desired communication speed.
-/// @return The status of the I2C initialization, indicating success or any errors
-i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, uint16_t speed)
+/// @return The last error code for the specified I2C handle.  If the handle is NULL, the
+/// function returns NO_HANDLE.
+I2C_Status_t I2C_GetLastState(I2C_Handle_t* handle)
+{
+    if (!isHandleValid(handle))
+    {
+        return I2C_INVALID_HANDLE; // Return an error code indicating that the handle is invalid
+    }
+    return handle->lastState; // Return the last state stored in the handle
+}
+
+/// @brief Initialize the I2C module.
+/// @param handle Pointer to the I2C handle structure to be created by the init code.
+/// @param channel I2C channel to be initialized (0 or 1).
+/// @param clockSource I2C clock source to be used (FOSC/4, FOSC, HFINTOSC, MFINTOSC, CLKREF,
+/// EXTREF, TMR0, TMR2, TMR4, TMR6, SMT, CLC1-8).
+/// @param mode I2C mode to be used (master or slave).
+/// @param timeout Timeout value for I2C operations (in milliseconds).  If zero, no timeout
+/// will be used.  If non-zero, and a timeout source has been defined, the I2C module will
+/// timeout if the operation takes longer than the specified timeout value.
+/// @param timeoutSource Timeout source to be used for I2C operations (timer or CLC).  If no
+/// timeout source is defined, the timeout parameter will be ignored.  If a timeout source
+/// is defined, the I2C module will timeout if the operation takes longer than the specified
+/// timeout value.
+/// @return I2C status indicating success or failure.  The provided handle will be initialized
+/// if the function returns I2C_STATUS_SUCCESS.  If the function returns I2C_STATUS_ERROR, the
+/// handle will not be initialized and should not be used.
+I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel,
+                      I2C_Clock_t clockSource, I2C_Mode_t mode, uint16_t timeout,
+                      I2C_Timeout_Source_t timeoutSource)
+{
+
+    if (handle == NULL)
+    {
+        return I2C_INVALID_HANDLE; // Return an error code indicating that the handle is invalid
+    }
+
+    // Check if the handle has already been initialized
+    if (isHandleValid(handle) && handle->initialized)
+    {
+        handle->lastState = I2C_OK; // Set the last state to OK
+        return I2C_OK;              // Return success status if the handle is already initialized
+    }
+
+    memset(handle, 0, sizeof(I2C_Handle_t));  // Clear the handle structure
+    handle->signature = I2C_HANDLE_SIGNATURE; // Set the handle signature to indicate that
+                                              // the handle is valid
+
+    // Validate the input parameters and set the last state in the handle accordingly
+    if (mode != I2C_MODE_MASTER_7 && mode != I2C_MODE_MASTER_10 && mode != I2C_MULTI_MASTER_7 &&
+        mode != I2C_MULTI_MASTER_10)
+    {
+        handle->lastState = I2C_INVALID_MODE; // Set the last state to invalid mode
+        return I2C_INVALID_MODE; // Return an error code indicating that the mode is invalid
+    }
+
+    if (!((clockSource <= I2C_CLOCK_TMR6_POST) ||
+          (clockSource >= I2C_CLOCK_SMT && clockSource <= I2C_CLOCK_CLC8)))
+    {
+        handle->lastState = I2C_INVALID_CLOCK_SOURCE; // Set the last state to invalid clock source
+        return I2C_INVALID_CLOCK_SOURCE; // Return an error code indicating that the clock source is
+                                         // invalid
+    }
+
+    if (channel == I2C_CHANNEL_1)
+    {
+#ifndef I2C1CON0
+        handle->lastState = I2C_INVALID_CHANNEL; // Set the last state to invalid channel
+        return I2C_INVALID_CHANNEL; // Return an error code indicating that the channel is invalid
+#endif
+    }
+    if (channel == I2C_CHANNEL_2)
+    {
+#ifndef I2C2CON0
+        handle->lastState = I2C_INVALID_CHANNEL; // Set the last state to invalid channel
+        return I2C_INVALID_CHANNEL; // Return an error code indicating that the channel is invalid
+#endif
+    }
+    if (channel != I2C_CHANNEL_1 && channel != I2C_CHANNEL_2)
+    {
+        handle->lastState = I2C_INVALID_CHANNEL; // Set the last state to invalid channel
+        return I2C_INVALID_CHANNEL; // Return an error code indicating that the channel is invalid
+    }
+
+    // Now, set up the I2C structure and initialize the I2C hardware module based on the provided
+    // parameters
+    handle->channel = channel;             // Store the channel in the handle
+    handle->clockSource = clockSource;     // Store the clock source in the handle
+    handle->mode = mode;                   // Store the mode in the handle
+    handle->timeout = timeout;             // Store the timeout value in the handle
+    handle->timeoutSource = timeoutSource; // Store the timeout source in the handle
+
+    // If a timer timeout source was defined and a non-zero timeout value was provided, configure
+    // the timer for the specified timeout value.  Note, the timeout value is in milliseconds, so
+    // the timer must be configured to generate an interrupt after the specified number of
+    // milliseconds.
+    if ((timeoutSource == TIMER2 || timeoutSource == TIMER4 || timeoutSource == TIMER6) &&
+        timeout > 0)
+    {
+        // configure the pre-scaller, post-scaler, and period registers for the system clock
+        // speed (defined by _XTAL_FREQ) and the specified timeout value.  The timer will be
+        // configured to generate an interrupt after the post scaler has counted the specified
+        // number of timer overflows.
+        uint32_t timerFrequency = _XTAL_FREQ / 4; // Timer frequency is FOSC/4
+        uint8_t prescaler = 1;                    // Default prescaler value
+        uint8_t postscaler = 1;                   // Default postscaler value
+        uint32_t timerTicks =
+            (timerFrequency / 1000) * timeout; // Calculate the number of timer ticks
+        // The timer is an 8-bit counter, so the maximum number of ticks is 256.  If the number
+        // of ticks is greater than 256, we need to use a pre-scaler and post-scaler to divide the
+        // timer frequency.  The pre-scaler and post-scaler can be set to 1, 2, 4, 8, 16, 32, 64,
+        // or 128.  We will use the smallest pre-scaler and post-scaler that will allow us to fit
+        // the number of ticks into the 8-bit counter.
+        uint32_t overflow = timerTicks / 256; // Calculate the number of overflows needed
+        do
+        {
+            timerTicks = timerTicks / prescaler;  // Divide the number of ticks by the prescaler
+            timerTicks = timerTicks / postscaler; // Divide the number of ticks by the postscaler
+
+            overflow = timerTicks / 256; // Calculate the number of overflows needed
+            if (overflow > 0)
+            {
+                if (prescaler < 128)
+                {
+                    prescaler *= 2; // Double the prescaler value
+                }
+                else if (postscaler < 16)
+                {
+                    postscaler++; // increment the postscaler value
+                }
+                else
+                {
+                    handle->lastState =
+                        I2C_INVALID_TIMEOUT_VALUE;    // Set the last state to invalid timeout value
+                    return I2C_INVALID_TIMEOUT_VALUE; // Return an error code indicating that the
+                                                      // timeout value is invalid
+                }
+            }
+        } while (overflow > 0);
+        uint8_t preScaleExponent = 0;
+        while (prescaler > 1)
+        {
+            prescaler /= 2;
+            preScaleExponent++;
+        }
+
+        switch (timeoutSource)
+        {
+        case TIMER2:
+            T2CONbits.TMR2ON = 0;                        // Disable Timer2 before configuring it
+            T2CONbits.CKPS = (uint8_t)preScaleExponent;  // Set the Timer2 prescaler
+            T2CONbits.OUTPS = (uint8_t)(postscaler - 1); // Set the Timer2 postscaler
+            T2TMR = 0;
+            T2PR = (uint8_t)timerTicks; // Set the Timer2 register to the calculated number of ticks
+            T2HLT = 0;                  // Set the Timer2 hardware limit to 0 (no limit)
+            T2HLTbits.PSYNC =
+                1; // Set the Timer2 hardware limit to synchronize with the system clock
+            T2CLKCONbits.T2CS = 0x01; // Set the Timer2 clock source to FOSC/4
+            T2RST = 0;                // Set the Timer2 reset source to none
+            break;
+        case TIMER4:
+            T4CONbits.TMR4ON = 0;                        // Disable Timer4 before configuring it
+            T4CONbits.CKPS = (uint8_t)preScaleExponent;  // Set the Timer4 prescaler
+            T4CONbits.OUTPS = (uint8_t)(postscaler - 1); // Set the Timer4 postscaler
+            T4TMR = 0;
+            T4PR = (uint8_t)timerTicks; // Set the Timer4 register to the calculated number of ticks
+            T4HLT = 0;                  // Set the Timer4 hardware limit to 0 (no limit)
+            T4HLTbits.PSYNC =
+                1; // Set the Timer4 hardware limit to synchronize with the system clock
+            T4CLKCONbits.T4CS = 0x01; // Set the Timer4 clock source to FOSC/4
+            T4RST = 0;                // Set the Timer4 reset source to none
+            break;
+        case TIMER6:
+            T6CONbits.TMR6ON = 0;                        // Disable Timer6 before configuring it
+            T6CONbits.CKPS = (uint8_t)preScaleExponent;  // Set the Timer6 prescaler
+            T6CONbits.OUTPS = (uint8_t)(postscaler - 1); // Set the Timer6 postscaler
+            T6TMR = 0;
+            T6PR = (uint8_t)timerTicks; // Set the Timer6 register to the calculated number of ticks
+            T6HLT = 0;                  // Set the Timer6 hardware limit to 0 (no limit)
+            T6HLTbits.PSYNC =
+                1; // Set the Timer6 hardware limit to synchronize with the system clock
+            T6CLKCONbits.T6CS = 0x01; // Set the Timer6 clock source to FOSC/4
+            T6RST = 0;                // Set the Timer6 reset source to none
+            break;
+        default:
+            handle->lastState =
+                I2C_INVALID_TIMEOUT_SOURCE;    // Set the last state to invalid timeout source
+            return I2C_INVALID_TIMEOUT_SOURCE; // Return an error code indicating that the timeout
+                                               // source is invalid
+        }
+    }
+
+    // If the clock source is the system oscillator (FOSC), the system clock / 4 (FOSC/4), or the 
+    // Hight Frequency Internal Oscillator (HFINTOSC), we will set the I2C fast mode.  Otherwise 
+    // we will leave it in normal mode.
+    bool fastMode = false;
+    if (clockSource == I2C_CLOCK_FOSC || clockSource == I2C_CLOCK_FOSC_DIV_4 || clockSource == I2C_CLOCK_HFINTOSC)
+    {
+        fastMode = true; // Set the fast mode flag
+    }
+    
+    if (handle->channel == I2C_CHANNEL_1)
+    {
+        CRITICAL_SECTION_START();
+        i2cHandles[0] = *handle;                   // Store the handle for channel 1
+        I2C1CON0 = 0;                              // Reset I2C1 control register
+        I2C1CON0bits.MODE = (uint8_t)handle->mode; // Set the I2C mode (master/slave)
+        I2C1CON1 = 0;                              // Reset I2C1 control register
+        I2C1CON2 = 0;                              // Reset I2C1 control register
+        I2C1CON2bits.FME = fastMode ? 1 : 0;       // Set the I2C fast mode bit
+        I2C1CLK = (uint8_t)handle->clockSource;    // Set the I2C clock source
+        I2C1PIE = 0;                               // Disable I2C1 condition interrupts
+        I2C1ERRbits.BTOIE = 1;                     // Enable I2C1 bus timeout interrupt
+        I2C1ERRbits.BCLIE = 1;                     // Enable I2C1 bus collision interrupt
+        I2C1ERRbits.NACKIE = 1;                    // Enable I2C1 NACK interrupt
+        I2C1PIR = 0;                               // Clear I2C1 interrupt flags
+        I2C1ERR = 0;                               // Clear I2C1 error flags
+        I2C1CNT = 0;                               // Reset I2C1 count register
+        if (handle->timeoutSource != NONE)
+        {
+            // Set the I2C1 bus timeout register to the specified timeout value
+            I2C1BTO = (uint8_t)handle->timeout;
+        }
+
+        PIE7bits.I2C1EIE = 1;  // Enable I2C1 Error Interrupt Enable
+        PIE7bits.I2C1TXIE = 1; // Enable I2C1 Transmit Interrupt Enable
+        PIE7bits.I2C1RXIE = 1; // Enable I2C1 Receive Interrupt Enable
+        PIE7bits.I2C1IE = 1;   // Enable I2C1 General Interrupt Enable
+        CRITICAL_SECTION_END();
+    }
+#ifdef I2C2CON0
+    if (handle->channel == I2C_CHANNEL_2)
+    {
+        CRITICAL_SECTION_START();
+        i2cHandles[1] = *handle;                   // Store the handle for channel 2
+        I2C2CON0 = 0;                              // Reset I2C2 control register
+        I2C2CON0bits.MODE = (uint8_t)handle->mode; // Set the I2C mode (master/slave)
+        I2C2CON1 = 0;                              // Reset I2C2 control register
+        I2C2CON2 = 0;                              // Reset I2C2 control register
+        I2C2CON2bits.FME = fastMode ? 1 : 0;       // Set the I2C fast mode bit
+        I2C2CLK = (uint8_t)handle->clockSource;    // Set the I2C clock source
+        I2C2PIE = 0;                               // Disable I2C2 interrupts
+        I2C2PIR = 0;                               // Clear I2C2 interrupt flags
+        I2C2ERRbits.BTOIE = 1;                     // Enable I2C2 bus timeout interrupt
+        I2C2ERRbits.BCLIE = 1;                     // Enable I2C2 bus collision interrupt
+        I2C2ERRbits.NACKIE = 1;                    // Enable I2C2 NACK interrupt
+        I2C2CNT = 0;                               // Reset I2C2 count register
+
+        PIE6bits.I2C2EIE = 1;  // Enable I2C2 Error Interrupt Enable
+        PIE6bits.I2C2TXIE = 1; // Enable I2C2 Transmit Interrupt Enable
+        PIE6bits.I2C2RXIE = 1; // Enable I2C2 Receive Interrupt Enable
+        PIE6bits.I2C2IE = 1;   // Enable I2C2 General Interrupt Enable
+        CRITICAL_SECTION_END();
+    }
+#endif
+    handle->initialized = true; // Mark the handle as initialized
+    handle->lastState = I2C_OK; // Set the last state to OK
+    return I2C_OK;              // Return success status
+}
+
+/// @brief Write data to an I2C device.
+/// @param handle Pointer to the I2C handle structure.
+I2C_Status_t I2C_Write(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data, uint16_t length)
+{
+    if (!isHandleValid(handle))
+    {
+        return I2C_INVALID_HANDLE; // Return an error code indicating that the handle is invalid
+    }
+    if (handle->state != I2C_IDLE)
+    {
+        return I2C_BUSY; // Return an error code indicating that the I2C bus is busy
+    }
+    if (length <= 0)
+    {
+        handle->lastState = I2C_INVALID_LENGTH; // Set the last state to invalid length
+        return I2C_INVALID_LENGTH; // Return an error code indicating that the length is invalid
+    }
+
+    handle->txBuffer = data;       // Set the transmit buffer pointer
+    handle->txBufferSize = length; // Set the transmit buffer size
+    handle->txBufferIndex = 0;     // Reset the transmit buffer index
+
+    setupDeviceAddress(handle, deviceAddress, false); // Setup the device address
+    PIE7bits.I2C1TXIE = 1;                            // Enable the transmit interrupt
+    handle->state = I2C_WRITE;                        // Set the I2C bus state to write mode
+    I2C1CNT = (uint8_t)length; // Set the I2C count register to the number of bytes to transmit
+    I2C1CON0bits.RSEN = 0;     // Disable repeated start condition
+    I2C1CON0bits.EN = 1;       // Enable the I2C module
+    I2C1CON0bits.S = 1;        // Generate a start condition
+
+    handle->lastState = I2C_OK; // Set the last state to OK
+    return I2C_OK; // Return success status (actual write implementation is not provided)
+}
+
+/// @brief Read data from an I2C device.
+/// @param handle Pointer to the I2C handle structure.
+/// @param deviceAddress The I2C address of the device to read from.
+/// @param data Pointer to the buffer to store the read data.
+/// @param length The number of bytes to read from the device.
+/// @return I2C status indicating success or failure.  The provided handle will be updated
+/// with the read data if the function returns I2C_STATUS_SUCCESS.  If the function returns
+/// I2C_STATUS_ERROR, the handle will not be updated and should not be used.
+I2C_Status_t I2C_Read(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data, uint16_t length)
+{
+    if (!isHandleValid(handle))
+    {
+        return I2C_INVALID_HANDLE; // Return an error code indicating that the handle is invalid
+    }
+    if (handle->state != I2C_IDLE)
+    {
+        return I2C_BUSY; // Return an error code indicating that the I2C bus is busy
+    }
+    if (length <= 0)
+    {
+        handle->lastState = I2C_INVALID_LENGTH; // Set the last state to invalid length
+        return I2C_INVALID_LENGTH; // Return an error code indicating that the length is invalid
+    }
+
+    handle->rxBuffer = data;       // Set the receive buffer pointer
+    handle->rxBufferSize = length; // Set the receive buffer size
+    handle->rxBufferIndex = 0;     // Reset the receive buffer index
+
+    setupDeviceAddress(handle, deviceAddress, true); // Setup the device address for read operation
+    PIE7bits.I2C1RXIE = 1;                           // Enable the receive interrupt
+    handle->state = I2C_READ;                        // Set the I2C bus state to read mode
+    I2C1CNT = (uint8_t)length; // Set the I2C count register to the number of bytes to receive
+    I2C1CON0bits.RSEN = 0;     // Disable repeated start condition
+    I2C1CON0bits.EN = 1;       // Enable the I2C module
+    I2C1CON0bits.S = 1;        // Generate a start condition
+
+    handle->lastState = I2C_OK; // Set the last state to OK
+    return I2C_OK; // Return success status (actual read implementation is not provided)
+}
+
+/// @brief Read data from a specific register of an I2C device.  This function is used to read
+/// data from a specific register of an I2C device.  The function must first write the register
+/// address as a single byte to the define (with the address of the device and the r/w bit cleared).
+/// It then generates a repeated start condition and reads the specified number of bytes from the
+/// device.
+/// @param handle Pointer to the I2C handle structure.
+/// @param deviceAddress The I2C address of the device to read from.
+/// @param registerAddress The register address to read from.
+/// @param data Pointer to the buffer to store the read data.
+/// @param length The number of bytes to read from the device.
+/// @return I2C status indicating success or failure.  The provided handle will be updated
+/// with the read data if the function returns I2C_OK.
+I2C_Status_t I2C_ReadRegister(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t registerAddress,
+                              uint8_t* data, uint16_t length)
+{
+    if (!isHandleValid(handle))
+    {
+        return I2C_INVALID_HANDLE; // Return an error code indicating that the handle is invalid
+    }
+    if (handle->state != I2C_IDLE)
+    {
+        return I2C_BUSY; // Return an error code indicating that the I2C bus is busy
+    }
+    if (length <= 0)
+    {
+        handle->lastState = I2C_INVALID_LENGTH; // Set the last state to invalid length
+        return I2C_INVALID_LENGTH; // Return an error code indicating that the length is invalid
+    }
+
+    handle->state = I2C_READ_REGISTER;                // Set the I2C bus state to read register mode
+    handle->rxBuffer = data;                          // Set the receive buffer pointer
+    handle->rxBufferSize = length;                    // Set the receive buffer size
+    handle->rxBufferIndex = 0;                        // Reset the receive buffer index
+    setupDeviceAddress(handle, deviceAddress, false); // Setup the device address
+    PIE7bits.I2C1TXIE = 1;                            // Enable the transmit interrupt
+    I2C1TXB = registerAddress; // Load the register address into the transmit buffer
+    I2C1CNT = 1;               // Set the I2C count register to 1 (for the register address)
+    // Disable repeated start condition (it will be enabled after the write phase in the ISR)
+    I2C1CON0bits.RSEN = 0;
+    I2C1CON0bits.EN = 1; // Enable the I2C module
+    I2C1CON0bits.S = 1;  // Generate a start condition
+
+    handle->lastState = I2C_OK; // Set the last state to OK
+    return I2C_OK; // Return success status (actual read register implementation is not provided)
+}
+
+/// @brief Reset the I2C module.  This function resets the I2C module by clearing all interrupts
+/// and resetting any operations in progress.  The function is defined as follows:
+I2C_Status_t I2C_Reset(I2C_Handle_t* handle)
+{
+    if (!isHandleValid(handle))
+    {
+        return I2C_INVALID_HANDLE; // Return an error code indicating that the handle is invalid
+    }
+
+    // Reset the I2C module based on the channel
+    if (handle->channel == I2C_CHANNEL_1)
+    {
+        CRITICAL_SECTION_START();
+        I2C1CON0bits.S = 0;    // Clear the start condition bit
+        I2C1CON0bits.EN = 0;   // Disable the I2C module
+        PIR7bits.I2C1EIF = 0;  // Clear the I2C1 error interrupt flag
+        PIR7bits.I2C1IF = 0;   // Clear the I2C1 general interrupt flag
+        PIR7bits.I2C1TXIF = 0; // Clear the I2C1 transmit interrupt flag
+        PIR7bits.I2C1RXIF = 0; // Clear the I2C1 receive interrupt flag
+        I2C1PIR = 0;           // Clear I2C1 interrupt flags
+        I2C1ERR = 0;           // Clear I2C1 error flags
+        I2C1CNT = 0;           // Reset I2C1 count register
+
+        handle->state = I2C_IDLE;   // Set the I2C bus state to idle
+        handle->lastState = I2C_OK; // Set the last state to OK
+        CRITICAL_SECTION_END();
+        return I2C_OK;
+    }
+
+    return I2C_INVALID_CHANNEL;
+}
+
+/// @brief Validate the I2C handle structure.  This function checks the signature of the
+/// I2C handle structure to ensure that it is valid.  The function returns true if
+/// the handle is valid, and false if the handle is invalid.  The function is defined as
+/// follows:
+static bool isHandleValid(I2C_Handle_t* handle)
 {
     if (handle == NULL)
     {
-        return I2C_ERROR; // Handle pointer is null, cannot initialize
+        return false; // Handle is NULL, not valid
     }
-
-    if (handle->initialized && handle->signature == I2C_HANDLE_SIGNATURE)
+    if (handle->signature != I2C_HANDLE_SIGNATURE)
     {
-        return I2C_ERROR_ALREADY_INITIALIZED; // Handle is already initialized, do not reinitialize
+        return false; // Handle signature does not match, not valid
     }
-
-    if (speed < 100 || speed > 5000)
-    {
-        return I2C_ERROR_INVALID_SPEED; // Invalid speed parameter, must be between 100 and 5000 kHz
-    }
-
-    memset(handle, 0x00, sizeof(i2c_handle_t)); // Clear the entire handle structure
-    handle->mode = mode;
-    handle->channel = channel;
-    handle->speed_khz = speed;
-    handle->signature = I2C_HANDLE_SIGNATURE;
-    handle->current_operation = I2C_OP_NONE; // Set the initial operation state
-
-    // Common hardware initialization regardless of mode
-    I2C1CON0 = 0x00;        // Clear the control register to start with a known state
-    TRISCbits.TRISC3 = 0;   // set to output pin
-    TRISCbits.TRISC4 = 0;   // set to output pin
-    ANSELCbits.ANSELC3 = 0; // Digital mode
-    ANSELCbits.ANSELC4 = 0; // Digital mode
-    ODCONCbits.ODCC3 = 1;   // Open-drain configuration
-    ODCONCbits.ODCC4 = 1;   // Open-drain configuration
-
-    PPS_Unlock();
-    RC3PPS = 0x37;         // RC3 -> I2C1 SCL
-    RC4PPS = 0x38;         // RC4 -> I2C1 SDA
-    I2C1SCLPPS = 0b010011; // I2C1 SCL -> RC3
-    I2C1SDAPPS = 0b010100; // I2C1 SDA -> RC4
-    PPS_Lock();
-    __delay_us(100); // Delay to allow the I2C lines to stabilize after configuration
-
-    I2C1PIR = 0x00; // Clear all pending module events
-    I2C1ERR = 0x00; // Clear all pending error conditions
-    I2C1PIE = 0x00; // Leave module event interrupts disabled; TX/RX/error use top-level vectors
-
-    i2c_clearInterruptFags();
-
-    IPR7bits.I2C1RXIP = 1; // Match the vectored ISRs declared as high priority
-    IPR7bits.I2C1TXIP = 1; // Match the vectored ISRs declared as high priority
-    IPR7bits.I2C1IP = 1;   // Match the vectored ISRs declared as high priority
-    IPR7bits.I2C1EIP = 1;  // Match the vectored ISRs declared as high priority
-    PIE7bits.I2C1RXIE = 1; // Enable vectored RX interrupts
-    PIE7bits.I2C1TXIE = 1; // TX interrupt advances each outgoing byte
-    PIE7bits.I2C1IE = 0;   // General/event IRQ stays disabled for host byte progression
-    PIE7bits.I2C1EIE = 1;  // Enable vectored error interrupts
-
-    I2C1CON0bits.MODE = (uint8_t)mode;
-    switch (mode)
-    {
-    // Configure the I2C peripheral for host mode
-    case I2C_MODE_HOST_7BIT:
-    case I2C_MODE_HOST_10BIT:
-
-        // compute the neccessary clock source to use for the selected speed.
-        // The Q43 family has multiple internal clock sources that can be used
-        // for I2C.
-        handle->speed_khz = speed;
-        if (speed >= 400)
-        {
-            I2C1CLK = I2C_CLK_HFINTOSC; // Use HFINTOSC for higher speeds
-            RC3I2Cbits.SLEW = 0b11;     // Use fast slew rate for higher speed operation
-            RC3I2Cbits.I2CPU = 0b10;    // Use 10X pullups on RC3 for I2C SCL function
-            RC3I2Cbits.I2CTH = 0b01;    // Use I2C standard thresholds for RC3
-            RC4I2Cbits.SLEW = 0b11;     // Use fast slew rate for higher speed operation
-            RC4I2Cbits.I2CPU = 0b10;    // Use 10X pullups on RC4 for I2C SDA function
-            RC4I2Cbits.I2CTH = 0b01;    // Use I2C standard thresholds for RC4
-        }
-        else
-        {
-            I2C1CLK = I2C_CLK_MFINTOSC; // Use MFINTOSC for lower speeds
-            RC3I2Cbits.SLEW = 0b01;     // Use slow slew rate for lower speed operation
-            RC3I2Cbits.I2CPU = 0b01;    // Use 2X pullups on RC3 for I2C SCL function
-            RC3I2Cbits.I2CTH = 0b01;    // Use I2C standard thresholds for RC3
-            RC4I2Cbits.SLEW = 0b01;     // Use slow slew rate for lower speed operation
-            RC4I2Cbits.I2CPU = 0b01;    // Use 2X pullups on RC4 for I2C SDA function
-            RC4I2Cbits.I2CTH = 0b01;    // Use I2C standard thresholds for RC4
-        }
-
-        I2C1CON1 = 0x00;        // default everything else
-        I2C1CON2 = 0x00;        // default everything else
-        I2C1CON2bits.ABD = 0;   // Were using the address buffers
-        I2C1CON2bits.SDAHT = 1; // Set SDA hold time to 300ns (T_scl/3) for standard mode timing
-        break;
-
-    case I2C_MODE_CLIENT_7BIT:
-    case I2C_MODE_CLIENT_10BIT:
-        // Configure the I2C peripheral for client mode
-        // (e.g., set own address, enable client mode, etc.)
-        break;
-
-    default:
-        handle->status = I2C_ERROR_ILLEGAL_STATE; // Invalid mode specified, handle error as needed
-        return I2C_ERROR_ILLEGAL_STATE;
-    }
-
-    I2C1CON0bits.EN = 1; // Enable module after final CON0 mode configuration
-    handle->initialized = true;
-    return I2C_SUCCESS;
+    return true; // Handle is valid
 }
 
-/// @brief Writes data to the specified I2C client device. This function initiates an
-/// I2C write transaction to the given address, transmitting the specified data bytes.
-/// The function will handle the necessary I2C protocol steps, including generating the
-/// start condition, transmitting the address and data bytes, and generating the stop
-/// condition. The status of the operation will be returned to indicate success or any
-/// errors that may have occurred during the transaction.
-/// @param handle Pointer to the I2C handle structure.
-/// @param address The 7-bit I2C address of the target device.
-/// @param data Pointer to the data buffer to be transmitted.
-/// @param length Number of bytes to be transmitted.
-/// @return The status of the I2C write operation.
-i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8_t *data,
-                             uint8_t length)
+/// @brief Setup the I2C device address for read or write operation.  This function sets
+/// the I2C device address in the appropriate register based on the I2C channel and the
+/// read/write operation.  The function is defined as follows:
+static void setupDeviceAddress(I2C_Handle_t* handle, uint16_t deviceAddress, bool read)
 {
-    if ((handle == NULL) || (!handle->initialized))
+    uint8_t addressHigh = (deviceAddress >> 8) & 0x03; // Get the upper 2 bits for 10-bit addressing
+    uint8_t addressLow = deviceAddress & 0xFF;         // Get the lower 8 bits for 10-bit addressing
+    if (read)
     {
-        return I2C_ERROR_NOT_INITIALIZED; // Handle is not initialized, cannot perform write operation
-    }
-
-    if ((data == NULL) || (length == 0))
-    {
-        return I2C_ERROR_ILLEGAL_STATE; // Invalid data buffer or length, cannot perform write operation
-    }
-
-    // Track the users buffer and length in the handle for use in the ISR.
-    // The actual transmission of data will be handled by the ISR.
-    handle->tx_buffer = data;
-    handle->tx_pos = 0;
-    handle->current_operation = I2C_OP_WRITE; // Set the current operation to write
-
-    // Initiate the I2C write transaction to the specified address
-    // (e.g., generate start condition, send address with write bit, etc.)
-    // The actual implementation of the I2C write transaction will depend on the
-    // specific hardware and may involve setting registers and handling interrupts.
-    active_handle = handle; // Set the active handle for use in the ISRs
-    switch (handle->mode)
-    {
-    case I2C_MODE_HOST_7BIT:
-    {
-        i2c_address7_t addr7 = format_7bit_address((uint8_t)address, false); // Format the 7-bit address with
-                                                                             // the write bit
-        active_handle->device_address.address7 = addr7;                      // Store the formatted address
-                                                                             // in the handle for ISR access
-        I2C1ADB1 = addr7.address_l;                                          // Load the 7-bit address into ADB1,
-                                                                             // ensuring the R/W bit is cleared
-                                                                             // for write
-        I2C1ADB0 = 0x00;                                                     // Clear ADB0 since we're using ADB1 for
-                                                                             // the address in 7-bit host mode
-        break;
-    }
-    case I2C_MODE_HOST_10BIT:
-    {
-        i2c_address10_t addr10 = format_10bit_address(address, false); // Format the 10-bit address with
-                                                                       // the write bit
-        active_handle->device_address.address10 = addr10;              // Store the formatted address in
-                                                                       // the handle for ISR access
-        I2C1ADB0 = addr10.address_l;                                   // Load the low byte of the 10-bit
-                                                                       // address into ADB0
-        I2C1ADB1 = addr10.address.address_h;                           // Load the high part of the 10-bit
-                                                                       // address into ADB1
-        break;
-    }
-    default:
-        return I2C_ERROR_ILLEGAL_STATE;
-    }
-    I2C1CNT = (uint8_t)length;      // Load the byte count (not including address)
-    I2C1TXB = handle->tx_buffer[0]; // Load the first byte of data to send into the TX buffer to prime the transfer
-    handle->tx_pos = 1;             // Set the position for the next byte to send
-    I2C1CON0bits.S = 1;             // Assert the start condition to begin the transfer
-
-    return I2C_SUCCESS; // Return success status for now (actual implementation needed)
-}
-
-/// @brief Reads data from the specified I2C client device. This function initiates an
-/// I2C read transaction from the given address, receiving the specified number of data
-/// bytes. The function will handle the necessary I2C protocol steps, including generating
-/// the start condition, transmitting the address with the read bit, receiving the data
-/// bytes, and generating the stop condition. The received data will be stored in the
-/// provided buffer, and the status of the operation will be returned to indicate success
-/// or any errors that may have occurred during the transaction.
-/// @param handle Pointer to the I2C handle structure.
-/// @param address The 7-bit I2C address of the target device.
-/// @param data Pointer to the buffer where the received data will be stored.
-/// @param length Number of bytes to be received.
-/// @return The status of the I2C read operation.
-i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *data,
-                            uint8_t length)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED; // Handle is not initialized, cannot perform read operation
-    }
-
-    if ((data == NULL) || (length == 0))
-    {
-        return I2C_ERROR_ILLEGAL_STATE; // Invalid data buffer or length, cannot perform read operation
-    }
-
-    // Track the users buffer and length in the handle for use in the ISR.
-    // The actual reception of data will be handled by the ISR.
-    handle->rx_buffer = data;
-    handle->rx_pos = 0;
-    handle->current_operation = I2C_OP_READ; // Set the current operation to read
-
-    // Initiate the I2C write transaction to the specified address
-    // (e.g., generate start condition, send address with write bit, etc.)
-    // The actual implementation of the I2C write transaction will depend on the
-    // specific hardware and may involve setting registers and handling interrupts.
-    active_handle = handle; // Set the active handle for use in the ISRs
-    switch (handle->mode)
-    {
-    case I2C_MODE_HOST_7BIT:
-    {
-        i2c_address7_t addr7 = format_7bit_address((uint8_t)address, false); // Format the 7-bit address with the write bit
-        active_handle->device_address.address7 = addr7;                      // Store the formatted address in the handle for ISR access
-        I2C1ADB1 = addr7.address_l;                                          // Load the 7-bit address into ADB1, ensuring the R/W bit is cleared for write
-        I2C1ADB0 = 0x00;                                                     // Clear ADB0 since we're using ADB1 for the address in 7-bit host mode
-        break;
-    }
-    case I2C_MODE_HOST_10BIT:
-    {
-        i2c_address10_t addr10 = format_10bit_address(address, false); // Format the 10-bit address with the write bit
-        active_handle->device_address.address10 = addr10;              // Store the formatted address in the handle for ISR access
-        I2C1ADB0 = addr10.address_l;                                   // Load the low byte of the 10-bit address into ADB0
-        I2C1ADB1 = addr10.address.address_h;                           // Load the high part of the 10-bit address into ADB1
-        break;
-    }
-    default:
-        return I2C_ERROR_ILLEGAL_STATE;
-    }
-    I2C1CNT = (uint8_t)length; // Load the byte count (not including address)
-    I2C1CON0bits.S = 1;        // Assert the start condition to begin the transfer
-
-    return I2C_SUCCESS; // Return success status for now (actual implementation needed)
-}
-
-/// @brief
-/// @param handle
-/// @param address
-/// @param client_register
-/// @param read_data
-/// @param read_length
-/// @return
-i2c_status_t i2c_readClientRegister(i2c_handle_t *handle, uint16_t address, const uint8_t client_register,
-                                    uint8_t *read_data, uint8_t read_length)
-{
-    if ((handle == NULL) || (!handle->initialized))
-    {
-        return I2C_ERROR_NOT_INITIALIZED; // Handle is not initialized, cannot perform write-read operation
-    }
-
-    if ((write_data == NULL) || (write_length == 0) ||
-        (read_data == NULL) || (read_length == 0))
-    {
-        return I2C_ERROR_ILLEGAL_STATE; // Invalid data buffers or lengths, cannot perform write-read operation
-    }
-
-    // Track the user's write and read buffers and lengths in the handle for use in the ISR.
-    // The actual transmission and reception of data will be handled by the ISR.
-    handle->tx_buffer = write_data;
-    handle->tx_buffer_size = write_length;
-    handle->tx_buffer_pos = 0;
-    handle->rx_buffer = read_data;
-    handle->rx_buffer_size = read_length;
-    handle->rx_buffer_pos = 0;
-    handle->current_operation = I2C_OP_WRITE_READ; // Set the current operation state
-
-    // Initiate the I2C write transaction to the specified address
-    // (e.g., generate start condition, send address with write bit, etc.)
-    // The actual implementation of the I2C write transaction will depend on the
-    // specific hardware and may involve setting registers and handling interrupts.
-    active_handle = handle; // Set the active handle for use in the ISRs
-    switch (handle->mode)
-    {
-    case I2C_MODE_HOST_7BIT:
-    {
-        i2c_address7_t addr7 = format_7bit_address((uint8_t)address, false); // Format the 7-bit address with the write bit
-        active_handle->device_address.address7 = addr7;                      // Store the formatted address in the handle for ISR access
-        I2C1ADB1 = addr7.address_l;                                          // Load the 7-bit address into ADB1, ensuring the R/W bit is cleared for write
-        I2C1ADB0 = 0x00;                                                     // Clear ADB0 since we're using ADB1 for the address in 7-bit host mode
-        break;
-    }
-    case I2C_MODE_HOST_10BIT:
-    {
-        i2c_address10_t addr10 = format_10bit_address(address, false); // Format the 10-bit address with the write bit
-        active_handle->device_address.address10 = addr10;              // Store the formatted address in the handle for ISR access
-        I2C1ADB0 = addr10.address_l;                                   // Load the low byte of the 10-bit address into ADB0
-        I2C1ADB1 = addr10.address.address_h;                           // Load the high part of the 10-bit address into ADB1
-        break;
-    }
-    default:
-        return I2C_ERROR_ILLEGAL_STATE;
-    }
-    I2C1CNT = (uint8_t)write_length; // Load the byte count (not including address)
-    I2C1TXB = handle->tx_buffer[0];  // Load the first byte of data to send into the TX buffer to prime the transfer
-    handle->tx_pos = 1;              // Set the position for the next byte to send
-    I2C1CON0bits.S = 1;              // Assert the start condition to begin the transfer
-
-    return I2C_SUCCESS; // Return success status for now (actual implementation needed)
-}
-
-/// @brief The I2C "General" interrupt service routine.
-/// The host driver uses TX/RX/error top-level vectors for transfer pacing, so the
-/// general/event path is left disabled during normal operation.
-void __attribute__((weak)) __interrupt(irq(IRQ_I2C1), high_priority) i2c1_generalISR(void)
-{
-    I2C1PIR = 0x00;
-    PIR7bits.I2C1IF = 0;
-}
-
-/// @brief The I2C "Error" interrupt service routine. This ISR is triggered when an error condition
-/// occurs on the I2C bus, such as a NACK received, bus collision, or other error events as
-/// indicated by the flags in the I2C Peripheral Interrupt Register (I2C1PIR) and the I2C Error
-/// Register (I2C1ERR). The ISR will need to check the specific error flags to determine the
-/// cause of the error and take appropriate action, such as clearing the error flags, updating
-/// the transfer status, and signaling any waiting tasks or callbacks about the error condition.
-void __attribute__((weak)) __interrupt(irq(IRQ_I2C1E), high_priority) i2c1_errorISR(void)
-{
-
-    if (active_handle == NULL || !active_handle->initialized)
-    {
-        PIR7bits.I2C1EIF = 0;
-        return;
-    }
-
-    // Check for specific error conditions based on the flags in I2C1PIR and I2C1ERR
-    // and take appropriate action (e.g., clear flags, update status, signal waiting tasks, etc.)
-    if (I2C1ERRbits.NACKIF) // Check for NACK received error
-    {
-        I2C1ERRbits.NACKIF = 0;                          // Clear the NACK error flag
-        active_handle->status = I2C_ERROR_NACK_RECEIVED; // Update the handle status to indicate a NACK error
-        // Additional error handling actions can be taken here (e.g., signal waiting tasks, reset state, etc.)
-    }
-    if (I2C1ERRbits.BCLIF) // Check for bus collision error
-    {
-        I2C1ERRbits.BCLIF = 0;                           // Clear the bus collision error flag
-        active_handle->status = I2C_ERROR_BUS_COLLISION; // Update the handle status to indicate a bus collision error
-        // Additional error handling actions can be taken here (e.g., signal waiting tasks, reset state, etc.)
-    }
-    // Check for other error conditions as needed and handle them accordingly
-
-    active_handle->current_operation = I2C_OP_NONE; // Clear the current operation state due to the error
-    active_handle = NULL;                           // Clear the active handle since the transfer is now complete due to the error
-    PIR7bits.I2C1EIF = 0;                           // Clear top-level error interrupt flag
-    // The ISR will automatically stop being called once the transfer is complete and the handle
-}
-
-/// @brief The I2C "Transmit" interrupt service routine.
-/// This ISR is triggered when the I2C module is ready to transmit the next byte of data on the
-/// bus. The ISR will need to check the current operation state (e.g., host write, client
-/// transmit, etc.) and load the next byte of data into the appropriate transmit register
-/// (e.g., I2C1TXB) based on the user's buffer and the current position in the transfer. The
-/// ISR may also need to check for conditions such as the byte count being complete, a stop
-/// condition being detected, or an error condition occurring during transmission, and take
-/// appropriate action based on those conditions.
-void __attribute__((weak)) __interrupt(irq(IRQ_I2C1TX), high_priority) i2c1_transmitISR(void)
-{
-    if (active_handle == NULL || !active_handle->initialized ||
-        (active_handle->current_operation != I2C_OP_WRITE && active_handle->current_operation != I2C_OP_WRITE_READ))
-    {
-        PIR7bits.I2C1TXIF = 0;
-        return;
-    }
-
-    // Check if there are more bytes to transmit
-    if (active_handle->tx_pos < active_handle->tx_buffer_size)
-    {
-        I2C1TXB = active_handle->tx_buffer[active_handle->tx_pos]; // Load the next byte to transmit
-        active_handle->tx_pos++;                                   // Move to the next byte position
+        addressLow |= 0x01; // Set the read/write bit for read operation
     }
     else
     {
-        // Everything to transmit has been sent.  If we were in write_read mode, switch to
-        // the read mode now to complete the repeated start condition and address phase for the read portion of the transfer.
-        if (active_handle->current_operation == I2C_OP_WRITE_READ)
-        {
-            // We need to switch to read mode and reformat the address with the R/W bit set for read before the next transmission occurs in the ISR.
-            switch (active_handle->mode)
-            {
-            case I2C_MODE_HOST_7BIT:
-                active_handle->device_address.address7.bits.rw = 1;          // Set the R/W bit for read
-                I2C1ADB1 = active_handle->device_address.address7.address_l; // Load the 7-bit address with the read bit into ADB1
-                break;
-            case I2C_MODE_HOST_10BIT:
-                active_handle->device_address.address10.address.bits.rw = 1;          // Set the R/W bit for read
-                I2C1ADB0 = active_handle->device_address.address10.address_l;         // Load low byte into ADB0
-                I2C1ADB1 = active_handle->device_address.address10.address.address_h; // Load high byte with read bit into ADB1
-                break;
-            default:
-                active_handle->status = I2C_ERROR_ILLEGAL_STATE;
-                active_handle->current_operation = I2C_OP_NONE;
-                active_handle = NULL;
-                return;
-            }
-            I2C1CNT = (uint8_t)active_handle->rx_buffer_size; // Load the byte count for the read portion of the transfer
-            active_handle->rx_pos = 0;                        // Reset the position for receiving bytes
-            I2C1CON0bits.RSEN = 1;                            // Assert a repeated start condition to begin the read portion of the transfer
-            active_handle->current_operation = I2C_OP_READ;   // Update state for receive ISR handling
-        }
-        else
-        {
-            // All bytes have been transmitted for a write-only operation, we can complete the transfer now.
-            // STOP is generated by the hardware sequence as the transfer counter completes.
-            active_handle->current_operation = I2C_OP_NONE; // Clear the current operation state
-            active_handle = NULL;                           // Clear the active handle since the transfer is complete
-            // The ISR will automatically stop being called once the transfer is complete and the handle
-            // is cleared
-        }
+        addressLow &= ~0x01; // Clear the read/write bit for write operation
     }
 
-    PIR7bits.I2C1TXIF = 0;
+#ifdef I2C1CON0
+    if (handle->channel == I2C_CHANNEL_1)
+    {
+        switch (handle->mode)
+        {
+        case I2C_MODE_MASTER_7:
+        case I2C_MULTI_MASTER_7:
+            I2C1ADB1 = addressLow; // Set the 7-bit address in the ADB1 register
+            break;
+        case I2C_MODE_MASTER_10:
+        case I2C_MULTI_MASTER_10:
+            I2C1ADB1 = addressLow;  // Set the lower 8 bits for 10-bit addressing
+            I2C1ADB0 = addressHigh; // Set the upper 2 bits for 10-bit addressing
+            break;
+        default:
+            handle->lastState = I2C_INVALID_MODE; // Set the last state to invalid mode
+            return;                               // Invalid mode, exit the function
+        }
+    }
+#endif
+#ifdef I2C2CON0
+    if (handle->channel == I2C_CHANNEL_2)
+    {
+        switch (handle->mode)
+        {
+        case I2C_MODE_MASTER_7:
+        case I2C_MULTI_MASTER_7:
+            I2C2ADB1 = addressLow; // Set the 7-bit address in the ADB1 register
+            break;
+        case I2C_MODE_MASTER_10:
+        case I2C_MULTI_MASTER_10:
+            I2C2ADB1 = addressLow;  // Set the lower 8 bits for 10-bit addressing
+            I2C2ADB0 = addressHigh; // Set the upper 2 bits for 10-bit addressing
+            break;
+        default:
+            handle->lastState = I2C_INVALID_MODE; // Set the last state to invalid mode
+            return;                               // Invalid mode, exit the function
+        }
+    }
+#endif
 }
 
-/// @brief The I2C "Receive" interrupt service routine.
-/// This ISR is triggered when a byte has been received on the I2C bus and is available in the
-/// receive buffer. The ISR will need to read the received byte from the appropriate register,
-/// store it in the user's buffer, and update the transfer status accordingly. The ISR may also
-/// need to check for conditions such as the byte count being complete, a stop condition being
-/// detected, or an error condition occurring during reception, and take appropriate action
-/// based on those conditions.
-void __attribute__((weak)) __interrupt(irq(IRQ_I2C1RX), high_priority) i2c1_receiveISR(void)
+/// @brief Handle I2C error interrupts.  This function checks the I2C error interrupt flags
+/// and updates the I2C handle structure with the appropriate error state.
+/// @param handle Pointer to the I2C handle structure.
+/// @return None
+static void handleErrorInterrupt(I2C_Handle_t* handle)
 {
-    if (active_handle == NULL || !active_handle->initialized ||
-        (active_handle->current_operation != I2C_OP_READ && active_handle->current_operation != I2C_OP_WRITE_READ))
+    if (!isHandleValid(handle))
     {
-        PIR7bits.I2C1RXIF = 0;
-        return;
+        return; // Handle is NULL, exit the function
     }
 
-    // Check if there is space in the user's buffer to store the received byte
-    if (active_handle->rx_pos < active_handle->rx_buffer_size)
+#ifdef I2C1CON0
+    if (handle->channel == I2C_CHANNEL_1)
     {
-        active_handle->rx_buffer[active_handle->rx_pos] = I2C1RXB; // Read the received byte into the user's buffer
-        active_handle->rx_pos++;                                   // Move to the next byte position
+        // Check for bus timeout error
+        if (I2C1ERRbits.BTOIF)
+        {
+            I2C1ERRbits.BTOIF = 0;               // Clear the bus timeout interrupt flag
+            handle->lastState = I2C_BUS_TIMEOUT; // Set the last state to bus timeout
+            handle->state = I2C_IDLE;            // Set the I2C bus state to idle
+        }
+
+        // Check for bus collision error
+        if (I2C1ERRbits.BCLIF)
+        {
+            I2C1ERRbits.BCLIF = 0;                 // Clear the bus collision interrupt flag
+            handle->lastState = I2C_BUS_COLLISION; // Set the last state to bus collision
+            handle->state = I2C_IDLE;              // Set the I2C bus state to idle
+        }
+
+        // Check for NACK received error
+        if (I2C1ERRbits.NACKIF)
+        {
+            I2C1ERRbits.NACKIF = 0; // Clear the NACK interrupt flag
+            handle->lastState =
+                (I2C_Status_t)I2C_NACK_RECEIVED; // Set the last state to NACK received
+            handle->state = I2C_IDLE;            // Set the I2C bus state to idle
+        }
+    }
+#endif
+}
+
+/// @brief Handle I2C receive interrupts.  This function reads the received data from the
+/// I2C receive buffer and stores it in the I2C handle structure.
+/// @param handle Pointer to the I2C handle structure.
+/// @return None
+void handleReceiveInterrupt(I2C_Handle_t* handle)
+{
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is NULL, exit the function
+    }
+
+#ifdef I2C1CON0
+    if (handle->channel == I2C_CHANNEL_1)
+    {
+        uint8_t data = I2C1RXB; // Read the receive buffer to clear the interrupt flag
+        if (handle->state != I2C_READ)
+        {
+            return; // Not in read mode, exit the ISR
+        }
+
+        if (handle->rxBufferIndex < handle->rxBufferSize - 1)
+        {
+            handle->rxBuffer[handle->rxBufferIndex++] = data;
+        }
+    }
+#endif
+}
+
+/// @brief Handle I2C transmit interrupts.  This function writes the next byte of data to the
+/// I2C transmit buffer and updates the I2C handle structure.  If all data has been transmitted,
+/// the function disables the transmit interrupt and sets the I2C bus state to idle.  If the
+/// function is in read register mode, it switches to read mode after the write phase and enables
+/// the receive interrupt.
+/// @param handle Pointer to the I2C handle structure.
+/// @return None
+void handleTransmitInterrupt(I2C_Handle_t* handle)
+{
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is NULL, exit the function
+    }
+
+    if (handle->state != I2C_WRITE)
+    {
+        return; // Not in write mode, exit the ISR
+    }
+    if (handle->txBufferIndex < handle->txBufferSize - 1)
+    {
+        // There is data to transmit
+        I2C1TXB =
+            handle
+                ->txBuffer[handle->txBufferIndex++]; // Load the next byte into the transmit buffer
     }
     else
     {
-        // Buffer overflow condition - more bytes received than the user's buffer can hold
-        // Handle this condition as needed (e.g., discard additional bytes, set an error status, etc.)
-        active_handle->status = I2C_ERROR_BUFFER_OVERFLOW; // Update the handle status to indicate a buffer overflow error
-    }
+        if (handle->state == I2C_READ_REGISTER)
+        {
+            // If we are in read register mode, we need to switch to read mode after the write phase
+            handle->state = I2C_READ; // Switch to read mode
+            PIE7bits.I2C1RXIE = 1;    // Enable the receive interrupt
+            I2C1CNT =
+                (uint8_t)handle
+                    ->rxBufferSize; // Set the I2C count register to the number of bytes to receive
+            I2C1CON0bits.RSEN = 1;  // Enable repeated start condition
+            I2C1CON0bits.S = 1;     // Generate a start condition for the read phase
+        }
 
-    PIR7bits.I2C1RXIF = 0;
+        // No more data to transmit, disable the transmit interrupt and set the bus state to idle
+        PIE7bits.I2C1TXIE = 0;    // Disable the transmit interrupt
+        handle->state = I2C_IDLE; // Set the bus state to idle
+    }
 }

@@ -1,10 +1,6 @@
 /* *****************************************************************************************
- *   File Name: i2clib.h
- *   Description: Hardware I2C library header file for PIC18 series Q43 microcontrollers.
- *   This library provides an interface for performing I2C operations, including reading
- *   and writing data as either a host or client device. The library is designed to be
- *   used with the I2C1 module provided by the PIC18___Q43, and it supports both 7-bit
- *   and 10-bit addressing modes.
+ *   File Name: i2c.h
+ *   Description: I2C hardware module interface for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-19
  *
@@ -21,225 +17,165 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  *
- *   Usage Notes:
- *  - This library is designed to be used with the I2C1 module on PIC18F__Q43 family
- *    microcontrollers. It uses the hardware I2C module and is intended for applications
- *    that require efficient and reliable I2C communication.
- *
- *  - The user MUST define the _XTAL_FREQ macro in their project configuration to match
- *    the frequency of the external crystal oscillator used in their system. This is
- *    necessary for the delay functions to work correctly and to ensure proper timing
- *    of I2C operations.
- *
+ *   This include file provides the data structures, constants, and function prototypes
+ *   for the I2C hardware module interface.  The I2C module is used to communicate with
+ *   external devices that support the I2C protocol, such as the MCP23017 I/O expander
+ *   used in this demonstration project.  These functions are the basis for a reusable
+ *   I2C library that can be used in other projects.
  ***************************************************************************************** */
+
 #ifndef I2C_H
 #define I2C_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-// The maximum number of retries for an I2C operation before giving up and returning an error.
-#define I2C_MAX_RETRIES 3
-// The signature for a properly initialized I2C handle. This can be used to verify that a
-// handle has been correctly initialized before performing I2C operations.
-#define I2C_HANDLE_SIGNATURE 0xD42B
+/* *****************************************************************************************
+ *   I2C data structures and enumerations
+ ***************************************************************************************** */
+#define I2C_HANDLE_SIGNATURE                                                                       \
+    0x4943 // I2C handle signature (used to verify that the handle is valid)
 
-// Common clock sources for the I2C peripheral. The driver will select the appropriate
-// clock source based on the desired I2C speed and the available system clocks.
-#define I2C_CLK_EXTOSC 0b00101
-#define I2C_CLK_REF 0b00100
-#define I2C_CLK_HFINTOSC 0b00010
-#define I2C_CLK_MFINTOSC 0b00011
-#define I2C_CLK_FOSC 0b00001
-#define I2C_CLK_FOSC_DIV4 0b00000
-
-/// @brief Enumeration for I2C states. These states represent the various stages of an I2C
-/// transaction, including idle, start condition, address transmission, data
-/// transmission/reception, and stop condition. The driver will transition through these
-/// states as it manages the I2C communication process.  The application code can use these
-/// states to monitor the progress of I2C transactions and handle errors appropriately.
+// Define the I2C channel enumeration.  The PIC18F47Q43 has two I2C channels, which are
+// referred to as channel 0 and channel 1.  The I2C channel enumeration is used to specify
+// which channel to use when calling the I2C functions.  The I2C channel enumeration is
+// defined as follows:
 typedef enum
 {
-    I2C_IDLE = 0,              // No ongoing I2C transaction
-    I2C_SUCCESS,               // I2C transaction completed successfully
-    I2C_ERROR,                 // General I2C error
-    I2C_ERROR_TIMEOUT,         // I2C transaction timed out
-    I2C_ERROR_NOT_INITIALIZED, // I2C not initialized
-    I2C_ERROR_ILLEGAL_STATE,   // Illegal I2C state
-    I2C_ERROR_BUS_COLLISION,   // I2C bus collision detected
-    I2C_ERROR_NACK_RECEIVED,   // Client returned NACK
-    I2C_ERROR_BUFFER_OVERFLOW, // RX data exceeded caller-provided buffer
-    I2C_ERROR_ALREADY_INITIALIZED,
-    I2C_ERROR_INVALID_SPEED
-} i2c_status_t;
+    I2C_CHANNEL_0 = 0, // I2C channel 0
+    I2C_CHANNEL_1 = 1, // I2C channel 1
+    I2C_CHANNEL_2 = 2  // I2C channel 2
+} I2C_Channel_t;
 
-/// @brief Enumeration for I2C operation types. This enumeration defines the possible
-/// operations that can be performed on the I2C bus, including reading and writing data.
-/// The driver will set the current operation to one of these values when an I2C transaction
-/// is initiated, allowing the application code to determine the type of transaction in
-/// progress and handle it accordingly.
+// Define the I2C clock source enumeration.  The PIC18F47Q43 has several clock sources
+// that can be used to drive the I2C module.  The I2C clock source enumeration is used to
+// specify which clock source to use when calling the I2C functions.  The I2C clock source
+// enumeration is defined as follows:
 typedef enum
 {
-    // Q43 I2C MODE field encodings (I2C1CON0.MODE)
-    I2C_MODE_HOST_7BIT = 0b100,   // Host mode with 7-bit addressing
-    I2C_MODE_HOST_10BIT = 0b101,  // Host mode with 10-bit addressing
-    I2C_MODE_CLIENT_7BIT = 0b000, // Client mode with 7-bit addressing
-    I2C_MODE_CLIENT_10BIT = 0b010 // Client mode with 10-bit addressing
-} i2c_mode_t;
+    I2C_CLOCK_FOSC_DIV_4 = 0, // FOSC/4
+    I2C_CLOCK_FOSC = 1,       // FOSC
+    I2C_CLOCK_HFINTOSC = 2,   // High frequency internal oscillator
+    I2C_CLOCK_MFINTOSC = 3,   // Medium frequencey internal oscillator (500 kHz)
+    I2C_CLOCK_CLKREF = 4,     // Clock reference (CLKREF)
+    I2C_CLOCK_EXTREF = 5,     // External reference clock (EXTREF)
+    I2C_CLOCK_TMR0 = 6,       // Timer 0 output clock (TMR0)
+    I2C_CLOCK_TMR2_POST = 7,  // Timer 2 postscaler output clock (TMR2)
+    I2C_CLOCK_TMR4_POST = 8,  // Timer 4 postscaler output clock (TMR4)
+    I2C_CLOCK_TMR6_POST = 9,  // Timer 6 postscaler output clock (TMR6)
+    I2C_CLOCK_SMT = 15,       // SMT clock (SMT)
+    I2C_CLOCK_CLC1 = 16,      // CLC1 output clock (CLC1)
+    I2C_CLOCK_CLC2 = 17,      // CLC2 output clock (CLC2)
+    I2C_CLOCK_CLC3 = 18,      // CLC3 output clock (CLC3)
+    I2C_CLOCK_CLC4 = 19,      // CLC4 output clock (CLC4)
+    I2C_CLOCK_CLC5 = 20,      // CLC5 output clock (CLC5)
+    I2C_CLOCK_CLC6 = 21,      // CLC6 output clock (CLC6)
+    I2C_CLOCK_CLC7 = 22,      // CLC7 output clock (CLC7)
+    I2C_CLOCK_CLC8 = 23       // CLC8 output clock (CLC8)
+} I2C_Clock_t;
 
-/// @brief Enumeration for I2C operation status. This enumeration defines the possible
-/// statuses of an I2C operation, including no ongoing operation, read operation in
-/// progress, and write operation in progress. The driver will update the current
-/// operation status as it manages the I2C communication process, allowing the
-/// application code to monitor the type of operation currently being performed on the
-/// I2C bus.
+// Define the I2C status enumeration.  The I2C status enumeration is used to indicate the
+// result of an I2C operation.  The I2C status enumeration is defined as follows:
 typedef enum
 {
-    I2C_OP_NONE = 0,  // No ongoing operation
-    I2C_OP_READ,      // Read operation in progress
-    I2C_OP_WRITE,     // Write operation in progress
-    I2C_OP_WRITE_READ // Combined write followed by read operation in progress
-} i2c_operation_t;
+    I2C_OK = 0,                 // I2C operation successful
+    I2C_INVALID_HANDLE,         // I2C operation failed due to invalid handle
+    I2C_INVALID_MODE,           // I2C operation failed due to invalid mode
+    I2C_INVALID_CLOCK_SOURCE,   // I2C operation failed due to invalid clock source
+    I2C_INVALID_CHANNEL,        // I2C operation failed due to invalid channel
+    I2C_INVALID_LENGTH,         // I2C operation failed due to invalid length
+    I2C_INVALID_TIMEOUT_VALUE,  // I2C operation failed due to invalid timeout value
+    I2C_INVALID_TIMEOUT_SOURCE, // I2C operation failed due to invalid timeout source
+    I2C_BUSY,                   // I2C operation failed due to bus being busy
+    I2C_BUS_TIMEOUT,            // I2C bus is in timeout state
+    I2C_BUS_COLLISION,          // I2C bus is in collision state
+    I2C_NACK_RECEIVED,          // I2C bus received a NAK (not acknowledge) from the slave device
+    I2C_ERROR                   // I2C operation failed
+} I2C_Status_t;
 
-/// @brief Typedef for representing a 10-bit I2C address, including the
-/// read/write bit for host mode.
+// Define the I2C address enumeration.  The I2C address enumeration is used to specify the
+// address of the I2C device.  The I2C address enumeration is defined as follows:
+typedef enum
+{
+    I2C_MODE_MASTER_7 = 4,  // I2C 7-bit master mode
+    I2C_MODE_MASTER_10 = 5, // I2C 10-bit master mode
+    I2C_MULTI_MASTER_7 = 6, // I2C 7-bit multi-master mode
+    I2C_MULTI_MASTER_10 = 7 // I2C 10-bit multi-master mode
+} I2C_Mode_t;
+
+// Define the I2C address enumeration.  The I2C address enumeration is used to specify the
+// address of the I2C device.  The I2C address enumeration is defined as follows:
+typedef enum
+{
+    I2C_ADDRESS_7BIT = 0, // 7-bit addressing mode
+    I2C_ADDRESS_10BIT = 1 // 10-bit addressing mode
+} I2C_Address_t;
+
+// Define the I2C bus state enumeration.  The I2C bus state enumeration is used to indicate
+// the current state of the I2C bus.  The I2C bus state enumeration is defined as follows:
+typedef enum
+{
+    I2C_IDLE = 0,      // I2C bus is idle
+    I2C_WRITE,         // I2C bus is in write mode
+    I2C_READ,          // I2C bus is in read mode
+    I2C_READ_REGISTER, // I2C bus is in read register mode (the write phase). The read phase
+                       // will be initiated after the write phase is complete by switching
+                       // to I2C_READ mode.
+    I2C_BUS_BUSY,      // I2C bus is busy
+    I2C_BUS_ERROR      // I2C bus is in error state
+} I2C_Bus_State_t;
+
+/// @brief I2C timeout source enumeration.  The I2C timeout source enumeration is used to
+/// specify the source of the timeout for I2C operations.  The I2C timeout source enumeration
+/// is defined as follows:
+typedef enum
+{
+    NONE = 0,   // No timeout source
+    TIMER2 = 1, // Use Timer2 as the timeout source
+    TIMER4 = 2, // Use Timer4 as the timeout source
+    TIMER6 = 3, // Use Timer6 as the timeout source
+    CLC1 = 7,   // Use CLC1 as the timeout source
+    CLC2 = 8,   // Use CLC2 as the timeout source
+    CLC3 = 9,   // Use CLC3 as the timeout source
+    CLC4 = 10,  // Use CLC4 as the timeout source
+    CLC5 = 11,  // Use CLC5 as the timeout source
+    CLC6 = 12,  // Use CLC6 as the timeout source
+    CLC7 = 13,  // Use CLC7 as the timeout source
+    CLC8 = 14   // Use CLC8 as the timeout source
+} I2C_Timeout_Source_t;
+
+// Define the I2C handle structure.  The I2C handle structure is used to store the
+// configuration and state of the I2C module.  The I2C handle structure is defined as follows:
 typedef struct
 {
-    union
-    {
-        struct
-        {
-            uint8_t reserved : 5; // Reserved bits for 10-bit addressing
-            uint8_t value : 2;    // 10-bit I2C address high bit portion
-            uint8_t rw : 1;       // read (not write) bit for 10-bit addressing
-        } bits;
-        uint8_t address_h; // the high byte of the 10-bit address, including the R/W bit
-    } address;             // Union for the high byte of the 10-bit address, including the R/W bit
-    uint8_t address_l;     // 10-bit I2C address low byte
-} i2c_address10_t;
+    uint16_t signature;      // I2C handle signature (used to verify that the handle is valid)
+    I2C_Channel_t channel;   // I2C channel (0 or 1)
+    I2C_Clock_t clockSource; // I2C clock source
+    I2C_Mode_t mode;         // I2C mode (master or slave)
+    uint8_t* txBuffer; // Pointer to the transmit buffer (set when calling the I2C write function)
+    uint8_t* rxBuffer; // Pointer to the receive buffer (set when calling the I2C read function)
+    uint16_t txBufferSize;  // Size of the transmit buffer (set when calling the I2C write function)
+    uint16_t rxBufferSize;  // Size of the receive buffer (set when calling the I2C read function)
+    I2C_Bus_State_t state;  // I2C bus state (idle, write, read, or error)
+    uint16_t txBufferIndex; // Current index in the transmit buffer
+    uint16_t rxBufferIndex; // Current index in the receive buffer
+    bool initialized;       // Flag indicating if the I2C module has been initialized
+    I2C_Status_t lastState; // last state of the I2C module (used for error handling)
+    uint16_t timeout;       // Timeout value for I2C operations (in milliseconds)
+    I2C_Timeout_Source_t timeoutSource; // Timeout source for I2C operations (timer or CLC)
+} I2C_Handle_t;
 
-/// @brief Typedef for representing a 7-bit I2C address, including the
-/// read/write bit for host mode. The 7-bit address is stored in the upper
-/// 7 bits of the byte, and the least significant bit is used for the read/write
-/// flag.
-typedef union
-{
-    struct
-    {
-        uint8_t value : 7; // 7-bit I2C address
-        uint8_t rw : 1;    // Read (1) or Write (0) bit for 7-bit addressing
-    } bits;
-    uint8_t address_l; // the low byte of the 10-bit address or the full 7-bit address
-} i2c_address7_t;
-
-/// @brief The i2c handle structure encapsulates all the necessary information
-/// for managing an I2C peripheral. It includes pointers to the transmit and
-/// receive buffers, their sizes, and the I2C operating mode. It also contains
-/// internal state variables for tracking the current operation and status of
-/// the I2C communication. This structure is designed to be used by the
-/// application code to configure and manage I2C transactions, while the internal
-/// fields are reserved for use by the driver implementation.
-typedef struct
-{
-    i2c_mode_t mode;      // I2C operating mode
-    uint8_t channel;      // I2C channel number (if multiple channels
-                          // are supported, 1-based index)
-    uint16_t speed_khz;   // I2C clock speed in kHz
-    uint8_t retry_count;  // Number of retries for the current operation
-    uint8_t *tx_buffer;   // Pointer to the transmit buffer
-    uint8_t *rx_buffer;   // Pointer to the receive buffer
-
-    // Everything below this line is for internal driver use and should not
-    // be modified by the application.  It will be cleared and initialized
-    // during the i2c_init() function processing.
-    uint16_t signature;  // Unique signature to verify handle integrity
-    i2c_status_t status; // I2C status
-
-    union
-    {
-        i2c_address7_t address7;   // 7-bit I2C address structure
-        i2c_address10_t address10; // 10-bit I2C address structure
-    } device_address;              // Union for storing the device address in either 7-bit or 10-bit format
-
-    volatile i2c_operation_t current_operation; // Current I2C operation (read/write/none)
-    volatile uint8_t rx_pos;                    // Current position in the receive buffer
-    volatile uint8_t tx_pos;                    // Current position in the transmit buffer
-
-    bool initialized; // Flag to indicate if the handle has been initialized
-} i2c_handle_t;
-
-// Function prototypes for the I2C library
-
-/// @brief Initializes the I2C handle with the specified mode and channel.
-/// This function must be called before any I2C operations can be performed. It
-/// configures the I2C peripheral according to the specified mode (e.g., host
-/// or client) and selects the appropriate channel if multiple channels are supported.
-/// @param handle Pointer to the I2C handle structure to be initialized.
-/// @param channel The I2C channel number to be used (if multiple channels are
-/// supported, this should be a 1-based index).
-/// @param mode The I2C operating mode to be set for the handle (e.g
-/// as host or client mode).
-/// @param speed The I2C clock speed in kHz. This parameter is used to calculate
-/// the appropriate timing for I2C operations. The driver will compute the necessary
-/// clock settings based on the provided speed and will select the appropriate
-/// clock source for the I2C peripheral to achieve the desired communication speed.
-/// @return The status of the I2C initialization, indicating success or any errors
-/// @note This function must be called before any other I2C operations are performed,
-/// and the handle must be properly initialized to ensure correct operation of the I2C
-/// driver.
-i2c_status_t i2c_init(i2c_handle_t *handle, uint8_t channel, i2c_mode_t mode, uint16_t speed);
-
-/// @brief Writes data to the specified I2C client device. This function initiates an
-/// I2C write transaction to the given address, sending the specified data. The
-/// function will handle the necessary I2C protocol steps, including generating the
-/// start condition, transmitting the address and data bytes, and generating the
-/// stop condition. The status of the operation will be returned to indicate success
-/// or any errors that may have occurred during the transaction.
-/// @param handle Pointer to the I2C handle structure.
-/// @param address The 7-bit I2C address of the target device.
-/// @param data Pointer to the data buffer to be transmitted.
-/// @param length Number of bytes to be transmitted.
-/// @return The status of the I2C write operation.
-i2c_status_t i2c_writeClient(i2c_handle_t *handle, uint16_t address, const uint8_t *data,
-                             uint8_t length);
-
-/// @brief Reads data from the specified I2C client device. This function initiates an
-/// I2C read transaction from the given address, receiving the specified amount of
-/// data. The function will handle the necessary I2C protocol steps, including
-/// generating the start condition, transmitting the address with the read bit set,
-/// receiving the data bytes, and generating the stop condition. The status of the
-/// operation will be returned to indicate success or any errors that may have
-/// occurred during the transaction.
-/// @param handle Pointer to the I2C handle structure.
-/// @param address The 7-bit I2C address of the target device.
-/// @param data Pointer to the data buffer to be received.
-/// @param length Number of bytes to be received.
-/// @return The status of the I2C read operation.
-i2c_status_t i2c_readClient(i2c_handle_t *handle, uint16_t address, uint8_t *data,
-                            uint8_t length);
-
-/// @brief This function is used to read a specific register value from the
-/// addressed client.
-/// @param handle Pointer to the I2C handle structure.
-/// @param address The 7-bit I2C address of the target device.
-/// @param client_register The register address of the client to be read.
-/// @param read_data Pointer to the data buffer to be received in the read phase.
-/// @param max_read_length Maximum number of bytes to be received in the read phase.
-/// @param received_length Pointer to a variable where the actual number of bytes
-/// received will be stored.
-/// @return The status of the combined I2C write-read operation.
-i2c_status_t i2c_readClientRegister(i2c_handle_t *handle, uint16_t address,
-                                    const uint8_t client_register,
-                                    uint8_t *read_data, uint8_t read_length);
-
-/// @brief  Gets the current status of the I2C operation. This function allows
-/// the application code to query the status of the I2C bus and determine if any
-/// errors have occurred during the last operation. The status can indicate whether
-/// the I2C transaction was successful, if there was a timeout, if the I2C bus is
-/// idle, or if any other errors were detected. This information can be used by the
-/// application to make informed decisions about how to proceed with further I2C
-/// transactions or to handle error conditions appropriately.
-/// @param handle Pointer to the I2C handle structure.
-/// @return The current status of the I2C operation.
-i2c_status_t i2c_getStatus(i2c_handle_t *handle);
+// *****************************************************************************************
+// I2C function prototypes
+// *****************************************************************************************
+I2C_Status_t I2C_GetLastState(I2C_Handle_t* handle);
+I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, 
+                      I2C_Clock_t clockSource, I2C_Mode_t mode, uint16_t timeout,
+                      I2C_Timeout_Source_t timeoutSource);
+I2C_Status_t I2C_Write(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data,
+                       uint16_t length);
+I2C_Status_t I2C_Read(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data, uint16_t length);
+I2C_Status_t I2C_ReadRegister(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t registerAddress,
+                              uint8_t* data, uint16_t length);
+I2C_Status_t I2C_Reset(I2C_Handle_t* handle);
 #endif // I2C_H

@@ -1,0 +1,20 @@
+[
+{
+  "directory": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default",
+  "command": "c:\\PROGRA~1\\MICROC~1\\xc8\\v3.10\\bin\\xc8-cc.exe -DXPRJ_default=default -D__18F47Q43__ -D__DEBUG=1 -I\"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\cmake\\I2C 02 Module Host\\default\\..\\..\\..\" -c -mcpu=18F47Q43 -mdfp=C:/Users/Dewayne/.mchp_packs/Microchip/PIC18F-Q_DFP/1.30.487/xc8 -fno-short-double -fno-short-float -memi=wordwrite -O0 -fasmfile -maddrqual=ignore -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file -ginhx32 -Wl,--data-init -mno-keep-startup -mno-download -mno-default-config-bits -std=c99 -gdwarf-3 -mno-const-data-in-config-mapped-progmem -mstack=compiled:auto:auto:auto -o CMakeFiles\\I2C_02_Module_Host_default_default_XC8_compile.dir\\C_\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03_I2C\\I2C_02_Module_Host\\app.c.p1 -c \"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\app.c\"",
+  "file": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/app.c",
+  "output": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/I2C_02_Module_Host_default_default_XC8_compile.dir/C_/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03_I2C/I2C_02_Module_Host/app.c.p1"
+},
+{
+  "directory": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default",
+  "command": "c:\\PROGRA~1\\MICROC~1\\xc8\\v3.10\\bin\\xc8-cc.exe -DXPRJ_default=default -D__18F47Q43__ -D__DEBUG=1 -I\"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\cmake\\I2C 02 Module Host\\default\\..\\..\\..\" -c -mcpu=18F47Q43 -mdfp=C:/Users/Dewayne/.mchp_packs/Microchip/PIC18F-Q_DFP/1.30.487/xc8 -fno-short-double -fno-short-float -memi=wordwrite -O0 -fasmfile -maddrqual=ignore -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file -ginhx32 -Wl,--data-init -mno-keep-startup -mno-download -mno-default-config-bits -std=c99 -gdwarf-3 -mno-const-data-in-config-mapped-progmem -mstack=compiled:auto:auto:auto -o CMakeFiles\\I2C_02_Module_Host_default_default_XC8_compile.dir\\354ef09005af1e6ab8d6c62d06d9b923\\03_I2C\\I2C_02_Module_Host\\config.c.p1 -c \"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\config.c\"",
+  "file": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/config.c",
+  "output": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/I2C_02_Module_Host_default_default_XC8_compile.dir/354ef09005af1e6ab8d6c62d06d9b923/03_I2C/I2C_02_Module_Host/config.c.p1"
+},
+{
+  "directory": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default",
+  "command": "c:\\PROGRA~1\\MICROC~1\\xc8\\v3.10\\bin\\xc8-cc.exe -DXPRJ_default=default -D__18F47Q43__ -D__DEBUG=1 -I\"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\cmake\\I2C 02 Module Host\\default\\..\\..\\..\" -c -mcpu=18F47Q43 -mdfp=C:/Users/Dewayne/.mchp_packs/Microchip/PIC18F-Q_DFP/1.30.487/xc8 -fno-short-double -fno-short-float -memi=wordwrite -O0 -fasmfile -maddrqual=ignore -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file -ginhx32 -Wl,--data-init -mno-keep-startup -mno-download -mno-default-config-bits -std=c99 -gdwarf-3 -mno-const-data-in-config-mapped-progmem -mstack=compiled:auto:auto:auto -o CMakeFiles\\I2C_02_Module_Host_default_default_XC8_compile.dir\\2f9e1bf2db892f88a4e37f32ebb41077\\PIC18F__Q43\\03_I2C\\I2C_02_Module_Host\\main.c.p1 -c \"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\main.c\"",
+  "file": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/main.c",
+  "output": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/I2C 02 Module Host/default/CMakeFiles/I2C_02_Module_Host_default_default_XC8_compile.dir/2f9e1bf2db892f88a4e37f32ebb41077/PIC18F__Q43/03_I2C/I2C_02_Module_Host/main.c.p1"
+}
+]
