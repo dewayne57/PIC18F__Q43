@@ -1,4 +1,0 @@
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/PPSLIB/default/CMakeFiles/PPSLIB_default_default_XC8_compile.dir
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/PPSLIB/default/CMakeFiles/PPSLIB_default_image_sdtLu5S1.dir
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/PPSLIB/default/CMakeFiles/edit_cache.dir
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/PPSLIB/default/CMakeFiles/rebuild_cache.dir

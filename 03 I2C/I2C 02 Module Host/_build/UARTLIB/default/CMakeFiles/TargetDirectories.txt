@@ -1,4 +1,0 @@
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/UARTLIB/default/CMakeFiles/UARTLIB_default_default_XC8_compile.dir
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/UARTLIB/default/CMakeFiles/UARTLIB_default_image_0YYJo8c4.dir
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/UARTLIB/default/CMakeFiles/edit_cache.dir
-C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/UARTLIB/default/CMakeFiles/rebuild_cache.dir

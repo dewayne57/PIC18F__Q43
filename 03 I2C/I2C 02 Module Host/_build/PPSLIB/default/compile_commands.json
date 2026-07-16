@@ -1,8 +1,0 @@
-[
-{
-  "directory": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/PPSLIB/default",
-  "command": "c:\\PROGRA~1\\MICROC~1\\xc8\\v3.10\\bin\\xc8-cc.exe -DXPRJ_default=default -D__18F47Q43__ -D__DEBUG=1 -I\"C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\03 I2C\\I2C 02 Module Host\\cmake\\PPSLIB\\default\\..\\..\\..\\..\\..\\Libraries\\PPSLIB\" -c -mcpu=18F47Q43 -mdfp=C:/Users/Dewayne/.mchp_packs/Microchip/PIC18F-Q_DFP/1.28.451/xc8 -fno-short-double -fno-short-float -memi=wordwrite -O0 -fasmfile -maddrqual=ignore -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file -ginhx32 -Wl,--data-init -mno-keep-startup -mno-download -mno-default-config-bits -std=c99 -gdwarf-3 -mno-const-data-in-config-mapped-progmem -mstack=compiled:auto:auto:auto -o CMakeFiles\\PPSLIB_default_default_XC8_compile.dir\\C_\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\Libraries\\PPSLIB\\pps.c.p1 -c C:\\Users\\Dewayne\\Documents\\GitHub\\PIC18F__Q43\\Libraries\\PPSLIB\\pps.c",
-  "file": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/Libraries/PPSLIB/pps.c",
-  "output": "C:/Users/Dewayne/Documents/GitHub/PIC18F__Q43/03 I2C/I2C 02 Module Host/_build/PPSLIB/default/CMakeFiles/PPSLIB_default_default_XC8_compile.dir/C_/Users/Dewayne/Documents/GitHub/PIC18F__Q43/Libraries/PPSLIB/pps.c.p1"
-}
-]
