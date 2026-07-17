@@ -47,6 +47,7 @@ static bool isHandleValid(I2C_Handle_t* handle);
 static void cacheHandle(I2C_Handle_t* handle);
 static void setupDeviceAddress(I2C_Handle_t* handle, uint16_t deviceAddress, bool read);
 static void handleErrorInterrupt(I2C_Handle_t* handle);
+static void handleGeneralInterrupt(I2C_Handle_t* handle);
 static void handleReceiveInterrupt(I2C_Handle_t* handle);
 static void handleTransmitInterrupt(I2C_Handle_t* handle);
 
@@ -64,6 +65,22 @@ void __interrupt(irq(I2C1E), high_priority) I2C1_Error_ISR(void)
     }
 
     handleErrorInterrupt(handle); // Call the error interrupt handler
+}
+
+/// @brief I2C1 general interrupt service routine.
+/// @param None
+/// @return None
+void __interrupt(irq(I2C1), high_priority) I2C1_General_ISR(void)
+{
+    I2C_Handle_t* handle = i2cHandles[0]; // Get the handle for I2C channel 1
+    if (!isHandleValid(handle))
+    {
+        PIR7bits.I2C1IF = 0;
+        return; // Handle is not valid, exit the ISR
+    }
+
+    handleGeneralInterrupt(handle); // Call the general interrupt handler
+    PIR7bits.I2C1IF = 0;
 }
 
 /// @brief I2C1 Receive interrupt service routine.
@@ -567,7 +584,8 @@ I2C_Status_t I2C_ReadRegister(I2C_Handle_t* handle, uint16_t deviceAddress, uint
     handle->rxBufferIndex = 0;
 
     // Phase 1: address + write + one register byte.
-    // Phase 2 (repeated-start + read) is initiated by TX ISR when write bytes are exhausted.
+    // Phase 2 (repeated-start + read) is initiated by the I2C general ISR
+    // when the hardware byte count reaches zero.
     handle->registerAddressByte = registerAddress;
     handle->txBuffer = &handle->registerAddressByte;
     handle->txBufferSize = 1;
@@ -814,6 +832,37 @@ static void handleErrorInterrupt(I2C_Handle_t* handle)
 #endif
 }
 
+/// @brief Handle I2C general interrupts. This is used to advance transactions
+/// that complete in hardware without guaranteeing a follow-up TX pacing interrupt.
+/// @param handle Pointer to the I2C handle structure.
+/// @return None
+static void handleGeneralInterrupt(I2C_Handle_t* handle)
+{
+    if (!isHandleValid(handle))
+    {
+        return; // Handle is NULL, exit the function
+    }
+
+#ifdef I2C1CON0
+    if (handle->channel == I2C_CHANNEL_1)
+    {
+        // After the 1-byte register-address write phase, CNT reaches zero.
+        // Trigger the repeated-start read phase here instead of depending on TXIF timing.
+        if (handle->state == I2C_READ_REGISTER && I2C1CNT == 0)
+        {
+            setupDeviceAddress(handle, handle->activeDeviceAddress, true);
+            handle->state = I2C_READ;
+            PIE7bits.I2C1TXIE = 0;
+            PIE7bits.I2C1RXIE = 1;
+            I2C1CNT = (uint8_t)handle->rxBufferSize;
+            I2C1CON0bits.RSEN = 1;
+            I2C1CON0bits.CSTR = 0;
+            I2C1CON0bits.S = 1;
+        }
+    }
+#endif
+}
+
 /// @brief Handle I2C receive interrupts.  This function reads the received data from the
 /// I2C receive buffer and stores it in the I2C handle structure.
 /// @param handle Pointer to the I2C handle structure.
@@ -855,8 +904,8 @@ void handleReceiveInterrupt(I2C_Handle_t* handle)
 /// @brief Handle I2C transmit interrupts.  This function writes the next byte of data to the
 /// I2C transmit buffer and updates the I2C handle structure.  If all data has been transmitted,
 /// the function disables the transmit interrupt and sets the I2C bus state to idle.  If the
-/// function is in read register mode, it switches to read mode after the write phase and enables
-/// the receive interrupt.
+/// function is in read register mode, it leaves the transition to read mode to the general
+/// interrupt path after the write byte count reaches zero.
 /// @param handle Pointer to the I2C handle structure.
 /// @return None
 void handleTransmitInterrupt(I2C_Handle_t* handle)
@@ -886,14 +935,8 @@ void handleTransmitInterrupt(I2C_Handle_t* handle)
 
         if (handle->state == I2C_READ_REGISTER)
         {
-            // Write phase finished for register-read operation: launch repeated start.
-            setupDeviceAddress(handle, handle->activeDeviceAddress, true);
-            handle->state = I2C_READ;
+            // Transition to read phase is handled by general interrupt on CNT completion.
             PIE7bits.I2C1TXIE = 0;
-            PIE7bits.I2C1RXIE = 1;
-            I2C1CNT = (uint8_t)handle->rxBufferSize;
-            I2C1CON0bits.RSEN = 1;
-            I2C1CON0bits.S = 1;
         }
         // Complete write-only transfer once hardware count is fully done.
         else if (I2C1CNT == 0)
