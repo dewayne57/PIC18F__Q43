@@ -35,7 +35,7 @@ static char console_rx_buffer[128];
 
 uart_handle_t console_uart = {.port = UART_PORT_1,
                               .high_speed_baud = false,
-                              .baud_rate = 19200U,
+                              .baud_rate = 57600U,
                               .fosc = _XTAL_FREQ,
                               .data_bits = 8U,
                               .parity = UART_PARITY_NONE,
@@ -59,8 +59,8 @@ uart_handle_t console_uart = {.port = UART_PORT_1,
 // @brief I2C host handle for the demonstration project.
 I2C_Handle_t i2c_host;
 uint8_t i2c_buffer[16]; // Buffer for I2C transactions
-uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
-bool s_porta_value_changed = false; // Flag indicating if the last known value of Port A has changed
+volatile uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
+volatile bool s_porta_value_changed = false; // Flag indicating if the last known value of Port A has changed
 
 /// @brief Main application entry point.
 /// @param  None
@@ -86,7 +86,7 @@ void main(void)
     UART_SelectPrintfTarget(&console_uart);
     printf("I2C Module Host example%s", CRLF);
     I2C_Status_t status =
-        I2C_Init(&i2c_host, I2C_CHANNEL_1, I2C_CLOCK_HFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
+        I2C_Init(&i2c_host, I2C_CHANNEL_1, I2C_CLOCK_MFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
     if (status != I2C_OK)
     {
         printf("I2C initialization failed with status: %d\n", status);
@@ -94,7 +94,6 @@ void main(void)
         {
         }
     }
-    printf("I2C Initialized%s", CRLF); 
 
     status = MCP23017_Initialize();
     if (status != I2C_OK)
@@ -105,14 +104,27 @@ void main(void)
         }
     }
 
+    printf("Reading port A%s", CRLF);
+    status = I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, &s_last_porta_value, 1U);
+    if (status != I2C_OK)
+    {
+        printf("I2C read from MCP23017 Port A failed with status: %d%s", status, CRLF);
+    }
+    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+    {
+    }
+    printf("Port value was %02x%s", s_last_porta_value, CRLF);
+    s_porta_value_changed = true;
+
     while (1)
     {
-        __delay_ms(1000);
         if (s_porta_value_changed)
         {
             printf("MCP23017 Port A value: 0x%02X%s", s_last_porta_value, CRLF);
             s_porta_value_changed = false;
         }
+
+        __delay_ms(1000);
     }
 }
 
@@ -188,7 +200,6 @@ static I2C_Status_t MCP23017_Initialize()
         return status;
     }
 
-    printf("MCP23017 initialized in banked mode%s", CRLF);
     while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
     {
         // Wait for the I2C bus to become idle
@@ -211,7 +222,6 @@ static I2C_Status_t MCP23017_Initialize()
         i2c_buffer[8] = 0x00; // INTFA (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPA (write ignored)
         i2c_buffer[10] = 0x00; // GPIOA
-    printf("Configuring MCP23017 Port A%s", CRLF);
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 11);
     if (status != I2C_OK)
     {
@@ -239,7 +249,6 @@ static I2C_Status_t MCP23017_Initialize()
         i2c_buffer[8] = 0x00; // INTFB (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPB (write ignored)
         i2c_buffer[10] = 0x00; // GPIOB
-    printf("Configuring MCP23017 Port B%s", CRLF);
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 11);
     if (status != I2C_OK)
     {

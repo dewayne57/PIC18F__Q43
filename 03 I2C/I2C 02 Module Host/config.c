@@ -35,6 +35,16 @@ void SYSTEM_Initialize(void)
     INTCON0bits.GIEL = 0;
     INTCON0bits.IPEN = 1; // Enable priority interrupts for low-priority UART ISRs.
 
+    /* Set up the oscillators as needed */
+    OSCFRQbits.HFFRQ = 0b1000; // HFINTOSC is 64MHz
+    OSCENbits.HFOEN = 1;    // Enable HFINTOSC 
+    OSCENbits.MFOEN = 1;    // Enable MFINTOSC
+    OSCENbits.LFOEN = 1;    // Enable LFINTOSC
+    ACTCONbits.ACTEN = 1; // Enable active clock tuning
+    ACTCONbits.ACTUD = 0;   // Hardware tuning
+    while (!OSCSTATbits.HFOR && !OSCSTATbits.MFOR && !OSCSTATbits.LFOR)
+        ; // Wait for all oscillators to stabilize        
+    
     /* Clear ANSEL registers so all used pins are in digital mode. */
     ANSELB = 0x00;  // All Port B pins: digital mode
     ANSELC = 0x00;  // All Port C pins: digital mode

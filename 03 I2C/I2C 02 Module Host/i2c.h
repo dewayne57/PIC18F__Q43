@@ -77,19 +77,19 @@ typedef enum
 // result of an I2C operation.  The I2C status enumeration is defined as follows:
 typedef enum
 {
-    I2C_OK = 0,                 // I2C operation successful
-    I2C_INVALID_HANDLE,         // I2C operation failed due to invalid handle
-    I2C_INVALID_MODE,           // I2C operation failed due to invalid mode
-    I2C_INVALID_CLOCK_SOURCE,   // I2C operation failed due to invalid clock source
-    I2C_INVALID_CHANNEL,        // I2C operation failed due to invalid channel
-    I2C_INVALID_LENGTH,         // I2C operation failed due to invalid length
-    I2C_INVALID_TIMEOUT_VALUE,  // I2C operation failed due to invalid timeout value
-    I2C_INVALID_TIMEOUT_SOURCE, // I2C operation failed due to invalid timeout source
-    I2C_BUSY,                   // I2C operation failed due to bus being busy
-    I2C_BUS_TIMEOUT,            // I2C bus is in timeout state
-    I2C_BUS_COLLISION,          // I2C bus is in collision state
-    I2C_NACK_RECEIVED,          // I2C bus received a NAK (not acknowledge) from the slave device
-    I2C_ERROR                   // I2C operation failed
+    I2C_OK = 0,                     // I2C operation successful
+    I2C_INVALID_HANDLE = 1,         // I2C operation failed due to invalid handle
+    I2C_INVALID_MODE = 2,           // I2C operation failed due to invalid mode
+    I2C_INVALID_CLOCK_SOURCE = 3,   // I2C operation failed due to invalid clock source
+    I2C_INVALID_CHANNEL = 4,        // I2C operation failed due to invalid channel
+    I2C_INVALID_LENGTH = 5,         // I2C operation failed due to invalid length
+    I2C_INVALID_TIMEOUT_VALUE = 6,  // I2C operation failed due to invalid timeout value
+    I2C_INVALID_TIMEOUT_SOURCE = 7, // I2C operation failed due to invalid timeout source
+    I2C_BUSY = 8,                   // I2C operation failed due to bus being busy
+    I2C_BUS_TIMEOUT = 9,            // I2C bus is in timeout state
+    I2C_BUS_COLLISION = 10,         // I2C bus is in collision state
+    I2C_NACK_RECEIVED = 11, // I2C bus received a NAK (not acknowledge) from the slave device
+    I2C_ERROR = 12          // I2C operation failed
 } I2C_Status_t;
 
 // Define the I2C address enumeration.  The I2C address enumeration is used to specify the
@@ -159,18 +159,19 @@ typedef struct
     uint16_t txBufferIndex; // Current index in the transmit buffer
     uint16_t rxBufferIndex; // Current index in the receive buffer
     bool initialized;       // Flag indicating if the I2C module has been initialized
-    I2C_Status_t lastStatus; // last status of the I2C module (used for error handling)
-    uint16_t timeout;       // Timeout value for I2C operations (in milliseconds)
+    I2C_Status_t lastStatus;            // last status of the I2C module (used for error handling)
+    uint16_t timeout;                   // Timeout value for I2C operations (in milliseconds)
     I2C_Timeout_Source_t timeoutSource; // Timeout source for I2C operations (timer or CLC)
+    uint16_t activeDeviceAddress;       // Active device address for current/next phase of transfer
+    uint8_t registerAddressByte;        // Storage for one-byte register address write phase
 } I2C_Handle_t;
 
 // *****************************************************************************************
 // I2C function prototypes
 // *****************************************************************************************
 I2C_Status_t I2C_GetLastStatus(I2C_Handle_t* handle);
-I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, 
-                      I2C_Clock_t clockSource, I2C_Mode_t mode, uint16_t timeout,
-                      I2C_Timeout_Source_t timeoutSource);
+I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, I2C_Clock_t clockSource,
+                      I2C_Mode_t mode, uint16_t timeout, I2C_Timeout_Source_t timeoutSource);
 I2C_Status_t I2C_Write(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data,
                        uint16_t length);
 I2C_Status_t I2C_Read(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data, uint16_t length);
