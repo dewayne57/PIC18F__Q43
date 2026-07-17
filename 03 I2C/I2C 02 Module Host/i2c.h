@@ -42,7 +42,6 @@
 // defined as follows:
 typedef enum
 {
-    I2C_CHANNEL_0 = 0, // I2C channel 0
     I2C_CHANNEL_1 = 1, // I2C channel 1
     I2C_CHANNEL_2 = 2  // I2C channel 2
 } I2C_Channel_t;
@@ -160,7 +159,7 @@ typedef struct
     uint16_t txBufferIndex; // Current index in the transmit buffer
     uint16_t rxBufferIndex; // Current index in the receive buffer
     bool initialized;       // Flag indicating if the I2C module has been initialized
-    I2C_Status_t lastState; // last state of the I2C module (used for error handling)
+    I2C_Status_t lastStatus; // last status of the I2C module (used for error handling)
     uint16_t timeout;       // Timeout value for I2C operations (in milliseconds)
     I2C_Timeout_Source_t timeoutSource; // Timeout source for I2C operations (timer or CLC)
 } I2C_Handle_t;
@@ -168,7 +167,7 @@ typedef struct
 // *****************************************************************************************
 // I2C function prototypes
 // *****************************************************************************************
-I2C_Status_t I2C_GetLastState(I2C_Handle_t* handle);
+I2C_Status_t I2C_GetLastStatus(I2C_Handle_t* handle);
 I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, 
                       I2C_Clock_t clockSource, I2C_Mode_t mode, uint16_t timeout,
                       I2C_Timeout_Source_t timeoutSource);
@@ -178,4 +177,5 @@ I2C_Status_t I2C_Read(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* dat
 I2C_Status_t I2C_ReadRegister(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t registerAddress,
                               uint8_t* data, uint16_t length);
 I2C_Status_t I2C_Reset(I2C_Handle_t* handle);
+I2C_Status_t I2C_IsBusy(I2C_Handle_t* handle);
 #endif // I2C_H

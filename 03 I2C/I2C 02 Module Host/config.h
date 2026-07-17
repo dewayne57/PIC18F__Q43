@@ -63,6 +63,9 @@
  */
 #define MCP23017_ADDR 0x40
 
+// Define a carriage return and line feed string for console output
+#define CRLF "\r\n" 
+
 /// @brief Initialize the system, including clock settings, pin configurations for I2C and
 /// external IOC, and any other necessary hardware setup for the I2C module host
 /// demonstration project.  This function should be called at the beginning of the main
