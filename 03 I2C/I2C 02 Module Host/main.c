@@ -59,8 +59,9 @@ uart_handle_t console_uart = {.port = UART_PORT_1,
 // @brief I2C host handle for the demonstration project.
 I2C_Handle_t i2c_host;
 uint8_t i2c_buffer[16]; // Buffer for I2C transactions
-uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
-bool s_porta_value_changed = false; // Flag indicating if the last known value of Port A has changed
+volatile uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
+volatile bool s_porta_value_changed = false; // Flag indicating if the last known value of Port A has changed
+volatile bool s_porta_read_pending = false;  // Async GPIOA read started by INT1 ISR
 
 /// @brief Main application entry point.
 /// @param  None
@@ -105,7 +106,7 @@ void main(void)
     }
 
     printf("Reading port A%s", CRLF);
-    status = I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, &s_last_porta_value, 1U);
+    status = I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, (uint8_t*)&s_last_porta_value, 1U);
     if (status != I2C_OK)
     {
         printf("I2C read from MCP23017 Port A failed with status: %d%s", status, CRLF);
@@ -117,15 +118,41 @@ void main(void)
     printf("Port value was %02x%s", s_last_porta_value, CRLF);
     s_porta_value_changed = true;
 
+    // Arm INT1 only after MCP configuration and initial GPIOA read have cleared
+    // any startup interrupt condition on the active-low INT line.
+    IPR6bits.INT1IP = 0; // Keep INT1 on low-priority vector (matches ISR declaration).
+    PIR6bits.INT1IF = 0;
+    PIE6bits.INT1IE = 1;
+
     while (1)
     {
+        if (s_porta_read_pending)
+        {
+            status = I2C_IsBusy(&i2c_host);
+            if (status == I2C_OK)
+            {
+                s_porta_read_pending = false;
+                s_porta_value_changed = true;
+            }
+            else if (status != I2C_BUSY)
+            {
+                printf("I2C read completion error: %d%s", status, CRLF);
+                s_porta_read_pending = false;
+            }
+        }
+
         if (s_porta_value_changed)
         {
-            printf("MCP23017 Port A value: 0x%02X%s", s_last_porta_value, CRLF);
+            uint8_t port_a_value = s_last_porta_value;
+            printf("MCP23017 Port A value: 0x%02X%s", port_a_value, CRLF);
             s_porta_value_changed = false;
             i2c_buffer[0] = BANKED_GPIOB; 
-            i2c_buffer[1] = s_last_porta_value; 
+            i2c_buffer[1] = port_a_value; 
             status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2); 
+            if (status != I2C_OK)
+            {
+                printf("I2C write to MCP23017 Port B failed with status: %d%s", status, CRLF);
+            }
         }
 
         __delay_ms(1000);
@@ -155,33 +182,16 @@ void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
 ///       port B
 void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 {
-    uint8_t mcp_port_a_value = 0x00;
-
-    printf("IOC interrupt%s", CRLF);
-    // Select GPIOA register, then read one byte from the client.
-    I2C_Status_t status =
-        I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, &mcp_port_a_value, 1U);
-    if (status != I2C_OK)
+    // Keep ISR short: queue a single asynchronous GPIOA read and process result in main.
+    if (!s_porta_read_pending)
     {
-        printf("I2C read from MCP23017 failed with status: %d%s", status, CRLF);
+        I2C_Status_t status =
+            I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, (uint8_t*)&s_last_porta_value, 1U);
+        if (status == I2C_OK)
+        {
+            s_porta_read_pending = true;
+        }
     }
-
-    // Check if the Port A value has changed since the last read. If it has, update
-    // the pending value and set the flag to report it in the main loop.  This is done
-    // to minimize the time spent in the interrupt service routine and to avoid printing
-    // to the console from within the ISR.
-    if (mcp_port_a_value != s_last_porta_value)
-    {
-        s_last_porta_value = mcp_port_a_value;
-        s_porta_value_changed = true;
-    }
-
-    // Write MCP23017 Port A value to MCP23017 Port B OLAT register.  We need to invert
-    // the value because the switches pull the pins low when "on" but we want the LEDs
-    // to turn on when the switch is "on".  Writing to the OLAT register updates the
-    // output latches and the GPIO register for Port B.
-    uint8_t write_buf[2] = {BANKED_OLATB, mcp_port_a_value};
-    status = I2C_Write(&i2c_host, MCP23017_ADDR, write_buf, 2);
 
     // Clear the INT1 interrupt flag
     PIR6bits.INT1IF = 0;
@@ -201,8 +211,11 @@ static I2C_Status_t MCP23017_Initialize()
     PORTBbits.RB3 = 1;  // Clear reset condition 
     __delay_us(100); 
 
+    // Keep INT1 disabled during setup; main() enables it after initial GPIOA read.
+    PIE6bits.INT1IE = 0;
+
     // Enter banked mode (BANK=1) while keeping address auto-increment enabled (SEQOP=0).
-    // INTPOL=1 makes INT active high; ODR=0 keeps INT in push-pull output mode.
+    // INTPOL=0 keeps INT active low; ODR=1 enables open-drain interrupt output.
     i2c_buffer[0] = IOCON;
     i2c_buffer[1] = iocon;
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);

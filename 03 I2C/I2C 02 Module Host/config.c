@@ -75,7 +75,7 @@ void SYSTEM_Initialize(void)
     INT1PPS = 0x0A;
     PPS_Lock();
 
-    INTCON0bits.INT1EDG = 1; // Rising edge triggers INT1
+    INTCON0bits.INT1EDG = 0; // Falling edge triggers INT1 (MCP23017 INT active-low)
     PIR6bits.INT1IF = 0;     // Clear any pending INT1 flag
     PIE6bits.INT1IE = 0;     // Enable INT1 after MCP23017 is initialized
 
