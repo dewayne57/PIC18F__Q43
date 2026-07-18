@@ -760,9 +760,8 @@ static void handleGeneralInterrupt(I2C_Handle_t* handle)
         else if (handle->state == I2C_READ)
         {
             // Read byte counter reached zero.
-            // Preferred completion is PCIF, but some sequences may not surface PCIF
-            // before software checks state. If all RX bytes are already consumed,
-            // finalize here as a deterministic fallback.
+            // Prefer PCIF-driven completion, but if PCIF is missed on this sequence,
+            // finalize once all RX bytes are consumed to avoid a deadlock.
             I2C1CON0bits.CSTR = 0;
             if (handle->rxBufferIndex >= handle->rxBufferSize)
             {
@@ -882,7 +881,7 @@ static void finalizeReadTransfer(I2C_Handle_t* handle)
         return;
     }
 
-    // Release any host requests that may keep SCL/SDA asserted.
+    // Release host request bits that can keep the bus asserted on edge cases.
     I2C1CON0bits.CSTR = 0;
     I2C1CON0bits.RSEN = 0;
     I2C1CON0bits.S = 0;

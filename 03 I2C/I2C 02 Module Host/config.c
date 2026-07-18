@@ -66,11 +66,12 @@ void SYSTEM_Initialize(void)
     __delay_ms(10); // Short delay to allow modules to stabilize after power-up
 
     // External INT1 on RB2 for MCP23017 interrupt input
-    TRISBbits.TRISB2 = 1;   // RB2 is input
+    TRISBbits.TRISB2 = 1;   // RB2 is external interrupt
+    WPUBbits.WPUB2 = 1;     // External interrupt is pulled up
     TRISBbits.TRISB3 = 0;   // RB3 is output (reset for MCP23017)
     
     PPS_Unlock();
-    // INT1 input <- RB2 (port B=0b01, pin2=0b010 -> 0x0A)
+    // INT1 input <- RB2 
     INT1PPS = 0x0A;
     PPS_Lock();
 

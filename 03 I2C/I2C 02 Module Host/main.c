@@ -110,13 +110,8 @@ void main(void)
     {
         printf("I2C read from MCP23017 Port A failed with status: %d%s", status, CRLF);
     }
-    printf("Read completed initially%s", CRLF); 
     while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
     {
-        printf("state=%i, bufferIndex=%i, bufferSize=%i, flags.stopSeen=%i%s", 
-                i2c_host.state, i2c_host.rxBufferIndex, i2c_host.rxBufferSize,
-                i2c_host.flags.stopSeen, CRLF); 
-        __delay_ms(1000); 
     }
  
     printf("Port value was %02x%s", s_last_porta_value, CRLF);
@@ -198,12 +193,18 @@ void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 /// @return i2c_status_t indicating success or error
 static I2C_Status_t MCP23017_Initialize()
 {
+    uint8_t iocon = 0x84;
     I2C_Status_t status;
+    
+    PORTBbits.RB3 = 0;  // reset the MCP23017 
+    __delay_us(100); 
+    PORTBbits.RB3 = 1;  // Clear reset condition 
+    __delay_us(100); 
 
     // Enter banked mode (BANK=1) while keeping address auto-increment enabled (SEQOP=0).
     // INTPOL=1 makes INT active high; ODR=0 keeps INT in push-pull output mode.
     i2c_buffer[0] = IOCON;
-    i2c_buffer[1] = 0x82;
+    i2c_buffer[1] = iocon;
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
     if (status != I2C_OK)
     {
@@ -227,7 +228,7 @@ static I2C_Status_t MCP23017_Initialize()
         i2c_buffer[3] = 0xFF; // GPINTENA
         i2c_buffer[4] = 0x00; // DEFVALA
         i2c_buffer[5] = 0x00; // INTCONA
-        i2c_buffer[6] = 0x82; // IOCON
+        i2c_buffer[6] = iocon; // IOCON
         i2c_buffer[7] = 0xFF; // GPPUA
         i2c_buffer[8] = 0x00; // INTFA (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPA (write ignored)
@@ -254,7 +255,7 @@ static I2C_Status_t MCP23017_Initialize()
         i2c_buffer[3] = 0x00; // GPINTENB
         i2c_buffer[4] = 0x00; // DEFVALB
         i2c_buffer[5] = 0x00; // INTCONB
-        i2c_buffer[6] = 0x82; // IOCON
+        i2c_buffer[6] = iocon; // IOCON
         i2c_buffer[7] = 0x00; // GPPUB
         i2c_buffer[8] = 0x00; // INTFB (write ignored)
         i2c_buffer[9] = 0x00; // INTCAPB (write ignored)
