@@ -22,6 +22,14 @@
  *   external devices that support the I2C protocol, such as the MCP23017 I/O expander
  *   used in this demonstration project.  These functions are the basis for a reusable
  *   I2C library that can be used in other projects.
+ * 
+ *   This code comprises a reusable I2C library that can be used in other projects. 
+ *   The library provides a simple interrupt-driven interface to the I2C hardware module,
+ *   allowing for easy communication with external devices that support the I2C protocol. 
+ *   The library is designed to be flexible and configurable, allowing for different I2C
+ *   channels, clock sources, and modes of operation.  The library also provides error
+ *   handling and timeout functionality to ensure reliable communication with external
+ *   devices.
  ***************************************************************************************** */
 
 #include <xc.h>
@@ -35,14 +43,15 @@
 
 /// @brief Array of I2C handle structures for each channel.  This array is used to store the
 /// configuration and state of the I2C module for each channel.  The array is indexed
-/// by the I2C channel number (0 or 1).  The array is initialized to zero.  The array is
+/// by the I2C channel number (1 or 2).  The channel number is decremented by 1 to 
+/// index this array since arrays are 0-based. The array is initialized to zero.  The array is
 /// used to record the addresses of each handle so that the interrupt service routines
-/// can update the appropriate buffers and handles. The array is defined as follows:
-static I2C_Handle_t* i2cHandles[2]; // Array of I2C handle structures for each channel
+/// can update the appropriate buffers and handles. 
+static I2C_Handle_t* i2cHandles[2]; 
 
 // Forward definitions of all the internal functions that are not exposed to the user.
 // These functions are used to validate the I2C handle structure and to perform the
-// actual I2C read and write operations.  The functions are defined as follows:
+// actual I2C read and write operations.  
 static bool isHandleValid(I2C_Handle_t* handle);
 static void cacheHandle(I2C_Handle_t* handle);
 static void setupDeviceAddress(I2C_Handle_t* handle, uint16_t deviceAddress, bool read);
@@ -401,6 +410,8 @@ I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, I2C_Clock_t c
         I2C1ERRbits.BTOIE = 1;                     // Enable I2C1 bus timeout interrupt
         I2C1ERRbits.BCLIE = 1;                     // Enable I2C1 bus collision interrupt
         I2C1ERRbits.NACKIE = 1;                    // Enable I2C1 NACK interrupt
+        I2C1PIE = 0;                               // Disable I2C1 general interrupts
+        I2C1PIEbits.CNTIE = 1;                     // Enable I2C1 count interrupt
         I2C1PIR = 0;                               // Clear I2C1 interrupt flags
         I2C1ERR = 0;                               // Clear I2C1 error flags
         I2C1CNT = 0;                               // Reset I2C1 count register
@@ -436,6 +447,7 @@ I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, I2C_Clock_t c
         I2C2CON2bits.FME = fastMode ? 1 : 0;       // Set the I2C fast mode bit
         I2C2CLK = (uint8_t)handle->clockSource;    // Set the I2C clock source
         I2C2PIE = 0;                               // Disable I2C2 interrupts
+        I2C2PIEbits.CNTIE = 1;                     // Enable I2C2 count interrupt
         I2C2PIR = 0;                               // Clear I2C2 interrupt flags
         I2C2ERRbits.BTOIE = 1;                     // Enable I2C2 bus timeout interrupt
         I2C2ERRbits.BCLIE = 1;                     // Enable I2C2 bus collision interrupt
@@ -733,7 +745,11 @@ static bool isHandleValid(I2C_Handle_t* handle)
 
 /// @brief Setup the I2C device address for read or write operation.  This function sets
 /// the I2C device address in the appropriate register based on the I2C channel and the
-/// read/write operation.  The function is defined as follows:
+/// read/write operation.  
+/// @param handle Pointer to the I2C handle structure.
+/// @param deviceAddress The I2C address of the device to communicate with.
+/// @param read Boolean flag indicating whether the operation is a read (true) or write (false).
+/// @return None
 static void setupDeviceAddress(I2C_Handle_t* handle, uint16_t deviceAddress, bool read)
 {
     uint8_t addressHigh = (deviceAddress >> 8) & 0x03; // Get the upper 2 bits for 10-bit addressing
@@ -832,8 +848,11 @@ static void handleErrorInterrupt(I2C_Handle_t* handle)
 #endif
 }
 
-/// @brief Handle I2C general interrupts. This is used to advance transactions
-/// that complete in hardware without guaranteeing a follow-up TX pacing interrupt.
+/// @brief Handle I2C general interrupts. We are using this interrupt to trigger the 
+/// repeated-start read phase after the 1-byte register-address write phase completes.  
+/// This is done by checking if the I2C count register has reached zero and if the handle 
+/// state is in read-register mode.  If both conditions are met, we set up the device
+/// address for reading and transition to read mode.
 /// @param handle Pointer to the I2C handle structure.
 /// @return None
 static void handleGeneralInterrupt(I2C_Handle_t* handle)
@@ -842,22 +861,50 @@ static void handleGeneralInterrupt(I2C_Handle_t* handle)
     {
         return; // Handle is NULL, exit the function
     }
-
+    
 #ifdef I2C1CON0
     if (handle->channel == I2C_CHANNEL_1)
     {
-        // After the 1-byte register-address write phase, CNT reaches zero.
-        // Trigger the repeated-start read phase here instead of depending on TXIF timing.
-        if (handle->state == I2C_READ_REGISTER && I2C1CNT == 0)
+        // If it is the count interrupt, we need to check if we are in read-register mode 
+       //  and transition to read mod after a restart.
+        if (I2C1PIRbits.I2C1IF)
         {
-            setupDeviceAddress(handle, handle->activeDeviceAddress, true);
-            handle->state = I2C_READ;
-            PIE7bits.I2C1TXIE = 0;
-            PIE7bits.I2C1RXIE = 1;
-            I2C1CNT = (uint8_t)handle->rxBufferSize;
-            I2C1CON0bits.RSEN = 1;
-            I2C1CON0bits.CSTR = 0;
-            I2C1CON0bits.S = 1;
+            I2C1PIRbits.I2C1IF = 0; // Clear the general interrupt flag
+            // After the 1-byte register-address write phase, CNT reaches zero.
+            // Trigger the repeated-start read phase here instead of depending on TXIF timing.
+            if (handle->state == I2C_READ_REGISTER)
+            {
+                setupDeviceAddress(handle, handle->activeDeviceAddress, true);
+                handle->state = I2C_READ;
+                PIE7bits.I2C1TXIE = 0;  // Disable the transmit interrupt
+                PIE7bits.I2C1RXIE = 1;  // Enable the receive interrupt
+                I2C1CNT = (uint8_t)handle->rxBufferSize; // Set the I2C count register to the number of bytes to receive
+                I2C1CON0bits.RSEN = 1;  // Enable repeated start condition
+                I2C1CON0bits.CSTR = 0; // Release clock stretching before starting the transfer
+                I2C1CON0bits.S = 1; // Generate a start condition
+            }
+        }
+    }
+#endif
+#ifdef I2C2CON0
+    if (handle->channel == I2C_CHANNEL_2)
+    {
+        if (I2C2PIRbits.I2C2IF)
+        {
+            I2C2PIRbits.I2C2IF = 0; // Clear the general interrupt flag
+            // After the 1-byte register-address write phase, CNT reaches zero.
+            // Trigger the repeated-start read phase here instead of depending on TXIF timing.
+            if (handle->state == I2C_READ_REGISTER)
+            {
+                setupDeviceAddress(handle, handle->activeDeviceAddress, true);
+                handle->state = I2C_READ;
+                PIE6bits.I2C2TXIE = 0;
+                PIE6bits.I2C2RXIE = 1;
+                I2C2CNT = (uint8_t)handle->rxBufferSize;
+                I2C2CON0bits.RSEN = 1;
+                I2C2CON0bits.CSTR = 0;
+                I2C2CON0bits.S = 1;
+            }
         }
     }
 #endif
