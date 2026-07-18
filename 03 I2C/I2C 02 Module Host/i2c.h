@@ -71,15 +71,14 @@ typedef enum
     I2C_INVALID_HANDLE = 1,         // I2C operation failed due to invalid handle
     I2C_INVALID_MODE = 2,           // I2C operation failed due to invalid mode
     I2C_INVALID_CLOCK_SOURCE = 3,   // I2C operation failed due to invalid clock source
-    I2C_INVALID_CHANNEL = 4,        // I2C operation failed due to invalid channel
-    I2C_INVALID_LENGTH = 5,         // I2C operation failed due to invalid length
-    I2C_INVALID_TIMEOUT_VALUE = 6,  // I2C operation failed due to invalid timeout value
-    I2C_INVALID_TIMEOUT_SOURCE = 7, // I2C operation failed due to invalid timeout source
-    I2C_BUSY = 8,                   // I2C operation failed due to bus being busy
-    I2C_BUS_TIMEOUT = 9,            // I2C bus is in timeout state
-    I2C_BUS_COLLISION = 10,         // I2C bus is in collision state
-    I2C_NACK_RECEIVED = 11, // I2C bus received a NAK (not acknowledge) from the slave device
-    I2C_ERROR = 12          // I2C operation failed
+    I2C_INVALID_LENGTH = 4,         // I2C operation failed due to invalid length
+    I2C_INVALID_TIMEOUT_VALUE = 5,  // I2C operation failed due to invalid timeout value
+    I2C_INVALID_TIMEOUT_SOURCE = 6, // I2C operation failed due to invalid timeout source
+    I2C_BUSY = 7,                   // I2C operation failed due to bus being busy
+    I2C_BUS_TIMEOUT = 8,            // I2C bus is in timeout state
+    I2C_BUS_COLLISION = 9,         // I2C bus is in collision state
+    I2C_NACK_RECEIVED = 10, // I2C bus received a NAK (not acknowledge) from the slave device
+    I2C_ERROR = 99          // I2C operation failed
 } I2C_Status_t;
 
 // Define the I2C address enumeration.  The I2C address enumeration is used to specify the

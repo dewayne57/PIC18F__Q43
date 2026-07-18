@@ -122,6 +122,9 @@ void main(void)
         {
             printf("MCP23017 Port A value: 0x%02X%s", s_last_porta_value, CRLF);
             s_porta_value_changed = false;
+            i2c_buffer[0] = BANKED_GPIOB; 
+            i2c_buffer[1] = s_last_porta_value; 
+            status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2); 
         }
 
         __delay_ms(1000);

@@ -184,9 +184,6 @@ I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Clock_t clockSource,
                                          // invalid
     }
 
-    handle->lastStatus = I2C_INVALID_CHANNEL; // Set the last state to invalid channel
-    return I2C_INVALID_CHANNEL; // Return an error code indicating that the channel is invalid
-
     // Now, set up the I2C structure and initialize the I2C hardware module based on the provided
     // parameters
     handle->clockSource = clockSource;     // Store the clock source in the handle
@@ -549,8 +546,6 @@ I2C_Status_t I2C_Reset(I2C_Handle_t* handle)
     handle->lastStatus = I2C_OK; // Set the last state to OK
     CRITICAL_SECTION_END();
     return I2C_OK;
-
-    return I2C_INVALID_CHANNEL;
 }
 
 /// @brief Check if the I2C bus is busy.  This function checks the state of the I2C bus and
@@ -679,9 +674,9 @@ static void handleGeneralInterrupt(I2C_Handle_t* handle)
 
     // If it is the count interrupt, we need to check if we are in read-register mode
     //  and transition to read mod after a restart.
-    if (I2C1PIRbits.I2C1IF)
+    if (I2C1PIRbits.CNT1IF)
     {
-        I2C1PIRbits.I2C1IF = 0; // Clear the general interrupt flag
+        I2C1PIRbits.CNT1IF = 0; // Clear the general interrupt flag
         // After the 1-byte register-address write phase, CNT reaches zero.
         // Trigger the repeated-start read phase here instead of depending on TXIF timing.
         if (handle->state == I2C_READ_REGISTER)
