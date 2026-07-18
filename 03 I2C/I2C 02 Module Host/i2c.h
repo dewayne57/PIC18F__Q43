@@ -36,16 +36,6 @@
 #define I2C_HANDLE_SIGNATURE                                                                       \
     0x4943 // I2C handle signature (used to verify that the handle is valid)
 
-// Define the I2C channel enumeration.  The PIC18F47Q43 has two I2C channels, which are
-// referred to as channel 0 and channel 1.  The I2C channel enumeration is used to specify
-// which channel to use when calling the I2C functions.  The I2C channel enumeration is
-// defined as follows:
-typedef enum
-{
-    I2C_CHANNEL_1 = 1, // I2C channel 1
-    I2C_CHANNEL_2 = 2  // I2C channel 2
-} I2C_Channel_t;
-
 // Define the I2C clock source enumeration.  The PIC18F47Q43 has several clock sources
 // that can be used to drive the I2C module.  The I2C clock source enumeration is used to
 // specify which clock source to use when calling the I2C functions.  The I2C clock source
@@ -148,7 +138,6 @@ typedef enum
 typedef struct
 {
     uint16_t signature;      // I2C handle signature (used to verify that the handle is valid)
-    I2C_Channel_t channel;   // I2C channel (0 or 1)
     I2C_Clock_t clockSource; // I2C clock source
     I2C_Mode_t mode;         // I2C mode (master or slave)
     uint8_t* txBuffer; // Pointer to the transmit buffer (set when calling the I2C write function)
@@ -170,7 +159,7 @@ typedef struct
 // I2C function prototypes
 // *****************************************************************************************
 I2C_Status_t I2C_GetLastStatus(I2C_Handle_t* handle);
-I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Channel_t channel, I2C_Clock_t clockSource,
+I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Clock_t clockSource,
                       I2C_Mode_t mode, uint16_t timeout, I2C_Timeout_Source_t timeoutSource);
 I2C_Status_t I2C_Write(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* data,
                        uint16_t length);

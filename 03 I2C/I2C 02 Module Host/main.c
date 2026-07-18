@@ -59,8 +59,8 @@ uart_handle_t console_uart = {.port = UART_PORT_1,
 // @brief I2C host handle for the demonstration project.
 I2C_Handle_t i2c_host;
 uint8_t i2c_buffer[16]; // Buffer for I2C transactions
-volatile uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
-volatile bool s_porta_value_changed = false; // Flag indicating if the last known value of Port A has changed
+uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
+bool s_porta_value_changed = false; // Flag indicating if the last known value of Port A has changed
 
 /// @brief Main application entry point.
 /// @param  None
@@ -86,7 +86,7 @@ void main(void)
     UART_SelectPrintfTarget(&console_uart);
     printf("I2C Module Host example%s", CRLF);
     I2C_Status_t status =
-        I2C_Init(&i2c_host, I2C_CHANNEL_1, I2C_CLOCK_MFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
+        I2C_Init(&i2c_host, I2C_CLOCK_MFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
     if (status != I2C_OK)
     {
         printf("I2C initialization failed with status: %d\n", status);
