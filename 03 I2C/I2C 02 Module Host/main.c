@@ -110,9 +110,15 @@ void main(void)
     {
         printf("I2C read from MCP23017 Port A failed with status: %d%s", status, CRLF);
     }
+    printf("Read completed initially%s", CRLF); 
     while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
     {
+        printf("state=%i, bufferIndex=%i, bufferSize=%i, flags.stopSeen=%i%s", 
+                i2c_host.state, i2c_host.rxBufferIndex, i2c_host.rxBufferSize,
+                i2c_host.flags.stopSeen, CRLF); 
+        __delay_ms(1000); 
     }
+ 
     printf("Port value was %02x%s", s_last_porta_value, CRLF);
     s_porta_value_changed = true;
 
@@ -156,6 +162,7 @@ void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
 {
     uint8_t mcp_port_a_value = 0x00;
 
+    printf("IOC interrupt%s", CRLF);
     // Select GPIOA register, then read one byte from the client.
     I2C_Status_t status =
         I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, &mcp_port_a_value, 1U);

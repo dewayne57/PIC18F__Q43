@@ -36,6 +36,12 @@
 #define I2C_HANDLE_SIGNATURE                                                                       \
     0x4943 // I2C handle signature (used to verify that the handle is valid)
 
+typedef struct
+{
+    uint8_t stopSeen : 1; // STOP detected while finalizing a read transfer
+    uint8_t reserved : 7;
+} I2C_Flags_t;
+
 // Define the I2C clock source enumeration.  The PIC18F47Q43 has several clock sources
 // that can be used to drive the I2C module.  The I2C clock source enumeration is used to
 // specify which clock source to use when calling the I2C functions.  The I2C clock source
@@ -152,6 +158,7 @@ typedef struct
     I2C_Timeout_Source_t timeoutSource; // Timeout source for I2C operations (timer or CLC)
     uint16_t activeDeviceAddress;       // Active device address for current/next phase of transfer
     uint8_t registerAddressByte;        // Storage for one-byte register address write phase
+    I2C_Flags_t flags;                  // Driver state flags
 } I2C_Handle_t;
 
 // *****************************************************************************************

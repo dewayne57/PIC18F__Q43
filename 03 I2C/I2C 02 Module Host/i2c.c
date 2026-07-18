@@ -26,7 +26,7 @@
  *   This code comprises a reusable I2C library that can be used in other projects.
  *   The library provides a simple interrupt-driven interface to the I2C hardware module,
  *   allowing for easy communication with external devices that support the I2C protocol.
- *   The library is designed to be flexible and configurable, allowing for different 
+ *   The library is designed to be flexible and configurable, allowing for different
  *   clock sources and modes of operation.  The library also provides error
  *   handling and timeout functionality to ensure reliable communication with external
  *   devices.
@@ -41,9 +41,9 @@
 #include "../../Libraries/INTLIB/intlib.h"
 #include "../../Libraries/PPSLIB/pps.h"
 
-/// @brief The pointer to the current I2C handle structure.  This pointer is used to 
-/// store the current I2C handle structure being used by the I2C module.  The pointer 
-/// is set when the I2C_Init function is called and is used by the interrupt service 
+/// @brief The pointer to the current I2C handle structure.  This pointer is used to
+/// store the current I2C handle structure being used by the I2C module.  The pointer
+/// is set when the I2C_Init function is called and is used by the interrupt service
 /// routines to access the current I2C handle structure.
 static I2C_Handle_t* i2cHandle;
 
@@ -57,6 +57,7 @@ static void handleErrorInterrupt(I2C_Handle_t* handle);
 static void handleGeneralInterrupt(I2C_Handle_t* handle);
 static void handleReceiveInterrupt(I2C_Handle_t* handle);
 static void handleTransmitInterrupt(I2C_Handle_t* handle);
+static void finalizeReadTransfer(I2C_Handle_t* handle);
 
 #ifdef VECTORED_INTERRUPTS_ENABLED
 /// @brief I2C1 error interrupt service routine.
@@ -148,8 +149,8 @@ I2C_Status_t I2C_GetLastStatus(I2C_Handle_t* handle)
 /// @return I2C status indicating success or failure.  The provided handle will be initialized
 /// if the function returns I2C_STATUS_SUCCESS.  If the function returns I2C_STATUS_ERROR, the
 /// handle will not be initialized and should not be used.
-I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Clock_t clockSource,
-                      I2C_Mode_t mode, uint16_t timeout, I2C_Timeout_Source_t timeoutSource)
+I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Clock_t clockSource, I2C_Mode_t mode,
+                      uint16_t timeout, I2C_Timeout_Source_t timeoutSource)
 {
 
     if (handle == NULL)
@@ -338,6 +339,8 @@ I2C_Status_t I2C_Init(I2C_Handle_t* handle, I2C_Clock_t clockSource,
     I2C1ERRbits.NACKIE = 1;                    // Enable I2C1 NACK interrupt
     I2C1PIE = 0;                               // Disable I2C1 general interrupts
     I2C1PIEbits.CNTIE = 1;                     // Enable I2C1 count interrupt
+    I2C1PIEbits.RSCIE = 1;                     // Enable I2C1 repeated-start interrupt
+    I2C1PIEbits.PCIE = 1;                      // Enable stop-condition interrupt
     I2C1PIR = 0;                               // Clear I2C1 interrupt flags
     I2C1ERR = 0;                               // Clear I2C1 error flags
     I2C1CNT = 0;                               // Reset I2C1 count register
@@ -435,11 +438,24 @@ I2C_Status_t I2C_Read(I2C_Handle_t* handle, uint16_t deviceAddress, uint8_t* dat
     handle->rxBuffer = data;       // Set the receive buffer pointer
     handle->rxBufferSize = length; // Set the receive buffer size
     handle->rxBufferIndex = 0;     // Reset the receive buffer index
+    handle->flags.stopSeen = 0;
 
     setupDeviceAddress(handle, deviceAddress, true); // Setup the device address for read operation
     PIE7bits.I2C1TXIE = 0;                           // RX transfer only
     PIE7bits.I2C1RXIE = 1;                           // Enable the receive interrupt
     handle->state = I2C_READ;                        // Set the I2C bus state to read mode
+    // Arm final-byte NACK policy before reception starts.
+    // For single-byte reads, this must be set before the first byte is clocked in.
+    if (length == 1U)
+    {
+        I2C1CON1bits.ACKDT = 1;  // NACK data bit
+        I2C1CON1bits.ACKCNT = 1; // Apply ACKDT on the next acknowledge phase
+    }
+    else
+    {
+        I2C1CON1bits.ACKDT = 0;
+        I2C1CON1bits.ACKCNT = 0;
+    }
     I2C1CNT = (uint8_t)length; // Set the I2C count register to the number of bytes to receive
     I2C1CON0bits.RSEN = 0;     // Disable repeated start condition
     I2C1CON0bits.CSTR = 0;     // Release clock stretching before starting the transfer
@@ -487,6 +503,7 @@ I2C_Status_t I2C_ReadRegister(I2C_Handle_t* handle, uint16_t deviceAddress, uint
     handle->rxBuffer = data;
     handle->rxBufferSize = length;
     handle->rxBufferIndex = 0;
+    handle->flags.stopSeen = 0;
 
     // Phase 1: address + write + one register byte.
     // Phase 2 (repeated-start + read) is initiated by the I2C general ISR
@@ -502,6 +519,8 @@ I2C_Status_t I2C_ReadRegister(I2C_Handle_t* handle, uint16_t deviceAddress, uint
     handle->state = I2C_READ_REGISTER;
     I2C1CNT = 1;
     I2C1TXB = handle->registerAddressByte;
+    I2C1CON1bits.ACKDT = 0;
+    I2C1CON1bits.ACKCNT = 0;
     I2C1CON0bits.RSEN = 0;
     I2C1CON0bits.CSTR = 0;
     I2C1CON0bits.S = 1;
@@ -535,6 +554,7 @@ I2C_Status_t I2C_Reset(I2C_Handle_t* handle)
     I2C1PIR = 0;           // Clear I2C1 interrupt flags
     I2C1ERR = 0;           // Clear I2C1 error flags
     I2C1CNT = 0;           // Reset I2C1 count register
+    handle->flags.stopSeen = 0;
     I2C1CON0bits.EN = 1;   // Re-enable module so future transactions can run
 
     PIE7bits.I2C1EIE = 1; // Restore base interrupt gates; TX/RX are enabled per transfer.
@@ -559,7 +579,7 @@ I2C_Status_t I2C_IsBusy(I2C_Handle_t* handle)
     }
     cacheHandle(handle);
 
-    if (I2C1STAT0bits.BFRE)
+    if (I2C1STAT0bits.BFRE && handle->state == I2C_IDLE)
     {
         return I2C_OK; // Bus is free
     }
@@ -672,8 +692,37 @@ static void handleGeneralInterrupt(I2C_Handle_t* handle)
         return; // Handle is NULL, exit the function
     }
 
+    // STOP completed on the bus.
+    if (I2C1PIRbits.PCIF)
+    {
+        I2C1PIRbits.PCIF = 0;
+        I2C1CON0bits.CSTR = 0;
+
+        // Finalize transfer state only after STOP has actually occurred.
+        if (handle->state == I2C_READ)
+        {
+            handle->flags.stopSeen = 1;
+            if (handle->rxBufferIndex >= handle->rxBufferSize)
+            {
+                finalizeReadTransfer(handle);
+            }
+        }
+        else if (handle->state == I2C_WRITE)
+        {
+            handle->state = I2C_IDLE;
+            PIE7bits.I2C1TXIE = 0;
+        }
+    }
+
+    // If the general interrupt is for a restart generated event, then clear the flag.
+    if (I2C1PIRbits.RSCIF)
+    {
+        I2C1PIRbits.RSCIF = 0; // Clear the repeated-start interrupt flag
+        I2C1CON0bits.RSEN = 0; // Clear the restart request bit
+    }
+
     // If it is the count interrupt, we need to check if we are in read-register mode
-    //  and transition to read mod after a restart.
+    //  and transition to read mode after a restart.
     if (I2C1PIRbits.CNT1IF)
     {
         I2C1PIRbits.CNT1IF = 0; // Clear the general interrupt flag
@@ -685,12 +734,40 @@ static void handleGeneralInterrupt(I2C_Handle_t* handle)
             handle->state = I2C_READ;
             PIE7bits.I2C1TXIE = 0; // Disable the transmit interrupt
             PIE7bits.I2C1RXIE = 1; // Enable the receive interrupt
-            I2C1CNT =
-                (uint8_t)handle
-                    ->rxBufferSize; // Set the I2C count register to the number of bytes to receive
-            I2C1CON0bits.RSEN = 1;  // Enable repeated start condition
-            I2C1CON0bits.CSTR = 0;  // Release clock stretching before starting the transfer
-            I2C1CON0bits.S = 1;     // Generate a start condition
+            // Program last-byte NACK policy before the read phase begins.
+            if (handle->rxBufferSize == 1U)
+            {
+                // Single-byte read must NACK the only received byte.
+                I2C1CON1bits.ACKDT = 1;
+                I2C1CON1bits.ACKCNT = 1;
+            }
+            else
+            {
+                // Multi-byte read ACKs intermediate bytes; RX ISR arms final NACK.
+                I2C1CON1bits.ACKDT = 0;
+                I2C1CON1bits.ACKCNT = 0;
+            }
+            
+            // Set the I2C count register to the number of bytes to receive
+            I2C1CNT = (uint8_t)handle->rxBufferSize;
+            I2C1CON0bits.RSEN = 1; // Enable repeated start condition
+            I2C1CON0bits.CSTR = 0; // Release clock stretching before starting the transfer
+            I2C1CON0bits.S = 1;    // Generate a start condition
+
+            // We will clear the repeated start flag in the general interrupt
+            // after the repeated start has been generated.
+        }
+        else if (handle->state == I2C_READ)
+        {
+            // Read byte counter reached zero.
+            // Preferred completion is PCIF, but some sequences may not surface PCIF
+            // before software checks state. If all RX bytes are already consumed,
+            // finalize here as a deterministic fallback.
+            I2C1CON0bits.CSTR = 0;
+            if (handle->rxBufferIndex >= handle->rxBufferSize)
+            {
+                finalizeReadTransfer(handle);
+            }
         }
     }
 }
@@ -707,6 +784,8 @@ void handleReceiveInterrupt(I2C_Handle_t* handle)
     }
 
     uint8_t data = I2C1RXB; // Read the receive buffer to clear the interrupt flag
+    // Release pacing/stretch so ACK/NACK and STOP can complete after this byte.
+    I2C1CON0bits.CSTR = 0;
     if (handle->state != I2C_READ)
     {
         return; // Not in read mode, exit the ISR
@@ -714,17 +793,27 @@ void handleReceiveInterrupt(I2C_Handle_t* handle)
 
     if (handle->rxBufferIndex < handle->rxBufferSize)
     {
+        // Before receiving the final byte, request a NACK on its acknowledge phase.
+        if ((handle->rxBufferSize > 1U) && ((handle->rxBufferIndex + 1U) == handle->rxBufferSize))
+        {
+            I2C1CON1bits.ACKDT = 1;
+            I2C1CON1bits.ACKCNT = 1;
+        }
+
         handle->rxBuffer[handle->rxBufferIndex++] = data;
         if (handle->rxBufferIndex >= handle->rxBufferSize)
         {
-            handle->state = I2C_IDLE;
-            PIE7bits.I2C1RXIE = 0;
+            // Keep state in READ until STOP completion (PCIF) finalizes transfer.
+            I2C1CON0bits.CSTR = 0;
+            if (handle->flags.stopSeen != 0U)
+            {
+                finalizeReadTransfer(handle);
+            }
         }
     }
     else
     {
-        handle->state = I2C_IDLE;
-        PIE7bits.I2C1RXIE = 0;
+        finalizeReadTransfer(handle);
     }
 }
 
@@ -774,7 +863,7 @@ void handleTransmitInterrupt(I2C_Handle_t* handle)
     }
 }
 
-/// @brief Cache the I2C handle 
+/// @brief Cache the I2C handle
 /// @param handle Pointer to the I2C handle structure to be cached.
 static void cacheHandle(I2C_Handle_t* handle)
 {
@@ -783,4 +872,26 @@ static void cacheHandle(I2C_Handle_t* handle)
         return;
     }
     i2cHandle = handle; // Cache the handle for the current operation.
+}
+
+/// @brief Complete a read transfer and release host control bits that can hold the bus low.
+static void finalizeReadTransfer(I2C_Handle_t* handle)
+{
+    if (!isHandleValid(handle))
+    {
+        return;
+    }
+
+    // Release any host requests that may keep SCL/SDA asserted.
+    I2C1CON0bits.CSTR = 0;
+    I2C1CON0bits.RSEN = 0;
+    I2C1CON0bits.S = 0;
+
+    // Restore acknowledge defaults for next transfer.
+    I2C1CON1bits.ACKDT = 0;
+    I2C1CON1bits.ACKCNT = 0;
+
+    handle->flags.stopSeen = 0;
+    handle->state = I2C_IDLE;
+    PIE7bits.I2C1RXIE = 0;
 }
