@@ -110,6 +110,7 @@ void main(void)
     PIR6bits.INT1IF = 0;
     PIE6bits.INT1IE = 1;
 
+    s_porta_value_changed = true; // force initial read/write
     while (1)
     {
         if (s_porta_value_changed)
@@ -125,13 +126,6 @@ void main(void)
             {
             }
 
-            if (status != I2C_BUSY)
-            {
-                printf("I2C read completion error: %d%s", status, CRLF);
-                s_porta_read_pending = false;
-            }
-            else
-            {
                 printf("MCP23017 Port A value: 0x%02X%s", s_last_porta_value, CRLF);
                 i2c_buffer[0] = BANKED_GPIOB;
                 i2c_buffer[1] = s_last_porta_value;
@@ -140,10 +134,10 @@ void main(void)
                 {
                     printf("I2C write to MCP23017 Port B failed with status: %d%s", status, CRLF);
                 }
-            }
             s_porta_value_changed = false;
         }
     }
+}
 
     /// @brief UART1 RX ISR (vectored)
     /// @param  None
