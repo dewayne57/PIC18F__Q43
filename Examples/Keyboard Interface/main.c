@@ -66,7 +66,7 @@ volatile bool scan_needed = false;          // Flag indicating that a scan of th
 // @brief this table of scan codes is used to map the row and column of the keyboard 
 // matrix to a specific key code.  The scan code is found in the table and the corresponding 
 // index is used to look up the key name in the key_names array.  
-const uint8_t scan_codes[16] = {
+const uint8_t scan_codes[] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
     0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 
@@ -75,13 +75,51 @@ const uint8_t scan_codes[16] = {
 };
 
 // @brief this table of key names is used to map the scan code to a specific key name.
-const char *key_names[16] = {
+const char *key_names[] = {
     "Key 00", "Key 01", "Key 02", "Key 03", "Key 04", "Key 05",
     "Key 10", "Key 11", "Key 12", "Key 13", "Key 14", "Key 15",
     "Key 20", "Key 21", "Key 22", "Key 23", "Key 24", "Key 25",
     "Key 30", "Key 31", "Key 32", "Key 33", "Key 34", "Key 35",
     "Key 40", "Key 41", "Key 42", "Key 43", "Key 44", "Key 45",
 };
+
+/// @brief Scan the keyboard matrix connected to the MCP23017 I/O expander.
+/// @param pressed_keys A 16 element array to hold the scan codes of the 
+/// pressed keys.  Only the elements from 0 to num_pressed_keys-1 will be
+/// valid.  The rest of the array will be unchanged.
+/// @param num_pressed_keys The number of pressed keys detected (max 16).
+void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys)
+{
+    *num_pressed_keys = 0; // Reset the count of pressed keys
+
+    for (uint8_t col = 0; col < 6; col++)
+    {
+        // Set the current column low and all others high
+        uint8_t col_value = (uint8_t) ~(1 << col); // Active low for the current column
+        i2c_buffer[0] = BANKED_GPIOB;
+        i2c_buffer[1] = col_value;
+        I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
+
+        // Read the row inputs from Port A
+        I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, (uint8_t *)&s_last_porta_value, 1U);
+
+        // Check each row for a pressed key (active low)
+        for (uint8_t row = 0; row < 5; row++)
+        {
+            if (!(s_last_porta_value & (1 << row))) // If the row input is low
+            {
+                uint8_t scan_code = scan_codes[row * 6 + col];
+                pressed_keys[*num_pressed_keys] = scan_code;
+                (*num_pressed_keys)++;
+
+                if (*num_pressed_keys >= 16)
+                {
+                    return; // Stop if we have detected the maximum number of keys
+                }
+            }
+        }
+    }
+}
 
 /// @brief Main application entry point.
 /// @param  None
@@ -130,7 +168,6 @@ void main(void)
     PIR6bits.INT1IF = 0;
     PIE6bits.INT1IE = 1;
 
-    s_porta_value_changed = true; // force initial read/write
     while (1)
     {
 
@@ -177,26 +214,19 @@ void main(void)
         if (scan_needed)
         {
             scan_needed = false;
-            printf("Reading port A%s", CRLF);
-            status = I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_INTFB,
-                                      (uint8_t *)&s_last_porta_value, 1U);
-            if (status != I2C_OK)
-            {
-                printf("I2C read from MCP23017 Port A failed with status: %d%s", status, CRLF);
-            }
-            while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
-            {
-            }
+            uint8_t pressed_keys[16]; // Array to hold the scan codes of the pressed keys
+            uint8_t num_pressed_keys = 0; // Number of pressed keys detected
 
-            printf("MCP23017 Port A value: 0x%02X%s", s_last_porta_value, CRLF);
-            i2c_buffer[0] = BANKED_GPIOB;
-            i2c_buffer[1] = s_last_porta_value;
-            status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
-            if (status != I2C_OK)
+            printf("Keyboard scan triggered by external interrupt%s", CRLF);
+            scanKeyboard(pressed_keys, &num_pressed_keys);
+
+            printf("Number of pressed keys: %d%s", num_pressed_keys, CRLF);
+            printf("Pressed keys scan codes: ");
+            for (uint8_t i = 0; i < num_pressed_keys; i++)
             {
-                printf("I2C write to MCP23017 Port B failed with status: %d%s", status, CRLF);
+                printf("0x%02X ", pressed_keys[i]);
             }
-            s_porta_value_changed = false;
+            printf("%s", CRLF);
         }
     }
 }
