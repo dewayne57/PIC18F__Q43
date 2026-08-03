@@ -15,6 +15,7 @@ such as debug output.
 | Library | Purpose | Typical Use |
 |---------|---------|-------------|
 | `UARTLIB` | Shared interrupt-driven UART library supporting UART1-UART5 on PIC18F Q43/Q84 devices | Debug console output, status logging, printf retargeting, lightweight serial diagnostics |
+| `DMALIB` | Shared DMA helper functions for PIC18F Q43 examples | DMA channel selection, source/destination address setup, transfer count setup, active-transfer polling |
 
 ## Library Usage Pattern
 
@@ -39,3 +40,4 @@ Each library folder should contain its own `ReadMe.md` describing:
 Currently available detailed documentation:
 
 - `UARTLIB/ReadMe.md` - Multi-UART debug/output library documentation
+- `DMALIB/ReadMe.md` - Shared DMA helper library documentation

@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>config.h</itemPath>
       <itemPath>i2c.h</itemPath>
+      <itemPath>ws2812.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -23,6 +24,7 @@
       <itemPath>config.c</itemPath>
       <itemPath>i2c.c</itemPath>
       <itemPath>main.c</itemPath>
+      <itemPath>ws2812.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -81,6 +83,40 @@
                             FL="dist/default/production/PPSLIB.a"
                             PD="dist/default/production/PPSLIB.a"
                             DD="dist/default/debug/PPSLIB.a">
+              </makeArtifact>
+            </linkerLibProjectItem>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../../Libraries/INTLIB"
+                            CT="3"
+                            CN="default"
+                            AC="true"
+                            BL="true"
+                            WD="../../Libraries/INTLIB"
+                            BC="${MAKE}  -f Makefile CONF=default"
+                            DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
+                            CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"
+                            OP="dist/default/production/INTLIB.a"
+                            DOP="dist/default/debug/INTLIB.a"
+                            FL="dist/default/production/INTLIB.a"
+                            PD="dist/default/production/INTLIB.a"
+                            DD="dist/default/debug/INTLIB.a">
+              </makeArtifact>
+            </linkerLibProjectItem>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../../Libraries/DMALIB"
+                            CT="3"
+                            CN="default"
+                            AC="true"
+                            BL="true"
+                            WD="../../Libraries/DMALIB"
+                            BC="${MAKE}  -f Makefile CONF=default"
+                            DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
+                            CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"
+                            OP="dist/default/production/DMALIB.a"
+                            DOP="dist/default/debug/DMALIB.a"
+                            FL="dist/default/production/DMALIB.a"
+                            PD="dist/default/production/DMALIB.a"
+                            DD="dist/default/debug/DMALIB.a">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

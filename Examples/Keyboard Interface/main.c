@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include "config.h"
 #include "i2c.h"
+#include "ws2812.h"
 
 #include "../../common/mcp23x17.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
@@ -32,6 +33,12 @@ static I2C_Status_t MCP23017_Initialize(void);
 
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
+static WS2812_Strip_t keyboard_strip;
+static bool keyboard_strip_update_pending = false;
+
+#define KEYBOARD_LED_ROWS 5U
+#define KEYBOARD_LED_COLS 6U
+#define KEYBOARD_LED_COUNT (KEYBOARD_LED_ROWS * KEYBOARD_LED_COLS)
 
 uart_handle_t console_uart = {.port = UART_PORT_1,
     .high_speed_baud = false,
@@ -107,6 +114,56 @@ const char *key_names[] = {
     "Key 44",
     "Key 45",
 };
+
+static uint8_t scanCodeToLedIndex(uint8_t scan_code)
+{
+    uint8_t row = (uint8_t)(scan_code >> 4U);
+    uint8_t col = (uint8_t)(scan_code & 0x0FU);
+
+    if ((row >= KEYBOARD_LED_ROWS) || (col >= KEYBOARD_LED_COLS))
+    {
+        return 0xFFU;
+    }
+
+    return (uint8_t)((row * KEYBOARD_LED_COLS) + col);
+}
+
+static void keyboardStripAllOff(void)
+{
+    for (uint8_t i = 0U; i < KEYBOARD_LED_COUNT; i++)
+    {
+        keyboard_strip.colors[i] = (WS2812_Color_t){0U, 0U, 0U};
+    }
+}
+
+static void keyboardStripApplyPressedKeys(const uint8_t *pressed_keys, uint8_t num_pressed_keys)
+{
+    keyboardStripAllOff();
+
+    for (uint8_t i = 0U; i < num_pressed_keys; i++)
+    {
+        uint8_t led_index = scanCodeToLedIndex(pressed_keys[i]);
+        if (led_index < KEYBOARD_LED_COUNT)
+        {
+            keyboard_strip.colors[led_index] = (WS2812_Color_t){255U, 0U, 0U};
+        }
+    }
+
+    keyboard_strip_update_pending = true;
+}
+
+static void keyboardStripServicePendingUpdate(void)
+{
+    (void)WS2812_Service(&keyboard_strip);
+
+    if (keyboard_strip_update_pending && (WS2812_isBusy(&keyboard_strip) == WS2812_OK))
+    {
+        if (WS2812_Update(&keyboard_strip) == WS2812_OK)
+        {
+            keyboard_strip_update_pending = false;
+        }
+    }
+}
 
 /// @brief Scan the keyboard matrix connected to the MCP23017 I/O expander.
 /// @param pressed_keys A 16 element array to hold the scan codes of the
@@ -197,6 +254,8 @@ void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys) {
 
 void main(void) {
     char rx_char;
+    I2C_Status_t status;
+    WS2812_Status_t ws2812_status;
 
     SYSTEM_Initialize();
 
@@ -207,7 +266,7 @@ void main(void) {
 
     UART_SelectPrintfTarget(&console_uart);
     printf("Keyboard Scan example%s", CRLF);
-    I2C_Status_t status = I2C_Init(&i2c_host, I2C_CLOCK_MFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
+    status = I2C_Init(&i2c_host, I2C_CLOCK_MFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
     if (status != I2C_OK) {
         printf("I2C initialization failed with status: %d\n", status);
         while (1) {
@@ -221,6 +280,16 @@ void main(void) {
         }
     }
 
+    ws2812_status = WS2812_Init(&keyboard_strip, WS2812_PWM_MODULE_1, WS2812_PIN_RB5, KEYBOARD_LED_COUNT);
+    if (ws2812_status != WS2812_OK) {
+        printf("WS2812 initialization failed with status: %d%s", ws2812_status, CRLF);
+        while (1) {
+        }
+    }
+
+    keyboardStripAllOff();
+    keyboard_strip_update_pending = true;
+
     // Arm INT1 only after MCP configuration and initial GPIOA read have cleared
     // any startup interrupt condition on the active-low INT line.
     IPR6bits.INT1IP = 0; // Keep INT1 on low-priority vector (matches ISR declaration).
@@ -229,6 +298,7 @@ void main(void) {
 
     printf("Waiting on keyboard%s", CRLF);
     while (1) {
+        keyboardStripServicePendingUpdate();
 
         // The keyboard scanning is performed using the MCP23017 I/O expander.  The switches are organized
         // as a matrix of rows and columns.  The rows are connected to Port A of the MCP23017, which is
@@ -245,7 +315,7 @@ void main(void) {
         // The keyboard scan is performed as:
         // 1. For each column, set one pin low and the others high, starting at column 0.
         // 2. Read the row inputs.  If any row input is low, a key in that column is pressed.
-        // 3. The scan code is computed as (row * 4) + column, where row is the index of the low row
+        // 3. The scan code is computed as (row * 6) + column, where row is the index of the low row
         //    input and column is the index of the low column output.
         // 4. More than one key press is supported, and all key scan codes are reported in the order
         //    they are detected as an array.
@@ -278,6 +348,7 @@ void main(void) {
             char key_name[16]; // Buffer to hold the key name corresponding to the scan code
 
             scanKeyboard(pressed_keys, &num_pressed_keys);
+            keyboardStripApplyPressedKeys(pressed_keys, num_pressed_keys);
 
             if (num_pressed_keys > 0) {
                 printf("Number of pressed keys: %d%s", num_pressed_keys, CRLF);
@@ -320,6 +391,7 @@ void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void) {
 }
 
 /// @brief Keyboard key has been hit (IOC occurred on RB2/INT1).  This ISR is triggered by the
+
 /// external interrupt on RB2, which is connected to the INT1 pin of the MCP23017 I/O expander.
 /// The ISR sets a flag indicating that the value of Port B has changed, allowing the main loop
 /// to handle the I2C read and write operations. The ISR clears the interrupt flag for INT1 to
