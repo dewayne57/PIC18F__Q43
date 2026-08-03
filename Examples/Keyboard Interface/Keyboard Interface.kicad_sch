@@ -4854,6 +4854,15 @@
 		(uuid "eb75997b-9de3-43a9-b706-2dbd7e0557b5")
 	)
 	(bus_entry
+		(at 99.06 97.79)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f0ba18d5-763e-407f-a903-a460eafbd562")
+	)
+	(bus_entry
 		(at 34.29 115.57)
 		(size 2.54 2.54)
 		(stroke
@@ -5641,6 +5650,16 @@
 			(type default)
 		)
 		(uuid "4d753ecf-2a00-4caf-afa2-e01b6a097863")
+	)
+	(wire
+		(pts
+			(xy 88.9 97.79) (xy 99.06 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4e95972b-e9f5-4205-addb-6214c6ae7ad5")
 	)
 	(wire
 		(pts
@@ -7572,7 +7591,7 @@
 		)
 		(uuid "76cc0fa8-71a9-44f0-a51e-30b608ef1356")
 	)
-	(label "LEDS"
+	(label "PWM"
 		(at 39.37 173.99 90)
 		(effects
 			(font
@@ -7621,6 +7640,16 @@
 			(justify left bottom)
 		)
 		(uuid "d4fdc08c-eab7-422b-82d3-ddc847e229ce")
+	)
+	(label "PWM"
+		(at 93.98 97.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f2ec96e9-74f5-4955-877a-95aaa2209fc9")
 	)
 	(label "PGD"
 		(at 93.98 102.87 0)
