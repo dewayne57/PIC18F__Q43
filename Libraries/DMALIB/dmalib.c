@@ -25,7 +25,9 @@
 bool DMA_IsTransferInProgress(const uint8_t channel)
 {
     DMA_SelectChannel(channel);
-    return (DMAnCON0bits.DGO != 0U);
+    // Some peripherals leave DGO asserted after the final trigger edge; SCNT is
+    // the reliable indication that source bytes are still pending.
+    return ((DMAnCON0bits.DGO != 0U) && (DMAnSCNT != 0U));
 }
 
 /// @brief Selects the DMA channel to be used.

@@ -26,6 +26,8 @@
 #include "ws2812.h"
 
 #include "../../common/mcp23x17.h"
+#include "../../Libraries/DMALIB/dmalib.h"
+#include "../../Libraries/PPSLIB/pps.h"
 #include "../../Libraries/UARTLIB/uartlib.h"
 // #include "../../Libraries/I2CLIB/i2clib.h"
 
@@ -34,11 +36,12 @@ static I2C_Status_t MCP23017_Initialize(void);
 static char console_tx_buffer[128];
 static char console_rx_buffer[128];
 static WS2812_Strip_t keyboard_strip;
-static bool keyboard_strip_update_pending = false;
 
 #define KEYBOARD_LED_ROWS 5U
 #define KEYBOARD_LED_COLS 6U
 #define KEYBOARD_LED_COUNT (KEYBOARD_LED_ROWS * KEYBOARD_LED_COLS)
+#define WS2812_ENABLE_SCOPE_SELF_TEST 0U
+#define WS2812_BUSY_RECOVERY_THRESHOLD 100000UL
 
 uart_handle_t console_uart = {.port = UART_PORT_1,
     .high_speed_baud = false,
@@ -115,6 +118,10 @@ const char *key_names[] = {
     "Key 45",
 };
 
+/// @brief Converts a scan code to the corresponding LED index in the 
+/// keyboard_strip.colors array.
+/// @param scan_code The key scan code.
+/// @return  The led index. 
 static uint8_t scanCodeToLedIndex(uint8_t scan_code)
 {
     uint8_t row = (uint8_t)(scan_code >> 4U);
@@ -128,40 +135,12 @@ static uint8_t scanCodeToLedIndex(uint8_t scan_code)
     return (uint8_t)((row * KEYBOARD_LED_COLS) + col);
 }
 
-static void keyboardStripAllOff(void)
+/// @brief Turns all LEDs in the keyboard_strip to off (0, 0, 0).
+static void keyboardLEDsAllOff(WS2812_Strip_t *strip)
 {
     for (uint8_t i = 0U; i < KEYBOARD_LED_COUNT; i++)
     {
-        keyboard_strip.colors[i] = (WS2812_Color_t){0U, 0U, 0U};
-    }
-}
-
-static void keyboardStripApplyPressedKeys(const uint8_t *pressed_keys, uint8_t num_pressed_keys)
-{
-    keyboardStripAllOff();
-
-    for (uint8_t i = 0U; i < num_pressed_keys; i++)
-    {
-        uint8_t led_index = scanCodeToLedIndex(pressed_keys[i]);
-        if (led_index < KEYBOARD_LED_COUNT)
-        {
-            keyboard_strip.colors[led_index] = (WS2812_Color_t){255U, 0U, 0U};
-        }
-    }
-
-    keyboard_strip_update_pending = true;
-}
-
-static void keyboardStripServicePendingUpdate(void)
-{
-    (void)WS2812_Service(&keyboard_strip);
-
-    if (keyboard_strip_update_pending && (WS2812_isBusy(&keyboard_strip) == WS2812_OK))
-    {
-        if (WS2812_Update(&keyboard_strip) == WS2812_OK)
-        {
-            keyboard_strip_update_pending = false;
-        }
+        strip->colors[i] = (WS2812_Color_t){0U, 0U, 0U};
     }
 }
 
@@ -287,8 +266,8 @@ void main(void) {
         }
     }
 
-    keyboardStripAllOff();
-    keyboard_strip_update_pending = true;
+    printf("Turning all keyboard LEDs off%s", CRLF);
+    keyboardLEDsAllOff(&keyboard_strip);
 
     // Arm INT1 only after MCP configuration and initial GPIOA read have cleared
     // any startup interrupt condition on the active-low INT line.
@@ -298,8 +277,6 @@ void main(void) {
 
     printf("Waiting on keyboard%s", CRLF);
     while (1) {
-        keyboardStripServicePendingUpdate();
-
         // The keyboard scanning is performed using the MCP23017 I/O expander.  The switches are organized
         // as a matrix of rows and columns.  The rows are connected to Port A of the MCP23017, which is
         // configured as inputs with pull-ups.  The columns are connected to Port B of the MCP23017, which
@@ -348,7 +325,6 @@ void main(void) {
             char key_name[16]; // Buffer to hold the key name corresponding to the scan code
 
             scanKeyboard(pressed_keys, &num_pressed_keys);
-            keyboardStripApplyPressedKeys(pressed_keys, num_pressed_keys);
 
             if (num_pressed_keys > 0) {
                 printf("Number of pressed keys: %d%s", num_pressed_keys, CRLF);
@@ -369,6 +345,28 @@ void main(void) {
                     printf("%s ", key_name);
                 }
                 printf("%s", CRLF);
+
+                keyboardLEDsAllOff(&keyboard_strip);
+
+                for (uint8_t i  = 0; i < num_pressed_keys; i++) {
+                    uint8_t led_index = scanCodeToLedIndex(pressed_keys[i]);
+                    printf("LED index is %d for scan code 0x%02X%s", led_index, pressed_keys[i], CRLF);
+                    keyboard_strip.colors[led_index] = (WS2812_Color_t){255U, 0U, 0U}; // RED
+                }
+
+                printf("Checking if WS2812 strip is busy before updating...%s", CRLF);
+                if (WS2812_isBusy(&keyboard_strip) == WS2812_OK)
+                {
+                    printf("WS2812 strip is ready for update.%s", CRLF);
+                    ws2812_status = WS2812_Update(&keyboard_strip);
+                    if (ws2812_status != WS2812_OK) {
+                        printf("WS2812 update failed with status: %d%s", ws2812_status, CRLF);
+                    }
+                }
+                else
+                {
+                    printf("WS2812 strip busy, update skipped.%s", CRLF);
+                }
             }
         }
     }
@@ -388,6 +386,10 @@ void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void) {
 
 void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void) {
     UART_HandleTxInterrupt(&console_uart);
+}
+
+void __interrupt(irq(IRQ_DMA1SCNT), low_priority) WS2812_DMA1SCNT_ISR(void) {
+    WS2812_OnDmaTransferCompleteISR();
 }
 
 /// @brief Keyboard key has been hit (IOC occurred on RB2/INT1).  This ISR is triggered by the

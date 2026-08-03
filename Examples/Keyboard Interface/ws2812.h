@@ -129,4 +129,8 @@ WS2812_Status_t WS2812_Clear(WS2812_Strip_t *strip);
 /// @return  WS2812_Status_t indicating if the strip is busy or not.
 WS2812_Status_t WS2812_isBusy(WS2812_Strip_t *strip);
 
+/// @brief ISR completion hook for WS2812 DMA source-count completion.
+/// @note Call this from the DMA1SCNT interrupt handler.
+void WS2812_OnDmaTransferCompleteISR(void);
+
 #endif // WS2812_H
