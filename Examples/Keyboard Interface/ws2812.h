@@ -29,9 +29,14 @@
 // Define the maximum number of LEDs supported by the WS2812 strip
 #define WS2812_MAX_LEDS 100
 
-#define WS2812_0_DUTY_CYCLE 0.3f // 30% duty cycle for logical '0'
-#define WS2812_1_DUTY_CYCLE 0.7f // 70% duty cycle for logical '1'
-#define WS2812_RESET_TIME_US 50  // Reset time in microseconds for the WS2812 strip
+// 30% duty cycle for logical '0'
+#define WS2812_0_DUTY_CYCLE 0.3f
+// 70% duty cycle for logical '1'
+#define WS2812_1_DUTY_CYCLE 0.7f
+// Reset time in microseconds for the WS2812 strip
+#define WS2812_RESET_TIME_US 50
+// Left-aligned PWM Mode
+#define WS2812_PWM_MODE 0U
 
 typedef enum
 {
@@ -39,6 +44,9 @@ typedef enum
     WS2812_PWM_MODULE_2 = 1, // PWM module 2
     WS2812_PWM_MODULE_3 = 2  // PWM module 3
 } WS2812_PWM_Module_t;       // Placeholder for PWM module enumeration, to be defined as needed
+
+// The maximum number of PWM modules, and therefore strips, that are supported.
+#define WS2812_MAX_PWM_MODULES 3U
 
 // Define an enumeration for each of the possible data pins for the WS2812 strip
 typedef enum
@@ -61,11 +69,12 @@ typedef enum
     WS2812_PIN_RC7 = 15  // RC7 pin for WS2812 data
 } WS2812_DATA_PIN;
 
-// Define a structure to hold the color values for each LED in the WS2812 strip
+// Define a structure to hold the color values for each LED in the WS2812 strip.
+// Note, the WS2812 protocol expects color data in the order of green, red, and blue.
 typedef struct
 {
-    uint8_t red;   // Red color value (0-255)
     uint8_t green; // Green color value (0-255)
+    uint8_t red;   // Red color value (0-255)
     uint8_t blue;  // Blue color value (0-255)
 } WS2812_Color_t;
 
@@ -98,8 +107,8 @@ typedef enum
 /// @param dataPin  The data pin to use for the WS2812 strip.
 /// @param numLEDs  The number of LEDs in the strip.
 /// @return WS2812_Status_t indicating success or failure of the operation.
-WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module, 
-    WS2812_DATA_PIN dataPin, uint16_t numLEDs);
+WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
+                            WS2812_DATA_PIN dataPin, uint16_t numLEDs);
 
 /// @brief Sets the color of the specified LED in the WS2812 strip.
 /// @param strip  The WS2812 strip structure.
@@ -113,12 +122,6 @@ WS2812_Status_t WS2812_SetColor(WS2812_Strip_t *strip, uint16_t index, WS2812_Co
 /// @return  WS2812_Status_t indicating success or failure of the operation.
 WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip);
 
-/// @brief Services a pending WS2812 DMA transfer and clears the busy state when complete.
-/// @note Call this periodically from the main loop while a transfer is active.
-/// @param strip  The WS2812 strip structure to service.
-/// @return  WS2812_Status_t indicating whether the strip is busy or idle.
-WS2812_Status_t WS2812_Service(WS2812_Strip_t *strip);
-
 /// @brief Clears all LEDs to a color of (0, 0, 0) and updates the strip.
 /// @param strip  The WS2812 strip structure to clear.
 /// @return  WS2812_Status_t indicating success or failure of the operation.
@@ -128,9 +131,5 @@ WS2812_Status_t WS2812_Clear(WS2812_Strip_t *strip);
 /// @param strip  The WS2812 strip structure to check.
 /// @return  WS2812_Status_t indicating if the strip is busy or not.
 WS2812_Status_t WS2812_isBusy(WS2812_Strip_t *strip);
-
-/// @brief ISR completion hook for WS2812 DMA source-count completion.
-/// @note Call this from the DMA1SCNT interrupt handler.
-void WS2812_OnDmaTransferCompleteISR(void);
 
 #endif // WS2812_H

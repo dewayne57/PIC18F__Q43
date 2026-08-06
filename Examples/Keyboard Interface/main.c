@@ -44,33 +44,33 @@ static WS2812_Strip_t keyboard_strip;
 #define WS2812_BUSY_RECOVERY_THRESHOLD 100000UL
 
 uart_handle_t console_uart = {.port = UART_PORT_1,
-    .high_speed_baud = false,
-    .baud_rate = 57600U,
-    .fosc = _XTAL_FREQ,
-    .data_bits = 8U,
-    .parity = UART_PARITY_NONE,
-    .stop_bits = UART_STOP_BITS_1,
-    .flow_control = UART_FLOW_NONE,
-    .tx_pin = UART_PPS_PIN_RB0,
-    .rx_pin = UART_PPS_PIN_RB1,
-    .rts_pin = UART_PPS_PIN_NONE,
-    .cts_pin = UART_PPS_PIN_NONE,
-    .isr_mode = UART_ISR_VECTORED,
-    .tx_buffer = console_tx_buffer,
-    .tx_buffer_size = sizeof (console_tx_buffer),
-    .rx_buffer = console_rx_buffer,
-    .rx_buffer_size = sizeof (console_rx_buffer),
-    .tx_head = 0U,
-    .tx_tail = 0U,
-    .rx_head = 0U,
-    .rx_tail = 0U,
-    .initialized = false};
+                              .high_speed_baud = false,
+                              .baud_rate = 57600U,
+                              .fosc = _XTAL_FREQ,
+                              .data_bits = 8U,
+                              .parity = UART_PARITY_NONE,
+                              .stop_bits = UART_STOP_BITS_1,
+                              .flow_control = UART_FLOW_NONE,
+                              .tx_pin = UART_PPS_PIN_RB0,
+                              .rx_pin = UART_PPS_PIN_RB1,
+                              .rts_pin = UART_PPS_PIN_NONE,
+                              .cts_pin = UART_PPS_PIN_NONE,
+                              .isr_mode = UART_ISR_VECTORED,
+                              .tx_buffer = console_tx_buffer,
+                              .tx_buffer_size = sizeof(console_tx_buffer),
+                              .rx_buffer = console_rx_buffer,
+                              .rx_buffer_size = sizeof(console_rx_buffer),
+                              .tx_head = 0U,
+                              .tx_tail = 0U,
+                              .rx_head = 0U,
+                              .rx_tail = 0U,
+                              .initialized = false};
 
 // @brief I2C host handle for the demonstration project.
 I2C_Handle_t i2c_host;
-uint8_t i2c_buffer[16]; // Buffer for I2C transactions
+uint8_t i2c_buffer[16];                     // Buffer for I2C transactions
 volatile uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
-volatile bool scan_needed = false; // Flag indicating that a scan of the keyboard
+volatile bool scan_needed = false;          // Flag indicating that a scan of the keyboard
 // is needed due to an external interrupt.
 
 // @brief this table of scan codes is used to map the row and column of the keyboard
@@ -81,8 +81,7 @@ const uint8_t scan_codes[] = {
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
     0x20, 0x21, 0x22, 0x23, 0x24, 0x25,
     0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
-    0x40, 0x41, 0x42, 0x43, 0x44, 0x45
-};
+    0x40, 0x41, 0x42, 0x43, 0x44, 0x45};
 
 // @brief this table of key names is used to map the scan code to a specific key name.
 const char *key_names[] = {
@@ -118,10 +117,10 @@ const char *key_names[] = {
     "Key 45",
 };
 
-/// @brief Converts a scan code to the corresponding LED index in the 
+/// @brief Converts a scan code to the corresponding LED index in the
 /// keyboard_strip.colors array.
 /// @param scan_code The key scan code.
-/// @return  The led index. 
+/// @return  The led index.
 static uint8_t scanCodeToLedIndex(uint8_t scan_code)
 {
     uint8_t row = (uint8_t)(scan_code >> 4U);
@@ -150,7 +149,8 @@ static void keyboardLEDsAllOff(WS2812_Strip_t *strip)
 /// valid.  The rest of the array will be unchanged.
 /// @param num_pressed_keys The number of pressed keys detected (max 16).
 
-void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys) {
+void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys)
+{
     *num_pressed_keys = 0; // Reset the count of pressed keys
     I2C_Status_t status;
 
@@ -164,39 +164,46 @@ void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys) {
     // first key because the scan completes before the other contacts close.
     __delay_ms(20);
 
-    for (uint8_t col = 0; col < 6; col++) {
+    for (uint8_t col = 0; col < 6; col++)
+    {
         // Set the current column low and all others high
-        uint8_t col_value = (uint8_t) ~(1 << col); // Active low for the current column
+        uint8_t col_value = (uint8_t)~(1 << col); // Active low for the current column
         i2c_buffer[0] = BANKED_GPIOB;
         i2c_buffer[1] = col_value;
         I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
-        while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY) {
+        while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+        {
             // Wait for the I2C bus to become idle
         }
-        if (status != I2C_OK) {
+        if (status != I2C_OK)
+        {
             printf("I2C bus error after writing to GPIOB: %d%s", status, CRLF);
             return;
         }
 
         // Read the row inputs from Port A
-        I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, (uint8_t *) & s_last_porta_value, 1U);
-        while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY) {
+        I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, (uint8_t *)&s_last_porta_value, 1U);
+        while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+        {
             // Wait for the I2C bus to become idle
         }
-        if (status != I2C_OK) {
+        if (status != I2C_OK)
+        {
             printf("I2C bus error after reading GPIOA: %d%s", status, CRLF);
             return;
         }
 
         // Check each row for a pressed key (active low)
-        for (uint8_t row = 0; row < 5; row++) {
+        for (uint8_t row = 0; row < 5; row++)
+        {
             if (!(s_last_porta_value & (1 << row))) // If the row input is low
             {
                 uint8_t scan_code = scan_codes[row * 6 + col];
                 pressed_keys[*num_pressed_keys] = scan_code;
                 (*num_pressed_keys)++;
 
-                if (*num_pressed_keys >= 16) {
+                if (*num_pressed_keys >= 16)
+                {
                     return; // Stop if we have detected the maximum number of keys
                 }
             }
@@ -208,13 +215,15 @@ void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys) {
     i2c_buffer[0] = BANKED_GPIOB;
     i2c_buffer[1] = 0x00;
     I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
-    while (I2C_IsBusy(&i2c_host) == I2C_BUSY) {
+    while (I2C_IsBusy(&i2c_host) == I2C_BUSY)
+    {
     }
 
     // Read GPIOA to flush the MCP23017 interrupt latch (INTA de-asserts
     // only after GPIOA or INTCAPA is read, not after reading INTFA).
     I2C_ReadRegister(&i2c_host, MCP23017_ADDR, BANKED_GPIOA, i2c_buffer, 1);
-    while (I2C_IsBusy(&i2c_host) == I2C_BUSY) {
+    while (I2C_IsBusy(&i2c_host) == I2C_BUSY)
+    {
     }
 
     // Re-arm PIC INT1 with a clean flag.
@@ -231,38 +240,47 @@ void scanKeyboard(uint8_t *pressed_keys, uint8_t *num_pressed_keys) {
 ///       external events. The main loop remains responsive, allowing for I2C host operations
 ///       and UART communication.
 
-void main(void) {
+void main(void)
+{
     char rx_char;
     I2C_Status_t status;
     WS2812_Status_t ws2812_status;
 
     SYSTEM_Initialize();
 
-    if (!UART_Open(&console_uart)) {
-        while (1) {
+    if (!UART_Open(&console_uart))
+    {
+        while (1)
+        {
         }
     }
 
     UART_SelectPrintfTarget(&console_uart);
     printf("Keyboard Scan example%s", CRLF);
     status = I2C_Init(&i2c_host, I2C_CLOCK_MFINTOSC, I2C_MODE_MASTER_7, 0U, NONE);
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         printf("I2C initialization failed with status: %d\n", status);
-        while (1) {
+        while (1)
+        {
         }
     }
 
     status = MCP23017_Initialize();
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         printf("MCP23017 initialization failed with status: %d\n", status);
-        while (1) {
+        while (1)
+        {
         }
     }
 
     ws2812_status = WS2812_Init(&keyboard_strip, WS2812_PWM_MODULE_1, WS2812_PIN_RB5, KEYBOARD_LED_COUNT);
-    if (ws2812_status != WS2812_OK) {
+    if (ws2812_status != WS2812_OK)
+    {
         printf("WS2812 initialization failed with status: %d%s", ws2812_status, CRLF);
-        while (1) {
+        while (1)
+        {
         }
     }
 
@@ -276,7 +294,8 @@ void main(void) {
     PIE6bits.INT1IE = 1;
 
     printf("Waiting on keyboard%s", CRLF);
-    while (1) {
+    while (1)
+    {
         // The keyboard scanning is performed using the MCP23017 I/O expander.  The switches are organized
         // as a matrix of rows and columns.  The rows are connected to Port A of the MCP23017, which is
         // configured as inputs with pull-ups.  The columns are connected to Port B of the MCP23017, which
@@ -317,27 +336,32 @@ void main(void) {
         // key is pressed and released, and then using that information to determine what actions are
         // needed.
 
-        if (scan_needed) {
+        if (scan_needed)
+        {
             scan_needed = false;
 
-            uint8_t pressed_keys[16]; // Array to hold the scan codes of the pressed keys
+            uint8_t pressed_keys[16];     // Array to hold the scan codes of the pressed keys
             uint8_t num_pressed_keys = 0; // Number of pressed keys detected
-            char key_name[16]; // Buffer to hold the key name corresponding to the scan code
+            char key_name[16];            // Buffer to hold the key name corresponding to the scan code
 
             scanKeyboard(pressed_keys, &num_pressed_keys);
 
-            if (num_pressed_keys > 0) {
+            if (num_pressed_keys > 0)
+            {
                 printf("Number of pressed keys: %d%s", num_pressed_keys, CRLF);
                 printf("Pressed keys scan codes: ");
-                for (uint8_t i = 0; i < num_pressed_keys; i++) {
+                for (uint8_t i = 0; i < num_pressed_keys; i++)
+                {
                     printf("0x%02X ", pressed_keys[i]);
                 }
                 printf("%s", CRLF);
                 printf("Pressed keys names: ");
                 for (uint8_t i = 0; i < num_pressed_keys; i++)
                 {
-                    for (uint8_t j = 0; j < sizeof(scan_codes) / sizeof(scan_codes[0]); j++) {
-                        if (pressed_keys[i] == scan_codes[j]) {
+                    for (uint8_t j = 0; j < sizeof(scan_codes) / sizeof(scan_codes[0]); j++)
+                    {
+                        if (pressed_keys[i] == scan_codes[j])
+                        {
                             snprintf(key_name, sizeof(key_name), "%s", key_names[j]);
                             break;
                         }
@@ -348,7 +372,8 @@ void main(void) {
 
                 keyboardLEDsAllOff(&keyboard_strip);
 
-                for (uint8_t i  = 0; i < num_pressed_keys; i++) {
+                for (uint8_t i = 0; i < num_pressed_keys; i++)
+                {
                     uint8_t led_index = scanCodeToLedIndex(pressed_keys[i]);
                     printf("LED index is %d for scan code 0x%02X%s", led_index, pressed_keys[i], CRLF);
                     keyboard_strip.colors[led_index] = (WS2812_Color_t){255U, 0U, 0U}; // RED
@@ -359,7 +384,8 @@ void main(void) {
                 {
                     printf("WS2812 strip is ready for update.%s", CRLF);
                     ws2812_status = WS2812_Update(&keyboard_strip);
-                    if (ws2812_status != WS2812_OK) {
+                    if (ws2812_status != WS2812_OK)
+                    {
                         printf("WS2812 update failed with status: %d%s", ws2812_status, CRLF);
                     }
                 }
@@ -375,25 +401,20 @@ void main(void) {
 /// @brief UART1 RX ISR (vectored)
 /// @param  None
 /// @return None
-
-void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void) {
+void __interrupt(irq(IRQ_U1RX), low_priority) UART1_RX_ISR(void)
+{
     UART_HandleRxInterrupt(&console_uart);
 }
 
 /// @brief UART1 TX ISR (vectored)
 /// @param  None
 /// @return None
-
-void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void) {
+void __interrupt(irq(IRQ_U1TX), low_priority) UART1_TX_ISR(void)
+{
     UART_HandleTxInterrupt(&console_uart);
 }
 
-void __interrupt(irq(IRQ_DMA1SCNT), low_priority) WS2812_DMA1SCNT_ISR(void) {
-    WS2812_OnDmaTransferCompleteISR();
-}
-
 /// @brief Keyboard key has been hit (IOC occurred on RB2/INT1).  This ISR is triggered by the
-
 /// external interrupt on RB2, which is connected to the INT1 pin of the MCP23017 I/O expander.
 /// The ISR sets a flag indicating that the value of Port B has changed, allowing the main loop
 /// to handle the I2C read and write operations. The ISR clears the interrupt flag for INT1 to
@@ -404,8 +425,8 @@ void __interrupt(irq(IRQ_DMA1SCNT), low_priority) WS2812_DMA1SCNT_ISR(void) {
 /// @return None
 /// @note This simply sets a flag to indicate that the port B value has changed. The main loop
 /// will handle the I2C read and write operations.
-
-void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void) {
+void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void)
+{
     scan_needed = true; // Indicate that a scan of the keyboard is needed due to an external interrupt.
     PIR6bits.INT1IF = 0;
 }
@@ -414,8 +435,8 @@ void __interrupt(irq(IRQ_INT1), low_priority) Extern_ISR(void) {
 /// The MCP23017 is configured in banked addressing mode so Port A registers are
 /// contiguous within one block and Port B registers are contiguous within another.
 /// @return i2c_status_t indicating success or error
-
-static I2C_Status_t MCP23017_Initialize() {
+static I2C_Status_t MCP23017_Initialize()
+{
     uint8_t iocon = 0x84;
     I2C_Status_t status;
 
@@ -432,14 +453,17 @@ static I2C_Status_t MCP23017_Initialize() {
     i2c_buffer[0] = IOCON;
     i2c_buffer[1] = iocon;
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         return status;
     }
 
-    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY) {
+    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+    {
         // Wait for the I2C bus to become idle
     }
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         printf("I2C bus error after writing to IOCON: %d%s", status, CRLF);
         return status;
     }
@@ -451,58 +475,67 @@ static I2C_Status_t MCP23017_Initialize() {
     i2c_buffer[0] = BANKED_GPPUA;
     i2c_buffer[1] = 0xFF; // GPPUA: enable all pull-ups
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 2);
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         return status;
     }
-    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY) {
+    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+    {
         // Wait for the I2C bus to become idle
     }
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         return status;
     }
 
     // Configure Port A in one contiguous banked transfer.
     i2c_buffer[0] = BANKED_IODIRA;
-    i2c_buffer[1] = 0xFF; // IODIRA: inputs
-    i2c_buffer[2] = 0x00; // IPOLA
-    i2c_buffer[3] = 0xFF; // GPINTENA: arm interrupt-on-change (pull-ups already active)
-    i2c_buffer[4] = 0x00; // DEFVALA
-    i2c_buffer[5] = 0x00; // INTCONA
+    i2c_buffer[1] = 0xFF;  // IODIRA: inputs
+    i2c_buffer[2] = 0x00;  // IPOLA
+    i2c_buffer[3] = 0xFF;  // GPINTENA: arm interrupt-on-change (pull-ups already active)
+    i2c_buffer[4] = 0x00;  // DEFVALA
+    i2c_buffer[5] = 0x00;  // INTCONA
     i2c_buffer[6] = iocon; // IOCON
-    i2c_buffer[7] = 0xFF; // GPPUA (redundant but keeps block self-consistent)
+    i2c_buffer[7] = 0xFF;  // GPPUA (redundant but keeps block self-consistent)
 
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 8);
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         return status;
     }
-    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY) {
+    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+    {
         // Wait for the I2C bus to become idle
     }
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         printf("I2C bus error after writing to IOCON: %d%s", status, CRLF);
         return status;
     }
 
     // Configure Port B in one contiguous banked transfer.
     i2c_buffer[0] = BANKED_IODIRB;
-    i2c_buffer[1] = 0x00; // IODIRB: outputs
-    i2c_buffer[2] = 0x00; // IPOLB
-    i2c_buffer[3] = 0x00; // GPINTENB
-    i2c_buffer[4] = 0x00; // DEFVALB
-    i2c_buffer[5] = 0x00; // INTCONB
+    i2c_buffer[1] = 0x00;  // IODIRB: outputs
+    i2c_buffer[2] = 0x00;  // IPOLB
+    i2c_buffer[3] = 0x00;  // GPINTENB
+    i2c_buffer[4] = 0x00;  // DEFVALB
+    i2c_buffer[5] = 0x00;  // INTCONB
     i2c_buffer[6] = iocon; // IOCON
-    i2c_buffer[7] = 0x00; // GPPUB
-    i2c_buffer[8] = 0x00; // INTFB (write ignored)
-    i2c_buffer[9] = 0x00; // INTCAPB (write ignored)
+    i2c_buffer[7] = 0x00;  // GPPUB
+    i2c_buffer[8] = 0x00;  // INTFB (write ignored)
+    i2c_buffer[9] = 0x00;  // INTCAPB (write ignored)
     i2c_buffer[10] = 0x00; // GPIOB
     status = I2C_Write(&i2c_host, MCP23017_ADDR, i2c_buffer, 11);
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         return status;
     }
-    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY) {
+    while ((status = I2C_IsBusy(&i2c_host)) == I2C_BUSY)
+    {
         // Wait for the I2C bus to become idle
     }
-    if (status != I2C_OK) {
+    if (status != I2C_OK)
+    {
         printf("I2C bus error after writing to IOCON: %d%s", status, CRLF);
         return status;
     }
