@@ -376,13 +376,21 @@ void main(void)
                 {
                     uint8_t led_index = scanCodeToLedIndex(pressed_keys[i]);
                     printf("LED index is %d for scan code 0x%02X%s", led_index, pressed_keys[i], CRLF);
-                    keyboard_strip.colors[led_index] = (WS2812_Color_t){255U, 0U, 0U}; // RED
+                    WS2812_SetColor(&keyboard_strip, led_index, (WS2812_Color_t){0U, 255U, 0U});
                 }
 
-                printf("Checking if WS2812 strip is busy before updating...%s", CRLF);
                 if (WS2812_isBusy(&keyboard_strip) == WS2812_OK)
                 {
-                    printf("WS2812 strip is ready for update.%s", CRLF);
+                    printf("Color Settings for LEDS are:%s", CRLF);
+                    for (uint8_t i = 0; i < WS2812_MAX_LEDS; i++)
+                    {
+                        printf("LED %d color: G=%d R=%d B=%d%s", i,
+                               keyboard_strip.colors[i].green,
+                               keyboard_strip.colors[i].red,
+                               keyboard_strip.colors[i].blue,
+                               CRLF);
+                    }
+                    printf("WS2812 strip is being updated.%s", CRLF);
                     ws2812_status = WS2812_Update(&keyboard_strip);
                     if (ws2812_status != WS2812_OK)
                     {

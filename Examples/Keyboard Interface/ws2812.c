@@ -12,6 +12,7 @@
 #include <xc.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "config.h"
 #include "ws2812.h"
@@ -36,7 +37,30 @@
 #define WS2812_DMA_BUFFER_SIZE ((uint16_t)(WS2812_MAX_LEDS * WS2812_BYTES_PER_LED + WS2812_RESET_PERIODS))
 
 static uint8_t ws2812_dmaBuffer[WS2812_DMA_BUFFER_SIZE];
-static WS2812_Strip_t *s_activeStrip[WS2812_MAX_PWM_MODULES] = { (WS2812_Strip_t *)0 };
+static WS2812_Strip_t *s_activeStrip[WS2812_MAX_PWM_MODULES] = {(WS2812_Strip_t *)0};
+
+static void debug(uint8_t led, bool state)
+{
+    TRISDbits.TRISD0 = 0U; // Set as output
+    TRISDbits.TRISD1 = 0U; // Set as output
+    TRISDbits.TRISD2 = 0U; // Set as output
+    TRISDbits.TRISD3 = 0U; // Set as output
+    switch (led)
+    {
+    case 0:
+        PORTDbits.RD0 = state ? 0 : 1;
+        break;
+    case 1:
+        PORTDbits.RD1 = state ? 0 : 1;
+        break;
+    case 2:
+        PORTDbits.RD2 = state ? 0 : 1;
+        break;
+    case 3:
+        PORTDbits.RD3 = state ? 0 : 1;
+        break;
+    }
+}
 
 /// @brief Sets up the PWM data pin for the WS2812 strip.
 /// @param dataPin The data pin to configure for PWM output.
@@ -147,30 +171,53 @@ static uint8_t getPWMPeriodTrigger(WS2812_PWM_Module_t module)
     }
 }
 
+/// @brief Disables the specified PWM module.
+/// @param module   The PWM module to disable.
+/// @return None
 static void disablePWMModule(WS2812_PWM_Module_t module)
 {
+    debug(0, false); // Indicate that PWM module is being disabled
     switch (module)
     {
     case WS2812_PWM_MODULE_1:
         PWM1CONbits.EN = 0U;
         PWM1GIEbits.S1P1IE = 0U;
         PWM1GIRbits.S1P1IF = 0U;
-        PWM1S1P1L = 0U;
-        PWM1S1P1H = 0U;
         break;
     case WS2812_PWM_MODULE_2:
         PWM2CONbits.EN = 0U;
         PWM2GIEbits.S1P1IE = 0U;
         PWM2GIRbits.S1P1IF = 0U;
-        PWM2S1P1L = 0U;
-        PWM2S1P1H = 0U;
         break;
     case WS2812_PWM_MODULE_3:
         PWM3CONbits.EN = 0U;
         PWM3GIEbits.S1P1IE = 0U;
         PWM3GIRbits.S1P1IF = 0U;
-        PWM3S1P1L = 0U;
-        PWM3S1P1H = 0U;
+        break;
+    default:
+        break;
+    }
+}
+
+/// @brief Enables the specified PWM module.
+/// @param module The PWM module to enable.
+/// @return None
+static void enablePWMModule(WS2812_PWM_Module_t module)
+{
+    debug(0, true); // Indicate that PWM module is being enabled
+    switch (module)
+    {
+    case WS2812_PWM_MODULE_1:
+        PWM1GIEbits.S1P1IE = 1U;
+        PWM1CONbits.EN = 1U;
+        break;
+    case WS2812_PWM_MODULE_2:
+        PWM2GIEbits.S1P1IE = 1U;
+        PWM2CONbits.EN = 1U;
+        break;
+    case WS2812_PWM_MODULE_3:
+        PWM3GIEbits.S1P1IE = 1U;
+        PWM3CONbits.EN = 1U;
         break;
     default:
         break;
@@ -179,6 +226,7 @@ static void disablePWMModule(WS2812_PWM_Module_t module)
 
 static void finalizePWMTransfer(WS2812_Strip_t *strip, volatile uint8_t *dutyRegister)
 {
+    debug(1, true); // Indicate finalize called
     DMA_SelectChannel(WS2812_DMA_CHANNEL);
     DMAnCON0bits.DGO = 0U;
     DMAnCON0bits.EN = 0U;
@@ -188,7 +236,8 @@ static void finalizePWMTransfer(WS2812_Strip_t *strip, volatile uint8_t *dutyReg
     {
         strip->busy = false;
     }
-
+    disablePWMModule(strip->pwmModule);
+    debug(1, false); // Indicate finalize completed
     s_activeStrip[strip->pwmModule] = (WS2812_Strip_t *)0;
 }
 
@@ -263,13 +312,13 @@ static WS2812_Status_t configurePWMModule(WS2812_PWM_Module_t module)
     return WS2812_OK;
 }
 
-/// @brief The waveform buffer is actually an array of duty cycle times for each bit to be 
-/// sent to the WS2812's in the strip.  Each 1 bit in the color value is represented by a 
-/// @note The specific duty cycle for a '1' bit is defined by WS2812_DUTY_1_TICKS and for 
+/// @brief The waveform buffer is actually an array of duty cycle times for each bit to be
+/// sent to the WS2812's in the strip.  Each 1 bit in the color value is represented by a
+/// @note The specific duty cycle for a '1' bit is defined by WS2812_DUTY_1_TICKS and for
 /// a '0' bit by WS2812_DUTY_0_TICKS.
 /// @note The buffer should be large enough to hold all the duty cycles for the entire strip.
-/// This means for a 30 LED strip, where there are 24 bits for the colors per LED, the 
-/// waveform buffer should have at least 30 * 24 entries, plus additional entries for the 
+/// This means for a 30 LED strip, where there are 24 bits for the colors per LED, the
+/// waveform buffer should have at least 30 * 24 entries, plus additional entries for the
 /// reset period.
 /// @param strip The WS2812 strip structure to have the waveform calculated.
 /// @param buffer The buffer to store the waveform duty cycle values.
@@ -283,7 +332,7 @@ static uint16_t buildWaveformBuffer(const WS2812_Strip_t *strip, uint8_t *buffer
         const WS2812_Color_t color = strip->colors[led];
         const uint8_t colorOrder[3] = {color.green, color.red, color.blue};
 
-        // Output duty cycle times for each color channel (green, red, blue) of the 
+        // Output duty cycle times for each color channel (green, red, blue) of the
         // current LED.
         for (uint8_t channel = 0U; channel < 3U; channel++)
         {
@@ -295,9 +344,8 @@ static uint16_t buildWaveformBuffer(const WS2812_Strip_t *strip, uint8_t *buffer
                     return 0U;
                 }
 
-                buffer[bufferIndex++] = ((colorOrder[channel] & (uint8_t)(1U << bit)) != 0U)
-                                            ? WS2812_DUTY_1_TICKS
-                                            : WS2812_DUTY_0_TICKS;
+                uint8_t bitValue = (colorOrder[channel] & (uint8_t)(1U << bit)) != 0U;
+                buffer[bufferIndex++] = bitValue ? WS2812_DUTY_1_TICKS : WS2812_DUTY_0_TICKS;
             }
         }
     }
@@ -313,10 +361,24 @@ static uint16_t buildWaveformBuffer(const WS2812_Strip_t *strip, uint8_t *buffer
         buffer[bufferIndex++] = 0U;
     }
 
+    // Print the waveform buffer in hex, 40 bytes per line, until the end of the 
+    // buffer, then print whatever is left.
+    printf("Waveform buffer built with %d entries%s", bufferIndex, CRLF);
+    int lines = bufferIndex / 24; 
+    int remainder = bufferIndex % 24;
+    if (remainder > 0) lines++; 
+    int index = 0; 
+    for (int i = 0; i < lines; i++)
+    {
+        for (int j = 0; j < 24 && index < bufferIndex; j++, index++) {
+            printf("%02X ", buffer[index]);
+        }
+        printf("%s", CRLF);
+    }
     return bufferIndex;
 }
 
-/// @brief Function to initialize the WS2812 strip with the specified data pin and 
+/// @brief Function to initialize the WS2812 strip with the specified data pin and
 /// number of LEDs.
 /// @param strip The WS2812 strip structure to initialize.
 /// @param module The PWM module to use for data transmission.
@@ -326,6 +388,13 @@ static uint16_t buildWaveformBuffer(const WS2812_Strip_t *strip, uint8_t *buffer
 WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
                             WS2812_DATA_PIN dataPin, uint16_t numLEDs)
 {
+    debug(0, false);
+    debug(1, false);
+    debug(2, false);
+    debug(3, false);
+    printf("Duty cycle tick counts: 0: %d, 1:%d%s", WS2812_DUTY_0_TICKS, WS2812_DUTY_1_TICKS, CRLF);
+
+
     if (strip == NULL || numLEDs == 0U || numLEDs > WS2812_MAX_LEDS)
     {
         return WS2812_INVALID_PARAM;
@@ -388,9 +457,9 @@ WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
     // as well as the driver.
 
     // Configure DMA1 source-count interrupt once for interrupt-driven completion.
-    IPR2bits.DMA1SCNTIP = 0U;       // Clear the DMA1 source-count interrupt priority bit
-    PIR2bits.DMA1SCNTIF = 0U;       // Clear the DMA1 source-count interrupt flag
-    PIE2bits.DMA1SCNTIE = 0U;       // Disable the DMA1 source-count interrupt
+    IPR2bits.DMA1SCNTIP = 0U; // Clear the DMA1 source-count interrupt priority bit
+    PIR2bits.DMA1SCNTIF = 0U; // Clear the DMA1 source-count interrupt flag
+    PIE2bits.DMA1SCNTIE = 0U; // Disable the DMA1 source-count interrupt
 
     disablePWMModule(strip->pwmModule);
     return WS2812_OK;
@@ -476,25 +545,7 @@ WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip)
     DMA_SelectChannel(WS2812_DMA_CHANNEL);
     DMAnCON0bits.EN = 1U;
     DMAnCON0bits.DGO = 1U;
-
-    switch (strip->pwmModule)
-    {
-    case WS2812_PWM_MODULE_1:
-        PWM1CONbits.EN = 1U;
-        break;
-    case WS2812_PWM_MODULE_2:
-        PWM2CONbits.EN = 1U;
-        break;
-    case WS2812_PWM_MODULE_3:
-        PWM3CONbits.EN = 1U;
-        break;
-    default:
-        PIE2bits.DMA1SCNTIE = 0U;
-        PIR2bits.DMA1SCNTIF = 0U;
-        strip->busy = false;
-        s_activeStrip[strip->pwmModule] = (WS2812_Strip_t *)0;
-        return WS2812_INVALID_PARAM;
-    }
+    enablePWMModule(strip->pwmModule);
 
     return WS2812_OK;
 }
