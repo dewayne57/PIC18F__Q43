@@ -39,27 +39,6 @@ static WS2812_Strip_t *s_activeStrip[WS2812_MAX_PWM_MODULES] = {(WS2812_Strip_t 
 static uint16_t ws2812_activeLength[WS2812_MAX_PWM_MODULES] = {0U, 0U, 0U};
 static uint16_t ws2812_activeIndex[WS2812_MAX_PWM_MODULES] = {0U, 0U, 0U};
 
-static void debug(uint8_t led, bool state) {
-    TRISDbits.TRISD0 = 0U; // Set as output
-    TRISDbits.TRISD1 = 0U; // Set as output
-    TRISDbits.TRISD2 = 0U; // Set as output
-    TRISDbits.TRISD3 = 0U; // Set as output
-    switch (led) {
-        case 0:
-            PORTDbits.RD0 = state ? 0 : 1;
-            break;
-        case 1:
-            PORTDbits.RD1 = state ? 0 : 1;
-            break;
-        case 2:
-            PORTDbits.RD2 = state ? 0 : 1;
-            break;
-        case 3:
-            PORTDbits.RD3 = state ? 0 : 1;
-            break;
-    }
-}
-
 /// @brief Sets up the PWM data pin for the WS2812 strip.
 /// @param dataPin The data pin to configure for PWM output.
 /// @param pwmMapping The PWM output PPS mapping value for the specified data pin.
@@ -217,7 +196,6 @@ static void commitPWMUpdate(WS2812_PWM_Module_t module) {
 /// @return None
 
 static void disablePWMModule(WS2812_PWM_Module_t module) {
-    debug(0, false); // Indicate that PWM module is being disabled
     switch (module) {
         case WS2812_PWM_MODULE_1:
             PWM1CONbits.EN = 0U;
@@ -253,27 +231,26 @@ static void disablePWMModule(WS2812_PWM_Module_t module) {
 /// @return None
 
 static void enablePWMModule(WS2812_PWM_Module_t module) {
-    debug(0, true); // Indicate that PWM module is being enabled
     switch (module) {
         case WS2812_PWM_MODULE_1:
             clearPWMInterruptFlags(module);
-            PIE4bits.PWM1PIE = 1U; // Enable the period interrupt
-            PIE4bits.PWM1IE = 1U; // Enable the parameter interrupt
-            PWM1GIEbits.S1P1IE = 1U; // Enable slice 1 parameter interrupt
+            PIE4bits.PWM1PIE = 1U; // Enable period interrupt for WS2812 bit pacing
+            PIE4bits.PWM1IE = 0U; // Keep module/parameter interrupt disabled
+            PWM1GIEbits.S1P1IE = 0U; // Do not use slice parameter interrupt for bit stepping
             PWM1CONbits.EN = 1U; // Enable the PWM module
             break;
         case WS2812_PWM_MODULE_2:
             clearPWMInterruptFlags(module);
-            PIE5bits.PWM2PIE = 1U; // Enable the period interrupt
-            PIE5bits.PWM2IE = 1U; // Enable the parameter interrupt
-            PWM2GIEbits.S1P1IE = 1U; // Enable slice 1 parameter interrupt
+            PIE5bits.PWM2PIE = 1U; // Enable period interrupt for WS2812 bit pacing
+            PIE5bits.PWM2IE = 0U; // Keep module/parameter interrupt disabled
+            PWM2GIEbits.S1P1IE = 0U; // Do not use slice parameter interrupt for bit stepping
             PWM2CONbits.EN = 1U; // Enable the PWM module
             break;
         case WS2812_PWM_MODULE_3:
             clearPWMInterruptFlags(module);
-            PIE7bits.PWM3PIE = 1U; // Enable the period interrupt
-            PIE7bits.PWM3IE = 1U; // Enable the parameter interrupt
-            PWM3GIEbits.S1P1IE = 1U; // Enable slice 1 parameter interrupt
+            PIE7bits.PWM3PIE = 1U; // Enable period interrupt for WS2812 bit pacing
+            PIE7bits.PWM3IE = 0U; // Keep module/parameter interrupt disabled
+            PWM3GIEbits.S1P1IE = 0U; // Do not use slice parameter interrupt for bit stepping
             PWM3CONbits.EN = 1U; // Enable the PWM module
             break;
         default:
@@ -420,10 +397,6 @@ static uint16_t buildWaveformBuffer(const WS2812_Strip_t *strip, uint8_t *buffer
 
 WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
         WS2812_DATA_PIN dataPin, uint16_t numLEDs) {
-    debug(0, false);
-    debug(1, false);
-    debug(2, false);
-    debug(3, false);
     printf("Duty cycle tick counts: 0: %d, 1:%d%s", WS2812_DUTY_0_TICKS, WS2812_DUTY_1_TICKS, CRLF);
 
 
@@ -444,11 +417,17 @@ WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
 
     WS2812_Status_t status = WS2812_OK;
 
-    uint8_t savedGIEH = INTCON0bits.GIEH;
-    uint8_t savedGIEL = INTCON0bits.GIEL;
-
     INTCON0bits.GIEH = 0U;
     INTCON0bits.GIEL = 0U;
+
+    // Setup PWM1, 2, and 3 interrupts as high priority 
+    IPR4bits.PWM1PIP = 1U; // Set PWM1 period interrupt as high priority
+    IPR4bits.PWM1IP = 1U;  // Set PWM1 parameter interrupt as high priority
+    IPR5bits.PWM2PIP = 1U; // Set PWM2 period interrupt as high priority
+    IPR5bits.PWM2IP = 1U;  // Set PWM2 parameter interrupt as high priority
+    IPR7bits.PWM3PIP = 1U; // Set PWM3 period interrupt as high priority
+    IPR7bits.PWM3IP = 1U;  // Set PWM3 parameter interrupt as high priority
+
     PPS_Unlock();
     switch (strip->pwmModule) {
         case WS2812_PWM_MODULE_1:
@@ -462,13 +441,13 @@ WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
             break;
         default:
             PPS_Lock();
-            INTCON0bits.GIEH = savedGIEH;
-            INTCON0bits.GIEL = savedGIEL;
+            INTCON0bits.GIEH = 1;
+            INTCON0bits.GIEL = 1;
             return WS2812_INVALID_PARAM;
     }
     PPS_Lock();
-    INTCON0bits.GIEH = savedGIEH;
-    INTCON0bits.GIEL = savedGIEL;
+    INTCON0bits.GIEH = 1;
+    INTCON0bits.GIEL = 1;
 
     if (status != WS2812_OK) {
         return status;
@@ -522,11 +501,6 @@ WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip) {
     if (strip->busy) {
         return WS2812_BUSY;
     }
-    debug(0, false);
-    debug(1, false);
-    debug(2, false);
-    debug(3, false);
-
     volatile uint16_t *dutyRegister = getPWMDutyRegister(strip->pwmModule);
     uint8_t dmaTrigger = getPWMPeriodTrigger(strip->pwmModule);
     if ((dutyRegister == 0) || (dmaTrigger == 0U)) {
@@ -559,7 +533,6 @@ WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip) {
 static void WS2812_ServicePwmInterrupt(WS2812_PWM_Module_t module) {
     WS2812_Strip_t *strip = s_activeStrip[module];
     volatile uint16_t *dutyRegister = getPWMCompareRegister(module);
-    debug(1, true);
 
     if ((strip == NULL) || (dutyRegister == NULL)) {
         return;
@@ -579,28 +552,28 @@ static void WS2812_ServicePwmInterrupt(WS2812_PWM_Module_t module) {
 
 /// @brief PWM1 period interrupt service routine for WS2812 output.
 
-void __interrupt(irq(IRQ_PWM1PR), low_priority) WS2812_PWM1_ISR(void) {
-    debug(2, true);
+void __interrupt(irq(IRQ_PWM1PR), high_priority) WS2812_PWM1_ISR(void) {
     WS2812_ServicePwmInterrupt(WS2812_PWM_MODULE_1);
 }
 
 /// @brief PWM1 parameter interrupt service routine for WS2812 output.
 
-void __interrupt(irq(IRQ_PWM1), low_priority) WS2812_PWM1_PARAM_ISR(void) {
-    debug(3, true);
-    WS2812_ServicePwmInterrupt(WS2812_PWM_MODULE_1);
+void __interrupt(irq(IRQ_PWM1), high_priority) WS2812_PWM1_PARAM_ISR(void) {
+    // Parameter interrupt is intentionally not used to clock WS2812 bits.
+    // If it ever fires, just clear flags to avoid stale interrupt state.
+    clearPWMInterruptFlags(WS2812_PWM_MODULE_1);
 }
 
 
 /// @brief PWM2 interrupt service routine for WS2812 output.
 
-void __interrupt(irq(IRQ_PWM2PR), low_priority) WS2812_PWM2_ISR(void) {
+void __interrupt(irq(IRQ_PWM2PR), high_priority) WS2812_PWM2_ISR(void) {
     WS2812_ServicePwmInterrupt(WS2812_PWM_MODULE_2);
 }
 
 /// @brief PWM3 interrupt service routine for WS2812 output.
 
-void __interrupt(irq(IRQ_PWM3PR), low_priority) WS2812_PWM3_ISR(void) {
+void __interrupt(irq(IRQ_PWM3PR), high_priority) WS2812_PWM3_ISR(void) {
     WS2812_ServicePwmInterrupt(WS2812_PWM_MODULE_3);
 }
 
