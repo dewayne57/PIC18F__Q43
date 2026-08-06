@@ -139,7 +139,16 @@ static void keyboardLEDsAllOff(WS2812_Strip_t *strip)
 {
     for (uint8_t i = 0U; i < KEYBOARD_LED_COUNT; i++)
     {
-        strip->colors[i] = (WS2812_Color_t){0U, 0U, 0U};
+        WS2812_SetColor(strip, i, (WS2812_Color_t){0U, 0U, 0U});
+    }
+    WS2812_Status_t status = WS2812_Update(strip);
+    if (status != WS2812_OK)
+    {
+        printf("Failed to update WS2812 strip: %d%s", status, CRLF);
+    }
+    while ((status = WS2812_isBusy(strip)) == WS2812_BUSY)
+    {
+        // Wait for the WS2812 strip to become idle
     }
 }
 
@@ -381,15 +390,6 @@ void main(void)
 
                 if (WS2812_isBusy(&keyboard_strip) == WS2812_OK)
                 {
-                    printf("Color Settings for LEDS are:%s", CRLF);
-                    for (uint8_t i = 0; i < WS2812_MAX_LEDS; i++)
-                    {
-                        printf("LED %d color: G=%d R=%d B=%d%s", i,
-                               keyboard_strip.colors[i].green,
-                               keyboard_strip.colors[i].red,
-                               keyboard_strip.colors[i].blue,
-                               CRLF);
-                    }
                     printf("WS2812 strip is being updated.%s", CRLF);
                     ws2812_status = WS2812_Update(&keyboard_strip);
                     if (ws2812_status != WS2812_OK)
