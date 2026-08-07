@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include "config.h"
 #include "i2c.h"
+#include "ditto.h"
 #include "ws2812.h"
 
 #include "../../common/mcp23x17.h"
@@ -387,6 +388,8 @@ void main(void)
                     printf("LED index is %d for scan code 0x%02X%s", led_index, pressed_keys[i], CRLF);
                     WS2812_SetColor(&keyboard_strip, led_index, (WS2812_Color_t){0U, 255U, 0U});
                 }
+                printf("Color Buffer%s", CRLF);
+                DittoDump((const uint8_t *)keyboard_strip.colors, sizeof(keyboard_strip.colors));
 
                 if (WS2812_isBusy(&keyboard_strip) == WS2812_OK)
                 {

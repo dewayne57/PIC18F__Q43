@@ -16,6 +16,7 @@
 
 #include "config.h"
 #include "ws2812.h"
+#include "ditto.h"
 #include "../../Libraries/PPSLIB/pps.h"
 #include "../../Libraries/INTLIB/intlib.h"
 
@@ -501,6 +502,8 @@ WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip) {
     if (strip->busy) {
         return WS2812_BUSY;
     }
+
+
     volatile uint16_t *dutyRegister = getPWMDutyRegister(strip->pwmModule);
     uint8_t dmaTrigger = getPWMPeriodTrigger(strip->pwmModule);
     if ((dutyRegister == 0) || (dmaTrigger == 0U)) {
@@ -511,6 +514,10 @@ WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip) {
     if (waveformLength == 0U) {
         return WS2812_ERROR;
     }
+
+    // Dump the waveform buffer for diagnostics
+    printf("Waveform buffer%s", CRLF);
+    DittoDump(&ws2812_dmaBuffer[0], waveformLength);
 
     strip->busy = true;
     s_activeStrip[strip->pwmModule] = strip;
