@@ -73,6 +73,13 @@ uint8_t i2c_buffer[16];                     // Buffer for I2C transactions
 volatile uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port A
 volatile bool scan_needed = false;          // Flag indicating that a scan of the keyboard
 // is needed due to an external interrupt.
+volatile int keysPressed = 0; 
+#define ALTERNATING_COLOR_COUNT 3
+WS2812_Color_t alternatingColors[] = {
+    {255U, 0U, 0U},   // Red
+    {0U, 255U, 0U},   // Green
+    {0U, 0U, 255U}    // Blue
+};
 
 // @brief this table of scan codes is used to map the row and column of the keyboard
 // matrix to a specific key code.  The scan code is found in the table and the corresponding
@@ -119,8 +126,11 @@ const char *key_names[] = {
 };
 
 /// @brief Converts a scan code to the corresponding LED index in the
-/// keyboard_strip.colors array.
-/// @param scan_code The key scan code.
+/// keyboard_strip.colors array.  Unfortunately, the Adafruit NeoKey 5X6 
+/// key matrix serializes the LEDs left-right for the top row (of 6),
+/// and then right-left for the next row, then back left-right, and so
+/// back left-right, and so forth.  This function accounts for that
+/// serialization pattern.
 /// @return  The led index.
 static uint8_t scanCodeToLedIndex(uint8_t scan_code)
 {
@@ -132,7 +142,7 @@ static uint8_t scanCodeToLedIndex(uint8_t scan_code)
         return 0xFFU;
     }
 
-    return (uint8_t)((row * KEYBOARD_LED_COLS) + col);
+    return (uint8_t)((row * KEYBOARD_LED_COLS) + ((row % 2U == 0U) ? col : (KEYBOARD_LED_COLS - 1U - col)));
 }
 
 /// @brief Turns all LEDs in the keyboard_strip to off (0, 0, 0).
@@ -146,10 +156,6 @@ static void keyboardLEDsAllOff(WS2812_Strip_t *strip)
     if (status != WS2812_OK)
     {
         printf("Failed to update WS2812 strip: %d%s", status, CRLF);
-    }
-    while ((status = WS2812_isBusy(strip)) == WS2812_BUSY)
-    {
-        // Wait for the WS2812 strip to become idle
     }
 }
 
@@ -285,7 +291,7 @@ void main(void)
         }
     }
 
-    ws2812_status = WS2812_Init(&keyboard_strip, WS2812_PWM_MODULE_1, WS2812_PIN_RB5, KEYBOARD_LED_COUNT);
+    ws2812_status = WS2812_Init(&keyboard_strip, WS2812_PIN_RB5, KEYBOARD_LED_COUNT);
     if (ws2812_status != WS2812_OK)
     {
         printf("WS2812 initialization failed with status: %d%s", ws2812_status, CRLF);
@@ -358,6 +364,10 @@ void main(void)
 
             if (num_pressed_keys > 0)
             {
+                keysPressed += num_pressed_keys;
+                if (keysPressed > KEYBOARD_LED_COUNT) { 
+                    keysPressed = 0; 
+                }
                 printf("Number of pressed keys: %d%s", num_pressed_keys, CRLF);
                 printf("Pressed keys scan codes: ");
                 for (uint8_t i = 0; i < num_pressed_keys; i++)
@@ -386,24 +396,17 @@ void main(void)
                 {
                     uint8_t led_index = scanCodeToLedIndex(pressed_keys[i]);
                     printf("LED index is %d for scan code 0x%02X%s", led_index, pressed_keys[i], CRLF);
-                    WS2812_SetColor(&keyboard_strip, led_index, (WS2812_Color_t){0U, 255U, 0U});
+                    WS2812_SetColor(&keyboard_strip, led_index, alternatingColors[keysPressed % ALTERNATING_COLOR_COUNT]);
                 }
-                printf("Color Buffer%s", CRLF);
-                DittoDump((const uint8_t *)keyboard_strip.colors, sizeof(keyboard_strip.colors));
+//                printf("Color Buffer%s", CRLF);
+//                DittoDump((const uint8_t *)keyboard_strip.colors, sizeof(keyboard_strip.colors));
 
-                if (WS2812_isBusy(&keyboard_strip) == WS2812_OK)
-                {
                     printf("WS2812 strip is being updated.%s", CRLF);
                     ws2812_status = WS2812_Update(&keyboard_strip);
                     if (ws2812_status != WS2812_OK)
                     {
                         printf("WS2812 update failed with status: %d%s", ws2812_status, CRLF);
                     }
-                }
-                else
-                {
-                    printf("WS2812 strip busy, update skipped.%s", CRLF);
-                }
             }
         }
     }

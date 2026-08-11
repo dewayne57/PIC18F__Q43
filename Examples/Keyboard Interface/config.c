@@ -58,10 +58,8 @@ void SYSTEM_Initialize(void)
      */
     PMD0bits.SYSCMD = 0; // System clock network enabled
     PMD0bits.CLKRMD = 0; // Clock Reference enabled
-    PMD5bits.PWM1MD = 0; // PWM1 module enabled for WS2812 output
-    PMD6bits.I2C1MD = 0; // I2C1 module enabled
+    PMD6bits.I2C1MD = 0; // I2C1 module enabled for the MCP23017 interface
     PMD6bits.U1MD = 0;   // UART1 enabled
-    PMD8bits.DMA1MD = 1; // DMA1 channel disabled while WS2812 runs interrupt-driven
     __delay_ms(10);      // Short delay to allow modules to stabilize after power-up
 
     // External INT1 on RB2 for MCP23017 interrupt input

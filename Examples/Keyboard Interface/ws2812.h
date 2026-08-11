@@ -38,13 +38,6 @@
 // Left-aligned PWM Mode
 #define WS2812_PWM_MODE 0U
 
-typedef enum
-{
-    WS2812_PWM_MODULE_1 = 0, // PWM module 1
-    WS2812_PWM_MODULE_2 = 1, // PWM module 2
-    WS2812_PWM_MODULE_3 = 2  // PWM module 3
-} WS2812_PWM_Module_t;       // Placeholder for PWM module enumeration, to be defined as needed
-
 // The maximum number of PWM modules, and therefore strips, that are supported.
 #define WS2812_MAX_PWM_MODULES 3U
 
@@ -85,7 +78,6 @@ typedef struct
     bool initialized;                       // Flag to indicate if the strip has been initialized
     bool busy;                              // Flag to indicate if the strip is currently updating
     uint16_t numLEDs;                       // Number of LEDs in the strip
-    WS2812_PWM_Module_t pwmModule;          // PWM module used for data transmission
     WS2812_DATA_PIN dataPin;                // Data pin for the WS2812 strip
     WS2812_Color_t colors[WS2812_MAX_LEDS]; // An array of color values for each LED
 } WS2812_Strip_t;
@@ -103,11 +95,10 @@ typedef enum
 
 /// @brief Function to initialize the WS2812 strip with the specified data pin and number of LEDs.
 /// @param strip The WS2812 strip structure to initialize.
-/// @param module The PWM module to use for data transmission.
 /// @param dataPin  The data pin to use for the WS2812 strip.
 /// @param numLEDs  The number of LEDs in the strip.
 /// @return WS2812_Status_t indicating success or failure of the operation.
-WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, WS2812_PWM_Module_t module,
+WS2812_Status_t WS2812_Init(WS2812_Strip_t *strip, 
                             WS2812_DATA_PIN dataPin, uint16_t numLEDs);
 
 /// @brief Sets the color of the specified LED in the WS2812 strip.
@@ -126,10 +117,5 @@ WS2812_Status_t WS2812_Update(WS2812_Strip_t *strip);
 /// @param strip  The WS2812 strip structure to clear.
 /// @return  WS2812_Status_t indicating success or failure of the operation.
 WS2812_Status_t WS2812_Clear(WS2812_Strip_t *strip);
-
-/// @brief  Checks if the WS2812 strip is currently busy updating.
-/// @param strip  The WS2812 strip structure to check.
-/// @return  WS2812_Status_t indicating if the strip is busy or not.
-WS2812_Status_t WS2812_isBusy(WS2812_Strip_t *strip);
 
 #endif // WS2812_H
