@@ -45,7 +45,7 @@ static WS2812_Strip_t keyboard_strip;
 #define WS2812_BUSY_RECOVERY_THRESHOLD 100000UL
 
 uart_handle_t console_uart = {.port = UART_PORT_1,
-                              .high_speed_baud = false,
+                              .high_speed_baud = true,
                               .baud_rate = 57600U,
                               .fosc = _XTAL_FREQ,
                               .data_bits = 8U,
@@ -74,11 +74,32 @@ volatile uint8_t s_last_porta_value = 0x00; // Last known value of MCP23017 Port
 volatile bool scan_needed = false;          // Flag indicating that a scan of the keyboard
 // is needed due to an external interrupt.
 volatile int keysPressed = 0; 
-#define ALTERNATING_COLOR_COUNT 3
+#define ALTERNATING_COLOR_COUNT 24
 WS2812_Color_t alternatingColors[] = {
-    {255U, 0U, 0U},   // Red
-    {0U, 255U, 0U},   // Green
-    {0U, 0U, 255U}    // Blue
+LED_WHITE,
+LED_RED,
+LED_GREEN,
+LED_BLUE,
+LED_YELLOW,
+LED_CYAN,
+LED_MAGENTA,
+LED_ORANGE,
+LED_PURPLE,
+LED_PINK,
+LED_BROWN,
+LED_LIME,
+LED_TEAL,
+LED_NAVY,
+LED_GOLD,
+LED_GRAY,
+LED_DARK_GRAY,
+LED_LIGHT_GRAY,
+LED_DARK_RED,
+LED_DARK_GREEN,
+LED_DARK_BLUE,
+LED_LIGHT_RED,
+LED_LIGHT_GREEN,
+LED_LIGHT_BLUE
 };
 
 // @brief this table of scan codes is used to map the row and column of the keyboard
@@ -124,6 +145,30 @@ const char *key_names[] = {
     "Key 44",
     "Key 45",
 };
+
+static void keyboardLEDsAllOff(WS2812_Strip_t *strip); 
+
+
+/// @brief Test the keyboard by turning on and then back off each LED for red, blue, and green.  Then 
+/// flash all leds alternating red, blue, green.  Leave all leds off after the test.
+static void testKeyboardLEDs(WS2812_Strip_t *strip) { 
+        for (uint16_t j = 0; j < KEYBOARD_LED_COUNT; j++) { 
+            WS2812_SetColor(strip, j, (WS2812_Color_t)LED_WHITE);
+            WS2812_Update( strip);
+            __delay_ms(125); 
+            WS2812_SetColor(strip, j, (WS2812_Color_t){0U, 0U, 0U});
+        }
+    for (uint16_t i = 0; i < ALTERNATING_COLOR_COUNT; i++) {
+        for (uint16_t j = 0; j < KEYBOARD_LED_COUNT; j++) {
+            WS2812_SetColor(strip, j, alternatingColors[i]);
+        }
+        WS2812_Update(strip);
+        __delay_ms(500);
+    }
+
+    // Turn all LEDs off after the test
+    keyboardLEDsAllOff(strip);
+}
 
 /// @brief Converts a scan code to the corresponding LED index in the
 /// keyboard_strip.colors array.  Unfortunately, the Adafruit NeoKey 5X6 
@@ -300,8 +345,8 @@ void main(void)
         }
     }
 
-    printf("Turning all keyboard LEDs off%s", CRLF);
-    keyboardLEDsAllOff(&keyboard_strip);
+    printf("Testing Keyboard%s", CRLF);
+    testKeyboardLEDs(&keyboard_strip);
 
     // Arm INT1 only after MCP configuration and initial GPIOA read have cleared
     // any startup interrupt condition on the active-low INT line.

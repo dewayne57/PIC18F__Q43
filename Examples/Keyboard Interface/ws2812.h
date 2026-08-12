@@ -93,6 +93,33 @@ typedef enum
     WS2812_BUSY = -5             // Strip is busy updating
 } WS2812_Status_t;
 
+// Standard color values 
+#define LED_BLACK       {  0,   0,   0}
+#define LED_WHITE       {255, 255, 255}
+#define LED_RED         {  0, 255,   0}
+#define LED_GREEN       {255,   0,   0}
+#define LED_BLUE        {  0,   0, 255}
+#define LED_YELLOW      {255, 255,   0}
+#define LED_CYAN        {255,   0, 255}
+#define LED_MAGENTA     {  0, 255, 255}
+#define LED_ORANGE      {128, 255,   0}
+#define LED_PURPLE      {  0, 128, 128}
+#define LED_PINK        { 20, 255, 128}
+#define LED_BROWN       { 42, 165,  42}
+#define LED_LIME        {255, 128,   0}
+#define LED_TEAL        {128,   0, 128}
+#define LED_NAVY        {  0,   0, 128}
+#define LED_GOLD        {215, 255,   0}
+#define LED_GRAY        {128, 128, 128}
+#define LED_DARK_GRAY   { 64,  64,  64}
+#define LED_LIGHT_GRAY  {192, 192, 192}
+#define LED_DARK_RED    {  0, 128,   0}
+#define LED_DARK_GREEN  {128,   0,   0}
+#define LED_DARK_BLUE   {  0,   0, 128}
+#define LED_LIGHT_RED   { 64, 255,  64}
+#define LED_LIGHT_GREEN {192,   0,  64}
+#define LED_LIGHT_BLUE  { 64,  64, 255}
+
 /// @brief Function to initialize the WS2812 strip with the specified data pin and number of LEDs.
 /// @param strip The WS2812 strip structure to initialize.
 /// @param dataPin  The data pin to use for the WS2812 strip.

@@ -3,8 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/Examples/Keyboard%20Interface/ws2812.h</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/Examples/Keyboard%20Interface/main.c</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/Examples/Keyboard%20Interface/config.h</file>
+            <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/Examples/Keyboard%20Interface/i2c.c</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/Examples/Keyboard%20Interface/ws2812.c</file>
             <file>file:/C:/Users/deway/Documents/GitHub/PIC18F__Q43/Examples/Keyboard%20Interface/ditto.c</file>
         </group>
