@@ -8124,7 +8124,7 @@
 			(uuid "01c6494b-3ea7-4c12-9784-7b360d274608")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "D102")
 					(unit 1)
@@ -8201,7 +8201,7 @@
 			(uuid "85cc652b-a08d-4ba3-98c8-1c12eeaf67e4")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0114")
 					(unit 1)
@@ -8278,7 +8278,7 @@
 			(uuid "e0cfd2c7-1968-4174-997b-e97b8b55a277")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0107")
 					(unit 1)
@@ -8359,7 +8359,7 @@
 			(uuid "c9bb861a-b767-4fb8-b0de-4ae1f94057cc")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C102")
 					(unit 1)
@@ -8437,7 +8437,7 @@
 			(uuid "b1cad2d5-ccce-4bd8-a492-bd7a06399009")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0101")
 					(unit 1)
@@ -8514,7 +8514,7 @@
 			(uuid "3423853f-c2fb-4b44-b2df-034e089b47de")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0118")
 					(unit 1)
@@ -8592,7 +8592,7 @@
 			(uuid "b5110850-7a3e-45d9-9020-e5d4fef9b8bb")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0117")
 					(unit 1)
@@ -8683,7 +8683,7 @@
 			(uuid "8a21586d-aefa-4fcb-83a4-446d5e4c4504")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "J101")
 					(unit 1)
@@ -8761,7 +8761,7 @@
 			(uuid "0dd67a1b-978c-4dd8-8b82-112fdf29114b")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0104")
 					(unit 1)
@@ -8839,7 +8839,7 @@
 			(uuid "8c86baf7-4508-4bf1-a205-6b350e93adbd")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0105")
 					(unit 1)
@@ -8917,7 +8917,7 @@
 			(uuid "1e603256-d571-41c7-b6b8-5ac627b4968d")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0119")
 					(unit 1)
@@ -8994,7 +8994,7 @@
 			(uuid "87ddfb8e-ccdd-492b-b4f9-6f17b2b9de21")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0111")
 					(unit 1)
@@ -9072,7 +9072,7 @@
 			(uuid "c5a4f2fc-74a3-4b83-b925-a54374564508")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0115")
 					(unit 1)
@@ -9154,7 +9154,7 @@
 			(uuid "9ea68326-a057-4f5b-b2ed-d0d537e98cb1")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "R101")
 					(unit 1)
@@ -9244,7 +9244,7 @@
 			(uuid "16623f67-e322-44d6-b051-bcf8024b3dee")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "D101")
 					(unit 1)
@@ -9325,7 +9325,7 @@
 			(uuid "b1b9a0dd-3bf9-4006-884e-560c85c752c3")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C101")
 					(unit 1)
@@ -9402,7 +9402,7 @@
 			(uuid "a41aced8-723b-4570-9cb1-e717b3b0d397")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0109")
 					(unit 1)
@@ -9479,7 +9479,7 @@
 			(uuid "6954f414-a480-46a8-ac77-789ab5ce9bc0")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0106")
 					(unit 1)
@@ -9558,7 +9558,7 @@
 			(uuid "e382acfb-6bb1-49f6-8fc9-cc7ce1015267")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "R102")
 					(unit 1)
@@ -9640,7 +9640,7 @@
 			(uuid "58295e2f-0e89-418b-9f6d-81c37e27458e")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "R104")
 					(unit 1)
@@ -9717,7 +9717,7 @@
 			(uuid "26d1508c-2f1b-49cd-889a-ac7a543a3427")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0110")
 					(unit 1)
@@ -9794,7 +9794,7 @@
 			(uuid "f0784c50-be2a-44f7-8e76-0bd8079ec0fb")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0116")
 					(unit 1)
@@ -9883,7 +9883,7 @@
 			(uuid "2e120da4-8403-44f7-8087-6a3ae6576c6d")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "J102")
 					(unit 1)
@@ -10089,7 +10089,7 @@
 			(uuid "7f4af101-21ed-4a9e-b7f4-7a2088390afc")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "U102")
 					(unit 1)
@@ -10167,7 +10167,7 @@
 			(uuid "45262e46-97b8-4b5b-959f-99d5568ec56b")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0113")
 					(unit 1)
@@ -10248,7 +10248,7 @@
 			(uuid "6f8f03af-f5d3-42ee-8866-b15d594e30a7")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C105")
 					(unit 1)
@@ -10325,7 +10325,7 @@
 			(uuid "780f1853-dd83-467e-a12f-f1d24054467a")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0103")
 					(unit 1)
@@ -10459,7 +10459,7 @@
 			(uuid "ab7938b7-d9d9-4d34-92f6-0361deef246b")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "BAR101")
 					(unit 1)
@@ -10536,7 +10536,7 @@
 			(uuid "04b25a22-dc36-45f8-9e01-2eb979e2a34c")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0102")
 					(unit 1)
@@ -10658,7 +10658,7 @@
 			(uuid "fb1695fc-7a88-463a-831f-447898af177d")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "RN101")
 					(unit 1)
@@ -10739,7 +10739,7 @@
 			(uuid "2b59259a-dd89-4ecd-9783-63ab4dc9fd05")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C104")
 					(unit 1)
@@ -10893,7 +10893,7 @@
 			(uuid "fe133c98-969a-4eb9-bfe3-c5191f6550ef")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "U103")
 					(unit 1)
@@ -10970,7 +10970,7 @@
 			(uuid "adf07ddb-93a0-4f5c-b6fa-78bbb0b12dc3")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0108")
 					(unit 1)
@@ -11049,7 +11049,7 @@
 			(uuid "326d1c27-7f9d-4667-aa86-a8e99ca359b3")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "R103")
 					(unit 1)
@@ -11127,7 +11127,7 @@
 			(uuid "f69d8aed-1b03-4f2e-b4da-4392e5659e57")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0112")
 					(unit 1)
@@ -11207,7 +11207,7 @@
 			(uuid "b2df6edb-24a6-4fb1-b7aa-efcc627f7c6e")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C103")
 					(unit 1)
@@ -11328,7 +11328,7 @@
 			(uuid "f0550d12-56b0-44f8-a971-bbfc74e9f8fd")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "SW101")
 					(unit 1)
@@ -11490,7 +11490,7 @@
 			(uuid "ed8d982e-5217-4a7b-a476-5c7c96e76a85")
 		)
 		(instances
-			(project "I2C 02 Module Master"
+			(project "I2C 02 Module Host"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "U101")
 					(unit 1)
