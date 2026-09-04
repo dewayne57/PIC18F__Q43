@@ -312,10 +312,10 @@
     "page_layout_descr_file": ""
   },
   "schematic": {
-    "annotate_start_num": 0,
+    "annotate_start_num": 100,
     "annotation": {
       "method": 0,
-      "sort_order": 0
+      "sort_order": 1
     },
     "bom_export_filename": "${PROJECTNAME}.csv",
     "bom_fmt_presets": [],
@@ -437,7 +437,7 @@
         "uuid": "d3b5dd27-4845-413f-badb-7f64f7fb8d77"
       }
     ],
-    "used_designators": "",
+    "used_designators": "D1-2,D101-102,#PWR1-17,#PWR101-117,C1-10,C101-110,R1-4,R101-104,J1-3,J101-103,U1-3,U101-103",
     "variants": []
   },
   "sheets": [

@@ -5821,12 +5821,6 @@
 		(uuid "6f3f3b8e-7b8b-4505-9117-7a615798b8cb")
 	)
 	(junction
-		(at 107.95 113.03)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "071e392e-658e-47f7-8b17-958ce37e5809")
-	)
-	(junction
 		(at 232.41 154.94)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6053,14 +6047,6 @@
 		(uuid "3692cc35-775e-4d43-8aff-dad23b71408a")
 	)
 	(no_connect
-		(at 101.6 105.41)
-		(uuid "3ce68ca1-60a2-42fb-a428-297413f96a70")
-	)
-	(no_connect
-		(at 58.42 87.63)
-		(uuid "3d751f6f-9d66-469e-90cf-abfcbba55e88")
-	)
-	(no_connect
 		(at 58.42 123.19)
 		(uuid "3dbdd313-4c04-46e9-bfbf-bf863e7a9c5b")
 	)
@@ -6135,6 +6121,10 @@
 	(no_connect
 		(at 200.66 134.62)
 		(uuid "932b27a2-f010-42b2-a156-613c208a36c4")
+	)
+	(no_connect
+		(at 101.6 105.41)
+		(uuid "96168b0e-b4bc-46a7-8c02-6cc6dcfa4846")
 	)
 	(no_connect
 		(at 58.42 120.65)
@@ -6256,6 +6246,15 @@
 		(uuid "a18e73a5-645a-4813-bdfe-5ef01508f66a")
 	)
 	(bus_entry
+		(at 27.94 85.09)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b712dca1-309a-4847-b185-07f35c1c5ae7")
+	)
+	(bus_entry
 		(at 27.94 82.55)
 		(size 2.54 2.54)
 		(stroke
@@ -6263,15 +6262,6 @@
 			(type default)
 		)
 		(uuid "b8d255cf-da16-4c69-86ac-84b16589cc0a")
-	)
-	(bus_entry
-		(at 132.08 113.03)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ce12e30f-466f-4b8f-84df-593ab372083e")
 	)
 	(bus_entry
 		(at 27.94 113.03)
@@ -6389,16 +6379,6 @@
 			(type default)
 		)
 		(uuid "0d48ee68-6365-4924-9620-c704a16dc5a9")
-	)
-	(bus
-		(pts
-			(xy 134.62 109.22) (xy 134.62 111.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0decea18-83b6-4745-aa84-a5c686d8126a")
 	)
 	(wire
 		(pts
@@ -6659,16 +6639,6 @@
 			(type default)
 		)
 		(uuid "2fade051-4a00-4a7f-8e7e-ef789f06ae5a")
-	)
-	(bus
-		(pts
-			(xy 134.62 111.76) (xy 134.62 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "327e2d6a-3e32-41af-a4ba-e880da8ea6f1")
 	)
 	(wire
 		(pts
@@ -7120,16 +7090,6 @@
 		)
 		(uuid "67ef74b8-25f0-4b90-a0ab-3e9a7c104ec5")
 	)
-	(bus
-		(pts
-			(xy 134.62 58.42) (xy 134.62 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6807fd94-aade-4be6-affc-68c2e416fb3f")
-	)
 	(wire
 		(pts
 			(xy 137.16 114.3) (xy 160.02 114.3)
@@ -7202,7 +7162,7 @@
 	)
 	(bus
 		(pts
-			(xy 134.62 115.57) (xy 134.62 140.97)
+			(xy 134.62 58.42) (xy 134.62 140.97)
 		)
 		(stroke
 			(width 0)
@@ -7752,16 +7712,6 @@
 	)
 	(wire
 		(pts
-			(xy 107.95 113.03) (xy 132.08 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d8cc265c-35d7-4b5b-bf82-0778b8c48863")
-	)
-	(wire
-		(pts
 			(xy 119.38 52.07) (xy 119.38 50.8)
 		)
 		(stroke
@@ -7889,6 +7839,16 @@
 			(type default)
 		)
 		(uuid "ed51efa6-3a5e-4601-bab8-89f244106261")
+	)
+	(wire
+		(pts
+			(xy 30.48 87.63) (xy 58.42 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "efaa0c63-7b1b-4406-a017-7ab7ac6b59c9")
 	)
 	(wire
 		(pts
@@ -8101,7 +8061,7 @@
 		(uuid "78dae83d-4413-4a23-ac35-b8d5a08f28de")
 	)
 	(label "~{RESET}"
-		(at 125.73 113.03 0)
+		(at 30.48 87.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8261,7 +8221,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1596bd8d-769e-4988-9b3e-53b4b4de08c3")
-		(property "Reference" "#PWR0117"
+		(property "Reference" "#PWR0115"
 			(at 236.22 139.7 0)
 			(hide yes)
 			(show_name no)
@@ -8321,7 +8281,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0117")
+					(reference "#PWR0115")
 					(unit 1)
 				)
 			)
@@ -8338,7 +8298,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "17013858-1c2c-4b29-95b5-6be5fdd390eb")
-		(property "Reference" "#PWR0106"
+		(property "Reference" "#PWR0107"
 			(at 111.76 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -8398,7 +8358,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0106")
+					(reference "#PWR0107")
 					(unit 1)
 				)
 			)
@@ -8574,7 +8534,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1fe433ab-585f-4c84-a38e-593e20618699")
-		(property "Reference" "#PWR0116"
+		(property "Reference" "#PWR0119"
 			(at 232.41 162.56 0)
 			(hide yes)
 			(show_name no)
@@ -8634,7 +8594,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0116")
+					(reference "#PWR0119")
 					(unit 1)
 				)
 			)
@@ -8652,7 +8612,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "21857503-4ed3-43b8-ac09-b2cb7f8117ab")
-		(property "Reference" "#PWR0114"
+		(property "Reference" "#PWR0118"
 			(at 220.98 153.67 0)
 			(hide yes)
 			(show_name no)
@@ -8712,7 +8672,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0114")
+					(reference "#PWR0118")
 					(unit 1)
 				)
 			)
@@ -8821,7 +8781,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "29ddbc43-34a6-45ce-aa41-8cdcf4ad55a3")
-		(property "Reference" "#PWR0102"
+		(property "Reference" "#PWR0104"
 			(at 39.37 49.53 0)
 			(hide yes)
 			(show_name no)
@@ -8881,7 +8841,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0102")
+					(reference "#PWR0104")
 					(unit 1)
 				)
 			)
@@ -8899,7 +8859,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2aee0f42-86aa-43b7-a3fc-6ee30c3c1ba7")
-		(property "Reference" "#PWR0103"
+		(property "Reference" "#PWR0105"
 			(at 104.14 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -8959,7 +8919,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0103")
+					(reference "#PWR0105")
 					(unit 1)
 				)
 			)
@@ -8977,7 +8937,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3c106b1f-4810-4889-8fe9-4c9578368d8c")
-		(property "Reference" "#PWR0108"
+		(property "Reference" "#PWR0120"
 			(at 175.26 165.1 0)
 			(hide yes)
 			(show_name no)
@@ -9037,7 +8997,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0108")
+					(reference "#PWR0120")
 					(unit 1)
 				)
 			)
@@ -9054,7 +9014,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "420e71eb-0baf-4dc0-91b7-f0122a17b171")
-		(property "Reference" "#PWR0109"
+		(property "Reference" "#PWR0112"
 			(at 177.8 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -9114,7 +9074,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0109")
+					(reference "#PWR0112")
 					(unit 1)
 				)
 			)
@@ -9132,7 +9092,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "444d3dcc-22f8-4119-807d-fead9f51f2ad")
-		(property "Reference" "#PWR0107"
+		(property "Reference" "#PWR0116"
 			(at 138.43 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -9192,7 +9152,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0107")
+					(reference "#PWR0116")
 					(unit 1)
 				)
 			)
@@ -9462,7 +9422,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5c8959da-075c-4707-be41-0e6b1af3ad39")
-		(property "Reference" "R105"
+		(property "Reference" "R101"
 			(at 30.226 105.156 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9526,7 +9486,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R105")
+					(reference "R101")
 					(unit 1)
 				)
 			)
@@ -9543,7 +9503,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "68109c31-2d4f-4e0d-a46b-e9fcdeae9847")
-		(property "Reference" "#PWR0112"
+		(property "Reference" "#PWR0109"
 			(at 156.21 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -9603,7 +9563,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0112")
+					(reference "#PWR0109")
 					(unit 1)
 				)
 			)
@@ -9620,7 +9580,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6b14b7ce-2b6c-48a6-8d3d-51db86219c85")
-		(property "Reference" "#PWR0105"
+		(property "Reference" "#PWR0106"
 			(at 111.76 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -9680,7 +9640,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0105")
+					(reference "#PWR0106")
 					(unit 1)
 				)
 			)
@@ -9697,7 +9657,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6e219d52-5434-4bae-ba7a-1d8880f7d87e")
-		(property "Reference" "R101"
+		(property "Reference" "R104"
 			(at 145.542 133.096 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9759,7 +9719,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R101")
+					(reference "R104")
 					(unit 1)
 				)
 			)
@@ -9777,7 +9737,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "71b93c83-6213-493f-bb88-6259b6390339")
-		(property "Reference" "R104"
+		(property "Reference" "R106"
 			(at 223.52 139.6999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9841,7 +9801,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R104")
+					(reference "R106")
 					(unit 1)
 				)
 			)
@@ -9858,7 +9818,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "72b61c08-9371-4958-9143-d3ff142f01a3")
-		(property "Reference" "#PWR0111"
+		(property "Reference" "#PWR0110"
 			(at 177.8 95.25 0)
 			(hide yes)
 			(show_name no)
@@ -9918,7 +9878,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0111")
+					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
@@ -9935,7 +9895,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7502ec07-83d0-46ba-86e7-6fc5da5007b7")
-		(property "Reference" "#PWR0115"
+		(property "Reference" "#PWR0117"
 			(at 232.41 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -9995,7 +9955,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0115")
+					(reference "#PWR0117")
 					(unit 1)
 				)
 			)
@@ -10013,7 +9973,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "761ceb3c-77e9-4c49-84c2-8845c46ed6da")
-		(property "Reference" "#PWR0120"
+		(property "Reference" "#PWR0111"
 			(at 36.83 102.87 0)
 			(hide yes)
 			(show_name no)
@@ -10073,7 +10033,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0120")
+					(reference "#PWR0111")
 					(unit 1)
 				)
 			)
@@ -10180,7 +10140,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9f1e022c-90e7-4faf-b39a-b715d73b947d")
-		(property "Reference" "U101"
+		(property "Reference" "U102"
 			(at 80.01 44.45 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10368,7 +10328,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "U101")
+					(reference "U102")
 					(unit 1)
 				)
 			)
@@ -10386,7 +10346,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "addebbd9-f249-4f33-9980-d494552cbac0")
-		(property "Reference" "R106"
+		(property "Reference" "R102"
 			(at 47.244 105.156 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10450,7 +10410,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R106")
+					(reference "R102")
 					(unit 1)
 				)
 			)
@@ -10468,7 +10428,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b047b5db-2a85-430c-b55b-13b355195b03")
-		(property "Reference" "#PWR0104"
+		(property "Reference" "#PWR0114"
 			(at 104.14 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -10528,7 +10488,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0104")
+					(reference "#PWR0114")
 					(unit 1)
 				)
 			)
@@ -10545,7 +10505,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "be0afac2-90b3-44ee-9ced-7c8d2f910c8b")
-		(property "Reference" "C110"
+		(property "Reference" "C105"
 			(at 240.792 145.796 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10609,7 +10569,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "C110")
+					(reference "C105")
 					(unit 1)
 				)
 			)
@@ -10626,7 +10586,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "be7e82b0-017c-409e-9ff3-91f303a7519b")
-		(property "Reference" "#PWR0119"
+		(property "Reference" "#PWR0103"
 			(at 246.38 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -10686,7 +10646,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0119")
+					(reference "#PWR0103")
 					(unit 1)
 				)
 			)
@@ -10837,7 +10797,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c9feb2ef-cea5-4e6a-8583-2cec6bd0efde")
-		(property "Reference" "#PWR0110"
+		(property "Reference" "#PWR0102"
 			(at 177.8 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -10897,7 +10857,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0110")
+					(reference "#PWR0102")
 					(unit 1)
 				)
 			)
@@ -11036,7 +10996,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d223799e-8c64-428a-91b0-61cc6ad68f63")
-		(property "Reference" "C109"
+		(property "Reference" "C104"
 			(at 232.918 146.304 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11100,7 +11060,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "C109")
+					(reference "C104")
 					(unit 1)
 				)
 			)
@@ -11271,7 +11231,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d9958631-d9b6-432a-9c0f-f7d2de703478")
-		(property "Reference" "#PWR0118"
+		(property "Reference" "#PWR0108"
 			(at 217.17 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -11331,7 +11291,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0118")
+					(reference "#PWR0108")
 					(unit 1)
 				)
 			)
@@ -11348,7 +11308,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "da6cf5c5-40c7-43a0-a04f-2f217606387a")
-		(property "Reference" "R102"
+		(property "Reference" "R105"
 			(at 145.288 142.24 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11410,7 +11370,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R102")
+					(reference "R105")
 					(unit 1)
 				)
 			)
@@ -11506,7 +11466,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "df35d18c-16b6-4f12-aa27-43fd1a6f8d55")
-		(property "Reference" "C105"
+		(property "Reference" "C103"
 			(at 208.534 104.14 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11568,7 +11528,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "C105")
+					(reference "C103")
 					(unit 1)
 				)
 			)
@@ -11707,7 +11667,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f85c7909-7186-4231-9bc1-7d287dcf8b41")
-		(property "Reference" "U102"
+		(property "Reference" "U101"
 			(at 179.9433 30.48 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11851,7 +11811,7 @@
 		(instances
 			(project "I2C 01 Bit Bang Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "U102")
+					(reference "U101")
 					(unit 1)
 				)
 			)

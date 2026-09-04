@@ -522,8 +522,8 @@
   "schematic": {
     "annotate_start_num": 0,
     "annotation": {
-      "method": 0,
-      "sort_order": 0
+      "method": 1,
+      "sort_order": 1
     },
     "bom_export_filename": "${PROJECTNAME}.csv",
     "bom_fmt_presets": [],
@@ -645,7 +645,7 @@
         "uuid": "5eab76fb-ada6-45ba-98e5-e02a58866275"
       }
     ],
-    "used_designators": "R105-106,#PWR120",
+    "used_designators": "J101-102,R101-106,D101-102,#PWR101-120,C101-105,BAR101,RN101,SW101,U101-103",
     "variants": []
   },
   "sheets": [

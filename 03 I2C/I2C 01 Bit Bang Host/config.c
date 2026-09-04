@@ -3,16 +3,16 @@
  *   Description: System configuration and initialization for the demonstration project.
  *   Author: Dewayne Hafenstein
  *   Date: 2026-05-11
- * 
- *   Configure Port B pins for use by UART 1 as follows: 
+ *
+ *   Configure Port B pins for use by UART 1 as follows:
  *   RB0 - TX1 (output)
  *   RB1 - RX1 (input)
  *   RB2 - External INT1 interrupt input
- * 
+ *
  *   Configure Port C pins for I2C bit bang host as follows:
  *   RC3 - I2C SCK (Serial Clock) - open-drain output
  *   RC4 - I2C SDA (Serial Data) - open-drain output
- * 
+ *
  *   The demonstration will use the internal 64MHz high frequency oscillator as the system clock.
  ***************************************************************************************** */
 
@@ -26,52 +26,55 @@
 /// @return None
 void SYSTEM_Initialize(void)
 {
-    /* Disable global interrupts while modifying shared hardware registers to prevent
-       an ISR from running on partially-configured hardware. */
-    INTCON0bits.GIEH = 0;
-    INTCON0bits.GIEL = 0;
-    INTCON0bits.IPEN = 1; // Enable priority interrupts, so we can use low-priority for the UART ISRs.
+   /* Disable global interrupts while modifying shared hardware registers to prevent
+      an ISR from running on partially-configured hardware. */
+   INTCON0bits.GIEH = 0;
+   INTCON0bits.GIEL = 0;
+   INTCON0bits.IPEN = 1; // Enable priority interrupts, so we can use low-priority for the UART ISRs.
 
-    /* The ANSEL (Analog SELect) registers control whether each I/O pin acts as an analog
-       input (ANSEL bit = 1) or a digital I/O (ANSEL bit = 0).  Clearing them ensures that
-       the UART TX/RX pins on Port B are in digital mode so the UART module can drive them.
-       Ports C and D are cleared for the same reason - no analog inputs are used here. */
-    ANSELB = 0x00;  // All Port B pins: digital mode
-    ANSELC = 0x00;  // All Port C pins: digital mode
-    ANSELD = 0x00;  // All Port D pins: digital mode
+   /* The ANSEL (Analog SELect) registers control whether each I/O pin acts as an analog
+      input (ANSEL bit = 1) or a digital I/O (ANSEL bit = 0).  Clearing them ensures that
+      the UART TX/RX pins on Port B are in digital mode so the UART module can drive them.
+      Ports C and D are cleared for the same reason - no analog inputs are used here. */
+   ANSELB = 0x00; // All Port B pins: digital mode
+   ANSELC = 0x00; // All Port C pins: digital mode
+   ANSELD = 0x00; // All Port D pins: digital mode
 
-    /*
-     * Enable all peripheral modules that are required
-     */
-    PMD0bits.SYSCMD = 0; // System clock network enabled
-    PMD6bits.I2C1MD = 1; // I2C1 module disabled; RC3/RC4 are driven by software bit-bang
-    PMD6bits.U1MD = 0;   // UART 1 enabled
+   /*
+    * Enable all peripheral modules that are required
+    */
+   PMD0bits.SYSCMD = 0; // System clock network enabled
+   PMD6bits.I2C1MD = 1; // I2C1 module disabled; RC3/RC4 are driven by software bit-bang
+   PMD6bits.U1MD = 0;   // UART 1 enabled
+
+   // RB3 is used to perform a reset of the MCP23017 to clear its configuration
+   TRISBbits.TRICB3 = 0; // Set as output pin
+   LATBbits.LATB3 = 0;  // Hold in reset
 
    // I2C bit bang pin setup: RC3 = SCK, RC4 = SDA (open-drain, released high at idle)
    LATCbits.LATC3 = 0;
    LATCbits.LATC4 = 0;
-   TRISCbits.TRISC3 = 1;  // RC3 released
-   TRISCbits.TRISC4 = 1;  // RC4 released
-    ANSELCbits.ANSELC3 = 0;
-    ANSELCbits.ANSELC4 = 0;
-    ODCONCbits.ODCC3 = 1;  // RC3 open-drain
-    ODCONCbits.ODCC4 = 1;  // RC4 open-drain
+   TRISCbits.TRISC3 = 1; // RC3 released
+   TRISCbits.TRISC4 = 1; // RC4 released
+   ANSELCbits.ANSELC3 = 0;
+   ANSELCbits.ANSELC4 = 0;
+   ODCONCbits.ODCC3 = 1; // RC3 open-drain
+   ODCONCbits.ODCC4 = 1; // RC4 open-drain
 
-      // External INT1 on RB2 for interrupt input
-      TRISBbits.TRISB2 = 1;   // RB2 is input
-      ANSELBbits.ANSELB2 = 0; // RB2 is digital
-      WPUBbits.WPUB2 = 0;     // Weak pull-up disabled on RB2
+   // External INT1 on RB2 for interrupt input
+   TRISBbits.TRISB2 = 1;   // RB2 is input
+   ANSELBbits.ANSELB2 = 0; // RB2 is digital
+   WPUBbits.WPUB2 = 0;     // Weak pull-up disabled on RB2
 
-      PPS_Unlock();
-      INT1PPS = 0x0AU;        // INT1 input <- RB2
-      PPS_Lock();
+   PPS_Unlock();
+   INT1PPS = 0x0AU; // INT1 input <- RB2
+   PPS_Lock();
 
-      INTCON0bits.INT1EDG = 1; // Rising edge triggers INT1
-      PIR6bits.INT1IF = 0;     // Clear any pending INT1 flag
-      PIE6bits.INT1IE = 0;     // Enable INT1 after MCP23017 is initialized
+   INTCON0bits.INT1EDG = 1; // Rising edge triggers INT1
+   PIR6bits.INT1IF = 0;     // Clear any pending INT1 flag
+   PIE6bits.INT1IE = 0;     // Enable INT1 after MCP23017 is initialized
 
-    /* Re-enable interrupts now that hardware registers are stable. */
-    INTCON0bits.GIEH = 1;
-    INTCON0bits.GIEL = 1;
+   /* Re-enable interrupts now that hardware registers are stable. */
+   INTCON0bits.GIEH = 1;
+   INTCON0bits.GIEL = 1;
 }
-

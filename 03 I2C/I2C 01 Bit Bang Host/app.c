@@ -129,6 +129,9 @@ static i2c_status_t MCP23017_Initialize(i2c_handle_t *handle)
 {
     i2c_status_t status;
 
+    // Release MCP23017 from reset
+    LATBbits.LATB3 = 1;
+
     // Enter banked mode (BANK=1) while keeping address auto-increment enabled (SEQOP=0).
     // INTPOL=1 makes INT active high; ODR=0 keeps INT in push-pull output mode.
     i2c_buffer[0] = IOCON;

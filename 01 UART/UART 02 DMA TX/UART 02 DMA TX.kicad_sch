@@ -4344,7 +4344,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1596bd8d-769e-4988-9b3e-53b4b4de08c3")
-		(property "Reference" "#PWR0117"
+		(property "Reference" "#PWR0109"
 			(at 238.76 142.24 0)
 			(hide yes)
 			(show_name no)
@@ -4404,7 +4404,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0117")
+					(reference "#PWR0109")
 					(unit 1)
 				)
 			)
@@ -4421,7 +4421,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "17013858-1c2c-4b29-95b5-6be5fdd390eb")
-		(property "Reference" "#PWR0106"
+		(property "Reference" "#PWR0105"
 			(at 114.3 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -4481,7 +4481,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0106")
+					(reference "#PWR0105")
 					(unit 1)
 				)
 			)
@@ -4657,7 +4657,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1fe433ab-585f-4c84-a38e-593e20618699")
-		(property "Reference" "#PWR0116"
+		(property "Reference" "#PWR0113"
 			(at 234.95 165.1 0)
 			(hide yes)
 			(show_name no)
@@ -4717,7 +4717,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0116")
+					(reference "#PWR0113")
 					(unit 1)
 				)
 			)
@@ -4735,7 +4735,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "21857503-4ed3-43b8-ac09-b2cb7f8117ab")
-		(property "Reference" "#PWR0114"
+		(property "Reference" "#PWR0112"
 			(at 223.52 156.21 0)
 			(hide yes)
 			(show_name no)
@@ -4795,7 +4795,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0114")
+					(reference "#PWR0112")
 					(unit 1)
 				)
 			)
@@ -5060,7 +5060,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3c106b1f-4810-4889-8fe9-4c9578368d8c")
-		(property "Reference" "#PWR0108"
+		(property "Reference" "#PWR0114"
 			(at 177.8 167.64 0)
 			(hide yes)
 			(show_name no)
@@ -5120,7 +5120,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0108")
+					(reference "#PWR0114")
 					(unit 1)
 				)
 			)
@@ -5137,7 +5137,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "420e71eb-0baf-4dc0-91b7-f0122a17b171")
-		(property "Reference" "#PWR0109"
+		(property "Reference" "#PWR0106"
 			(at 180.34 106.68 0)
 			(hide yes)
 			(show_name no)
@@ -5197,7 +5197,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0109")
+					(reference "#PWR0106")
 					(unit 1)
 				)
 			)
@@ -5215,7 +5215,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "444d3dcc-22f8-4119-807d-fead9f51f2ad")
-		(property "Reference" "#PWR0107"
+		(property "Reference" "#PWR0110"
 			(at 140.97 140.97 0)
 			(hide yes)
 			(show_name no)
@@ -5275,7 +5275,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0107")
+					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
@@ -5293,7 +5293,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "44eb4a0d-aeba-4034-8338-d5bb95960e1a")
-		(property "Reference" "R103"
+		(property "Reference" "R101"
 			(at 226.06 130.8099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5357,7 +5357,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "R103")
+					(reference "R101")
 					(unit 1)
 				)
 			)
@@ -5545,7 +5545,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6b14b7ce-2b6c-48a6-8d3d-51db86219c85")
-		(property "Reference" "#PWR0105"
+		(property "Reference" "#PWR0104"
 			(at 114.3 55.88 0)
 			(hide yes)
 			(show_name no)
@@ -5605,7 +5605,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0105")
+					(reference "#PWR0104")
 					(unit 1)
 				)
 			)
@@ -5622,7 +5622,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6e219d52-5434-4bae-ba7a-1d8880f7d87e")
-		(property "Reference" "R101"
+		(property "Reference" "R102"
 			(at 148.082 135.636 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5684,7 +5684,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "R101")
+					(reference "R102")
 					(unit 1)
 				)
 			)
@@ -5783,7 +5783,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7502ec07-83d0-46ba-86e7-6fc5da5007b7")
-		(property "Reference" "#PWR0115"
+		(property "Reference" "#PWR0111"
 			(at 234.95 149.86 0)
 			(hide yes)
 			(show_name no)
@@ -5843,7 +5843,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0115")
+					(reference "#PWR0111")
 					(unit 1)
 				)
 			)
@@ -6156,7 +6156,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b047b5db-2a85-430c-b55b-13b355195b03")
-		(property "Reference" "#PWR0104"
+		(property "Reference" "#PWR0108"
 			(at 106.68 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -6216,7 +6216,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0104")
+					(reference "#PWR0108")
 					(unit 1)
 				)
 			)
@@ -6233,7 +6233,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "be0afac2-90b3-44ee-9ced-7c8d2f910c8b")
-		(property "Reference" "C110"
+		(property "Reference" "C105"
 			(at 243.332 148.336 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6297,7 +6297,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "C110")
+					(reference "C105")
 					(unit 1)
 				)
 			)
@@ -6314,7 +6314,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d223799e-8c64-428a-91b0-61cc6ad68f63")
-		(property "Reference" "C109"
+		(property "Reference" "C104"
 			(at 235.458 148.844 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6378,7 +6378,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "C109")
+					(reference "C104")
 					(unit 1)
 				)
 			)
@@ -6396,7 +6396,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d25eb383-7686-474b-b402-1dcc976772cc")
-		(property "Reference" "U103"
+		(property "Reference" "U102"
 			(at 178.1967 105.41 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6532,7 +6532,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "U103")
+					(reference "U102")
 					(unit 1)
 				)
 			)
@@ -6549,7 +6549,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "da6cf5c5-40c7-43a0-a04f-2f217606387a")
-		(property "Reference" "R102"
+		(property "Reference" "R103"
 			(at 147.828 144.78 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6611,7 +6611,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "R102")
+					(reference "R103")
 					(unit 1)
 				)
 			)
@@ -6629,7 +6629,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "dcf784b1-83eb-4359-b5c3-abd08824fc0d")
-		(property "Reference" "#PWR0113"
+		(property "Reference" "#PWR0107"
 			(at 219.71 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -6689,7 +6689,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "#PWR0113")
+					(reference "#PWR0107")
 					(unit 1)
 				)
 			)
@@ -6707,7 +6707,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "df35d18c-16b6-4f12-aa27-43fd1a6f8d55")
-		(property "Reference" "C105"
+		(property "Reference" "C103"
 			(at 211.074 106.68 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6769,7 +6769,7 @@
 		(instances
 			(project "UART 02 DMA TX"
 				(path "/d3b5dd27-4845-413f-badb-7f64f7fb8d77"
-					(reference "C105")
+					(reference "C103")
 					(unit 1)
 				)
 			)

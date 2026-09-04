@@ -473,7 +473,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "I2C 01 Module Master.kicad_pro",
+    "filename": "I2C 02 Module Host.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -522,8 +522,8 @@
   "schematic": {
     "annotate_start_num": 0,
     "annotation": {
-      "method": 0,
-      "sort_order": 0
+      "method": 1,
+      "sort_order": 1
     },
     "bom_export_filename": "${PROJECTNAME}.csv",
     "bom_fmt_presets": [],
@@ -640,12 +640,12 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "I2C 01 Module Master.kicad_sch",
+        "filename": "I2C 02 Module Master.kicad_sch",
         "name": "I2C 01 Module Master",
         "uuid": "5eab76fb-ada6-45ba-98e5-e02a58866275"
       }
     ],
-    "used_designators": "",
+    "used_designators": "D101-102,#PWR101-119,C101-105,BAR101,R101-104,J101-102,RN101,SW101,U101-103",
     "variants": []
   },
   "sheets": [

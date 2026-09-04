@@ -5809,7 +5809,7 @@
 		)
 		(uuid "55ff0040-2edc-40fd-8de0-3d53e21435ac")
 	)
-	(text "I had 10 LED bar displays and \nused the first 8.  Discrete LEDs\ncould also be used.  I also used\na Bourns 4116R-1-331 (330 ohm) \nresistor pack DIP.  Individual \nresistors can also be used.  A \nDIP switch is shown, but individual\njumpers to ground could be used\ninstead."
+	(text "I had 10 LED bar displays and used the first 8.\nDiscrete LEDs could be used instead.  I also used\na Bourns 4116R-1-331 (330 ohm) resistor pack DIP.\nIndividual resistors could be used instead.  A \nDIP switch is shown, but individual jumpers to \nground (for bits you want to turn \"On\") could be\nused instead."
 		(exclude_from_sim no)
 		(at 223.266 77.216 0)
 		(effects
@@ -8124,7 +8124,7 @@
 			(uuid "01c6494b-3ea7-4c12-9784-7b360d274608")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "D102")
 					(unit 1)
@@ -8143,7 +8143,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1596bd8d-769e-4988-9b3e-53b4b4de08c3")
-		(property "Reference" "#PWR0117"
+		(property "Reference" "#PWR0114"
 			(at 236.22 139.7 0)
 			(hide yes)
 			(show_name no)
@@ -8201,9 +8201,9 @@
 			(uuid "85cc652b-a08d-4ba3-98c8-1c12eeaf67e4")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0117")
+					(reference "#PWR0114")
 					(unit 1)
 				)
 			)
@@ -8220,7 +8220,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "17013858-1c2c-4b29-95b5-6be5fdd390eb")
-		(property "Reference" "#PWR0106"
+		(property "Reference" "#PWR0107"
 			(at 111.76 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -8278,9 +8278,9 @@
 			(uuid "e0cfd2c7-1968-4174-997b-e97b8b55a277")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0106")
+					(reference "#PWR0107")
 					(unit 1)
 				)
 			)
@@ -8359,7 +8359,7 @@
 			(uuid "c9bb861a-b767-4fb8-b0de-4ae1f94057cc")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C102")
 					(unit 1)
@@ -8437,7 +8437,7 @@
 			(uuid "b1cad2d5-ccce-4bd8-a492-bd7a06399009")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "#PWR0101")
 					(unit 1)
@@ -8456,7 +8456,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1fe433ab-585f-4c84-a38e-593e20618699")
-		(property "Reference" "#PWR0116"
+		(property "Reference" "#PWR0118"
 			(at 232.41 162.56 0)
 			(hide yes)
 			(show_name no)
@@ -8514,9 +8514,9 @@
 			(uuid "3423853f-c2fb-4b44-b2df-034e089b47de")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0116")
+					(reference "#PWR0118")
 					(unit 1)
 				)
 			)
@@ -8534,7 +8534,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "21857503-4ed3-43b8-ac09-b2cb7f8117ab")
-		(property "Reference" "#PWR0114"
+		(property "Reference" "#PWR0117"
 			(at 220.98 153.67 0)
 			(hide yes)
 			(show_name no)
@@ -8592,9 +8592,9 @@
 			(uuid "b5110850-7a3e-45d9-9020-e5d4fef9b8bb")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0114")
+					(reference "#PWR0117")
 					(unit 1)
 				)
 			)
@@ -8683,7 +8683,7 @@
 			(uuid "8a21586d-aefa-4fcb-83a4-446d5e4c4504")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "J101")
 					(unit 1)
@@ -8703,7 +8703,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "29ddbc43-34a6-45ce-aa41-8cdcf4ad55a3")
-		(property "Reference" "#PWR0102"
+		(property "Reference" "#PWR0104"
 			(at 39.37 49.53 0)
 			(hide yes)
 			(show_name no)
@@ -8761,9 +8761,9 @@
 			(uuid "0dd67a1b-978c-4dd8-8b82-112fdf29114b")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0102")
+					(reference "#PWR0104")
 					(unit 1)
 				)
 			)
@@ -8781,7 +8781,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2aee0f42-86aa-43b7-a3fc-6ee30c3c1ba7")
-		(property "Reference" "#PWR0103"
+		(property "Reference" "#PWR0105"
 			(at 104.14 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -8839,9 +8839,9 @@
 			(uuid "8c86baf7-4508-4bf1-a205-6b350e93adbd")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0103")
+					(reference "#PWR0105")
 					(unit 1)
 				)
 			)
@@ -8859,7 +8859,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3c106b1f-4810-4889-8fe9-4c9578368d8c")
-		(property "Reference" "#PWR0108"
+		(property "Reference" "#PWR0119"
 			(at 175.26 165.1 0)
 			(hide yes)
 			(show_name no)
@@ -8917,9 +8917,9 @@
 			(uuid "1e603256-d571-41c7-b6b8-5ac627b4968d")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0108")
+					(reference "#PWR0119")
 					(unit 1)
 				)
 			)
@@ -8936,7 +8936,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "420e71eb-0baf-4dc0-91b7-f0122a17b171")
-		(property "Reference" "#PWR0109"
+		(property "Reference" "#PWR0111"
 			(at 177.8 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -8994,9 +8994,9 @@
 			(uuid "87ddfb8e-ccdd-492b-b4f9-6f17b2b9de21")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0109")
+					(reference "#PWR0111")
 					(unit 1)
 				)
 			)
@@ -9014,7 +9014,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "444d3dcc-22f8-4119-807d-fead9f51f2ad")
-		(property "Reference" "#PWR0107"
+		(property "Reference" "#PWR0115"
 			(at 138.43 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -9072,9 +9072,9 @@
 			(uuid "c5a4f2fc-74a3-4b83-b925-a54374564508")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0107")
+					(reference "#PWR0115")
 					(unit 1)
 				)
 			)
@@ -9092,7 +9092,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "44eb4a0d-aeba-4034-8338-d5bb95960e1a")
-		(property "Reference" "R103"
+		(property "Reference" "R101"
 			(at 223.52 128.2699 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9154,9 +9154,9 @@
 			(uuid "9ea68326-a057-4f5b-b2ed-d0d537e98cb1")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R103")
+					(reference "R101")
 					(unit 1)
 				)
 			)
@@ -9244,7 +9244,7 @@
 			(uuid "16623f67-e322-44d6-b051-bcf8024b3dee")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "D101")
 					(unit 1)
@@ -9325,7 +9325,7 @@
 			(uuid "b1b9a0dd-3bf9-4006-884e-560c85c752c3")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "C101")
 					(unit 1)
@@ -9344,7 +9344,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "68109c31-2d4f-4e0d-a46b-e9fcdeae9847")
-		(property "Reference" "#PWR0112"
+		(property "Reference" "#PWR0109"
 			(at 156.21 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -9402,9 +9402,9 @@
 			(uuid "a41aced8-723b-4570-9cb1-e717b3b0d397")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0112")
+					(reference "#PWR0109")
 					(unit 1)
 				)
 			)
@@ -9421,7 +9421,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6b14b7ce-2b6c-48a6-8d3d-51db86219c85")
-		(property "Reference" "#PWR0105"
+		(property "Reference" "#PWR0106"
 			(at 111.76 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -9479,9 +9479,9 @@
 			(uuid "6954f414-a480-46a8-ac77-789ab5ce9bc0")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0105")
+					(reference "#PWR0106")
 					(unit 1)
 				)
 			)
@@ -9498,7 +9498,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6e219d52-5434-4bae-ba7a-1d8880f7d87e")
-		(property "Reference" "R101"
+		(property "Reference" "R102"
 			(at 145.542 133.096 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9558,9 +9558,9 @@
 			(uuid "e382acfb-6bb1-49f6-8fc9-cc7ce1015267")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R101")
+					(reference "R102")
 					(unit 1)
 				)
 			)
@@ -9640,7 +9640,7 @@
 			(uuid "58295e2f-0e89-418b-9f6d-81c37e27458e")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "R104")
 					(unit 1)
@@ -9659,7 +9659,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "72b61c08-9371-4958-9143-d3ff142f01a3")
-		(property "Reference" "#PWR0111"
+		(property "Reference" "#PWR0110"
 			(at 177.8 95.25 0)
 			(hide yes)
 			(show_name no)
@@ -9717,9 +9717,9 @@
 			(uuid "26d1508c-2f1b-49cd-889a-ac7a543a3427")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0111")
+					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
@@ -9736,7 +9736,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7502ec07-83d0-46ba-86e7-6fc5da5007b7")
-		(property "Reference" "#PWR0115"
+		(property "Reference" "#PWR0116"
 			(at 232.41 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -9794,9 +9794,9 @@
 			(uuid "f0784c50-be2a-44f7-8e76-0bd8079ec0fb")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0115")
+					(reference "#PWR0116")
 					(unit 1)
 				)
 			)
@@ -9883,7 +9883,7 @@
 			(uuid "2e120da4-8403-44f7-8087-6a3ae6576c6d")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "J102")
 					(unit 1)
@@ -9903,7 +9903,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9f1e022c-90e7-4faf-b39a-b715d73b947d")
-		(property "Reference" "U101"
+		(property "Reference" "U102"
 			(at 80.01 44.45 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10089,9 +10089,9 @@
 			(uuid "7f4af101-21ed-4a9e-b7f4-7a2088390afc")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "U101")
+					(reference "U102")
 					(unit 1)
 				)
 			)
@@ -10109,7 +10109,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b047b5db-2a85-430c-b55b-13b355195b03")
-		(property "Reference" "#PWR0104"
+		(property "Reference" "#PWR0113"
 			(at 104.14 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -10167,9 +10167,9 @@
 			(uuid "45262e46-97b8-4b5b-959f-99d5568ec56b")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0104")
+					(reference "#PWR0113")
 					(unit 1)
 				)
 			)
@@ -10186,7 +10186,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "be0afac2-90b3-44ee-9ced-7c8d2f910c8b")
-		(property "Reference" "C110"
+		(property "Reference" "C105"
 			(at 240.792 145.796 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10248,9 +10248,9 @@
 			(uuid "6f8f03af-f5d3-42ee-8866-b15d594e30a7")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "C110")
+					(reference "C105")
 					(unit 1)
 				)
 			)
@@ -10267,7 +10267,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "be7e82b0-017c-409e-9ff3-91f303a7519b")
-		(property "Reference" "#PWR0119"
+		(property "Reference" "#PWR0103"
 			(at 246.38 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -10325,9 +10325,9 @@
 			(uuid "780f1853-dd83-467e-a12f-f1d24054467a")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0119")
+					(reference "#PWR0103")
 					(unit 1)
 				)
 			)
@@ -10459,7 +10459,7 @@
 			(uuid "ab7938b7-d9d9-4d34-92f6-0361deef246b")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "BAR101")
 					(unit 1)
@@ -10478,7 +10478,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c9feb2ef-cea5-4e6a-8583-2cec6bd0efde")
-		(property "Reference" "#PWR0110"
+		(property "Reference" "#PWR0102"
 			(at 177.8 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -10536,9 +10536,9 @@
 			(uuid "04b25a22-dc36-45f8-9e01-2eb979e2a34c")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0110")
+					(reference "#PWR0102")
 					(unit 1)
 				)
 			)
@@ -10658,7 +10658,7 @@
 			(uuid "fb1695fc-7a88-463a-831f-447898af177d")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "RN101")
 					(unit 1)
@@ -10677,7 +10677,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d223799e-8c64-428a-91b0-61cc6ad68f63")
-		(property "Reference" "C109"
+		(property "Reference" "C104"
 			(at 232.918 146.304 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10739,9 +10739,9 @@
 			(uuid "2b59259a-dd89-4ecd-9783-63ab4dc9fd05")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "C109")
+					(reference "C104")
 					(unit 1)
 				)
 			)
@@ -10893,7 +10893,7 @@
 			(uuid "fe133c98-969a-4eb9-bfe3-c5191f6550ef")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "U103")
 					(unit 1)
@@ -10912,7 +10912,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d9958631-d9b6-432a-9c0f-f7d2de703478")
-		(property "Reference" "#PWR0118"
+		(property "Reference" "#PWR0108"
 			(at 217.17 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -10970,9 +10970,9 @@
 			(uuid "adf07ddb-93a0-4f5c-b6fa-78bbb0b12dc3")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0118")
+					(reference "#PWR0108")
 					(unit 1)
 				)
 			)
@@ -10989,7 +10989,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "da6cf5c5-40c7-43a0-a04f-2f217606387a")
-		(property "Reference" "R102"
+		(property "Reference" "R103"
 			(at 145.288 142.24 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11049,9 +11049,9 @@
 			(uuid "326d1c27-7f9d-4667-aa86-a8e99ca359b3")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "R102")
+					(reference "R103")
 					(unit 1)
 				)
 			)
@@ -11069,7 +11069,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "dcf784b1-83eb-4359-b5c3-abd08824fc0d")
-		(property "Reference" "#PWR0113"
+		(property "Reference" "#PWR0112"
 			(at 217.17 119.38 0)
 			(hide yes)
 			(show_name no)
@@ -11127,9 +11127,9 @@
 			(uuid "f69d8aed-1b03-4f2e-b4da-4392e5659e57")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "#PWR0113")
+					(reference "#PWR0112")
 					(unit 1)
 				)
 			)
@@ -11147,7 +11147,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "df35d18c-16b6-4f12-aa27-43fd1a6f8d55")
-		(property "Reference" "C105"
+		(property "Reference" "C103"
 			(at 208.534 104.14 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11207,9 +11207,9 @@
 			(uuid "b2df6edb-24a6-4fb1-b7aa-efcc627f7c6e")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "C105")
+					(reference "C103")
 					(unit 1)
 				)
 			)
@@ -11328,7 +11328,7 @@
 			(uuid "f0550d12-56b0-44f8-a971-bbfc74e9f8fd")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
 					(reference "SW101")
 					(unit 1)
@@ -11348,7 +11348,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f85c7909-7186-4231-9bc1-7d287dcf8b41")
-		(property "Reference" "U102"
+		(property "Reference" "U101"
 			(at 179.9433 30.48 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11490,9 +11490,9 @@
 			(uuid "ed8d982e-5217-4a7b-a476-5c7c96e76a85")
 		)
 		(instances
-			(project "I2C 01 Module Master"
+			(project "I2C 02 Module Master"
 				(path "/5eab76fb-ada6-45ba-98e5-e02a58866275"
-					(reference "U102")
+					(reference "U101")
 					(unit 1)
 				)
 			)
