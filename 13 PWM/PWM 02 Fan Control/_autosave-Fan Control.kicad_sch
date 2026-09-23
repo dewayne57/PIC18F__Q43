@@ -3923,7 +3923,7 @@
 	)
 	(text "Use pull-up on pin."
 		(exclude_from_sim no)
-		(at 112.776 141.478 0)
+		(at 108.966 141.478 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3942,9 +3942,9 @@
 		)
 		(uuid "17b524ce-7876-4bac-a558-d5927ce7f91f")
 	)
-	(text "Configured as open drain. "
+	(text "Configured as open drain output,\nthe fan will pull up this pin. "
 		(exclude_from_sim no)
-		(at 112.776 146.558 0)
+		(at 109.22 147.828 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3964,12 +3964,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3414459e-53b1-4f00-9aa1-e5f54566c757")
-	)
-	(junction
-		(at 160.02 144.78)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "4fc7a4ee-9fb3-429c-975a-e2eceb9031a9")
 	)
 	(junction
 		(at 134.62 208.28)
@@ -4240,16 +4234,6 @@
 			(type default)
 		)
 		(uuid "20625777-b3de-4c48-886c-9393a858e8e9")
-	)
-	(wire
-		(pts
-			(xy 160.02 129.54) (xy 160.02 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "25cd8976-ec75-465f-99b9-344c15db38be")
 	)
 	(wire
 		(pts
@@ -4543,16 +4527,6 @@
 	)
 	(wire
 		(pts
-			(xy 160.02 139.7) (xy 160.02 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6b78e4c5-3338-4de6-8e28-cf6375d5e807")
-	)
-	(wire
-		(pts
 			(xy 102.87 175.26) (xy 130.81 175.26)
 		)
 		(stroke
@@ -4723,7 +4697,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 144.78) (xy 160.02 144.78)
+			(xy 60.96 144.78) (xy 172.72 144.78)
 		)
 		(stroke
 			(width 0)
@@ -5110,16 +5084,6 @@
 			(type default)
 		)
 		(uuid "de20311d-6e9e-43e1-b7b1-c426ef626fac")
-	)
-	(wire
-		(pts
-			(xy 160.02 144.78) (xy 172.72 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "de709e83-07e3-4a0f-896b-c2c3b7b305b9")
 	)
 	(wire
 		(pts
@@ -5877,83 +5841,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 160.02 129.54 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "395bcab9-a952-4e63-b5fa-4d8a42791213")
-		(property "Reference" "#PWR0109"
-			(at 160.02 133.35 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 160.274 125.984 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 160.02 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 160.02 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 160.02 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c4d1d255-002c-4da2-99a4-d7b6f570a74f")
-		)
-		(instances
-			(project "Fan Control"
-				(path "/badc57c4-ca21-4b51-becd-f0bffd352e4b"
-					(reference "#PWR0109")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 135.89 60.96 0)
 		(unit 1)
@@ -6102,88 +5989,6 @@
 			(project "Fan Control"
 				(path "/badc57c4-ca21-4b51-becd-f0bffd352e4b"
 					(reference "#PWR0107")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R_US")
-		(at 160.02 135.89 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "52b1464a-6d96-4162-aa48-9606cbf74067")
-		(property "Reference" "R107"
-			(at 162.56 134.6199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10K"
-			(at 162.56 137.1599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 161.036 136.144 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 160.02 135.89 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Resistor, US symbol"
-			(at 160.02 135.89 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "d2f3a090-13f4-4b9c-9493-4ef8a662a2cb")
-		)
-		(pin "1"
-			(uuid "4af21b0c-3008-49b3-bd16-2a73f8a2ef0d")
-		)
-		(instances
-			(project "Fan Control"
-				(path "/badc57c4-ca21-4b51-becd-f0bffd352e4b"
-					(reference "R107")
 					(unit 1)
 				)
 			)
