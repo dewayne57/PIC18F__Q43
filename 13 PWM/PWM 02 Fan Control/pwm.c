@@ -19,9 +19,10 @@
  ***************************************************************************************** */
 
 #include <xc.h>
+#include <stdbool.h>
 #include "config.h"
 #include "pwm.h"
-#include <stdbool.h>
+
 
 /// @brief Wait for any pending PWM load operation to complete.
 /// @param None.
@@ -52,7 +53,7 @@ static long CalculateDutyPeriod(PWM_Handle *handle, uint16_t dutyPercent)
         return handle->Period; // Invalid duty cycle, return total period time (100%)
     }
 
-    return (uint16_t)((((uint32_t)handle->Period *
+    return (uint16_t)(((((uint32_t)handle->Period + 1) *
                         (uint32_t)dutyPercent) +
                        50UL) /
                       100UL);
@@ -80,7 +81,16 @@ PWM_Status PWM_Open(PWM_Handle *handle, uint32_t frequency, uint16_t dutyPercent
         return PWM_SUCCESS;
     }
 
-    PWM1CONbits.EN = 0; // Disable the PWM module
+    if (frequency == 0)
+    {
+        return PWM_ERROR;
+    }
+    if (dutyPercent < 0 || dutyPercent > 100)
+    {
+        return PWM_ERROR;
+    }   
+
+    // Initialize the PWM handle structure with the provided frequency and duty cycle.
     handle->Signature = PWM_SIGNATURE;
     handle->Initialized = false;
     handle->Enabled = false;
@@ -90,10 +100,18 @@ PWM_Status PWM_Open(PWM_Handle *handle, uint32_t frequency, uint16_t dutyPercent
     // Calculate the period corresponding to the desired frequency assuming a duty cycle of
     // 100% initially.  This is the total period time of the PWM signal.  The duty cycle
     // can then be adjusted at any time.
-    handle->Period = (long)(handle->ClockFrequency / handle->Frequency);
+    uint32_t periodClocks = handle->ClockFrequency / frequency;
+    if (periodClocks == 0UL || periodClocks > 65535UL)
+    {
+        return PWM_ERROR;
+    }
+    handle->Period = periodClocks - 1UL;
 
     // Calculate the initial duty value based on the desired duty cycle percentage
     handle->DutyValue = CalculateDutyPeriod(handle, dutyPercent);
+
+    // Disable the PWM module before configuring it.
+    PWM1CONbits.EN = 0; // Disable the PWM module
 
     PWM1ERS = 0x00;                  // Disable external reset source
     PWM1CLK = 0x03;                  // Set the PWM clock source to HFINTOSC
@@ -104,14 +122,16 @@ PWM_Status PWM_Open(PWM_Handle *handle, uint32_t frequency, uint16_t dutyPercent
     PWM1PIPOS = 0x00;                // Set the PWM Period Interrupt Postscaler Register to 1:1
     PWM1GIE = 0x00;                  // Disable the PWM global interrupt
     PWM1CON = 0x00;                  // Reset all PWM control bits
-    PWM1SACFGbits.POL2 = 0;          // Paramter 2 polarity is active high
-    PWM1SACFGbits.POL1 = 0;          // Paramter 1 polarity is active high
-    PWM1SACFGbits.PPEN = 0;          // Push-pull mode disabled
-    PWM1SACFGbits.MODE = 0x00;       // Left aligned mode
-    PWM1SAP1H = 0x00;                // Clear Slice A parameter 1 high register
-    PWM1SAP1L = 0x00;                // Clear Slice A parameter 1 low register
-    PWM1SAP2H = 0x00;                // Clear Slice A parameter 2 high register
-    PWM1SAP2L = 0x00;                // Clear Slice A parameter 2 low register
+    PWM1S1CFGbits.POL2 = 0;          // Paramter 2 polarity is active high
+    PWM1S1CFGbits.POL1 = 0;          // Paramter 1 polarity is active high
+    PWM1S1CFGbits.PPEN = 0;          // Push-pull mode disabled
+    PWM1S1CFGbits.MODE = 0x00;       // Left aligned mode
+    PWM1S1P1H = 0x00;                // Clear Slice A parameter 1 high register
+    PWM1S1P1L = 0x00;                // Clear Slice A parameter 1 low register
+    PWM1S1P2H = 0x00;                // Clear Slice A parameter 2 high register
+    PWM1S1P2L = 0x00;                // Clear Slice A parameter 2 low register
+
+    // Enable the PWM module and mark the handle as initialized and enabled.
     PWM1CONbits.EN = 1;              // Enable the PWM module
     handle->Initialized = true;      // Mark the handle as initialized
     handle->Enabled = true;          // Mark the handle as enabled
@@ -147,7 +167,7 @@ PWM_Status PWM_Close(PWM_Handle *handle)
 /// @param dutyPercent Duty cycle percentage (0-100).  Note, if the value is outside this range,
 /// an error response is generated and the current duty cycle remains unchanged.
 /// @return PWM_SUCCESS if the duty cycle was successfully updated, PWM_ERROR otherwise.
-PWM_Status PWM_SetDuty(PWM_Handle *handle, int dutyPercent)
+PWM_Status PWM_SetDuty(PWM_Handle *handle, uint16_t dutyPercent)
 {
     if (handle == NULL)
     {
@@ -163,15 +183,18 @@ PWM_Status PWM_SetDuty(PWM_Handle *handle, int dutyPercent)
     {
         return PWM_ERROR;
     }
+    if (!handle->Enabled) {
+        return PWM_ERROR;
+    }
 
     handle->DutyPercent = dutyPercent;
-    handle->DutyValue = CalculateDutyPeriod(handle->Period, dutyPercent);
+    handle->DutyValue = CalculateDutyPeriod(handle, dutyPercent);
 
     WaitForPendingLoad();
 
     // Update the PWM hardware registers accordingly
-    PWM1SAP1H = (handle->DutyValue >> 8) & 0xFF;
-    PWM1SAP1L = handle->DutyValue & 0xFF;
+    PWM1S1P1H = (handle->DutyValue >> 8) & 0xFF;
+    PWM1S1P1L = handle->DutyValue & 0xFF;
 
     // Set the load bit to cause the new duty cycle to take effect
     PWM1CONbits.LD = 1;

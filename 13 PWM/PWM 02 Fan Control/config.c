@@ -96,12 +96,11 @@ void SYSTEM_Initialize(void)
     TRISCbits.TRISC2 = 0; // Fan PWM output (Open Drain) inverted
     ANSELC = 0x00;        // All digital
     LATC = 0x00;
-    ODCONC = 0x00;       // No open-drain
-    ODCONCbits.ODC2 = 1; // Set RC2 as open-drain
-    WPUC = 0x00;         // Weak pull-ups disabled on all pins
-    WPUCbits.WPUC2 = 0;  // Disable weak pull-up on RC2
-    SLRCONC = 0x00;      // No slew rate control
-    INLVLC = 0x00;       // TTL input levels
+    ODCONC = 0x00;        // No open-drain
+    ODCONCbits.ODCC2 = 1; // Set RC2 as open-drain
+    WPUCbits.WPUC0 = 1;   // Enable weak pull-up on RC0
+    SLRCONC = 0x00;       // No slew rate control
+    INLVLC = 0x00;        // TTL input levels
 
     // Set up port D
     //
@@ -120,8 +119,8 @@ void SYSTEM_Initialize(void)
     PMD0bits.SYSCMD = 0; // System clock network enabled
     PMD1bits.TMR0MD = 0; // Timer 0 module enabled
     PMD5bits.PWM1MD = 0; // PWM 1 module enabled
-    PMD5bits.CC1MD = 0; // Capture/Compare 1 module enabled
-    PMD6bits.U1MD = 0; // UART 1 enabled
+    PMD5bits.CCP1MD = 0; // Capture/Compare 1 module enabled
+    PMD6bits.U1MD = 0;   // UART 1 enabled
 
     /* Setup RB0 (TxD) and RB1 (RxD) for UART usage */
     TRISBbits.TRISB0 = 0;
@@ -132,6 +131,7 @@ void SYSTEM_Initialize(void)
     PPS_Unlock();
     RB0PPS = 0x20;
     U1RXPPS = 0x09;
+    RC2PPS = 0x18; // PWM1 slice 1, parameter 1 output
     PPS_Lock();
 
     /* Global interrupt enable. */
