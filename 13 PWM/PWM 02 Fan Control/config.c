@@ -118,6 +118,7 @@ void SYSTEM_Initialize(void)
      */
     PMD0bits.SYSCMD = 0; // System clock network enabled
     PMD1bits.TMR0MD = 0; // Timer 0 module enabled
+    PMD1bits.TMR1MD = 0; // Timer 1 counts fan tach pulses
     PMD5bits.PWM1MD = 0; // PWM 1 module enabled
     PMD5bits.CCP1MD = 0; // Capture/Compare 1 module enabled
     PMD6bits.U1MD = 0;   // UART 1 enabled
@@ -132,7 +133,19 @@ void SYSTEM_Initialize(void)
     RB0PPS = 0x20;
     U1RXPPS = 0x09;
     RC2PPS = 0x18; // PWM1 slice 1, parameter 1 output
+    T1CKIPPS = 0x10; // RC0 -> Timer 1 external clock (fan tach)
     PPS_Lock();
+
+    // Count rising tach edges, synchronized to the system clock, prescaler 1:1.
+    // Leave the counter stopped until the measurement window starts.
+    T1CON = 0x00;
+    T1CONbits.RD16 = 1;
+    T1GCON = 0x00; // Gate disabled
+    T1CLK = 0x00;  // External clock from T1CKIPPS
+    TMR1H = 0;
+    TMR1L = 0;
+    PIE3bits.TMR1IE = 0;
+    PIR3bits.TMR1IF = 0;
 
     /* Global interrupt enable. */
     INTCON0bits.GIE = 1;

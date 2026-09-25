@@ -54,11 +54,52 @@ uart_handle_t console_uart = {
 
 PWM_Handle pwm_handle;
 
+/// @brief Change speed, report RPM after two seconds, and finish the five-second step.
+static void Fan_SetSpeedAndReport(uint16_t duty_cycle)
+{
+     uint16_t pulses;
+     uint8_t count_low;
+     uint32_t rpm;
+
+     printf("Setting duty cycle to %u%%... ", duty_cycle);
+     if (PWM_SetDuty(&pwm_handle, duty_cycle) != PWM_SUCCESS)
+     {
+          printf("%sUnable to set fan duty cycle.%s", CRLF, CRLF);
+          return;
+     }
+
+     // Let the fan settle for two seconds, then count during the third second.
+     __delay_ms(2000);
+     T1CONbits.ON = 0;
+     TMR1H = 0;
+     TMR1L = 0; // RD16 commits the high and low bytes together.
+     PIR3bits.TMR1IF = 0;
+     T1CONbits.ON = 1;
+     __delay_ms(1000);
+     T1CONbits.ON = 0;
+
+     // Read low first to latch the high byte when RD16 is enabled.
+     count_low = TMR1L;
+     pulses = ((uint16_t)TMR1H << 8) | count_low;
+     if (PIR3bits.TMR1IF)
+     {
+          printf("Fan tach counter overflow.%s", CRLF);
+     }
+     else
+     {
+          rpm = ((uint32_t)pulses * 60UL) / FAN_TACH_PULSES_PER_REVOLUTION;
+          printf("Fan speed: %lu RPM%s", (unsigned long)rpm, CRLF);
+     }
+
+     // Wait for the remainder of the ten-second step.
+     for (int i = 0; i < 7; i++)
+     {
+          __delay_ms(1000);
+     }
+}
+
 /// @brief Main entry point of the application.
-/// This function initializes the system, sets up the UART for debugging, and 
-/// enters an infinite loop.  Diagnostic output to the UART echoing the state 
-/// of the switch input is printed whenever an IOC event occurs on the configured 
-/// pin.  This diagnostic is generated in the IOC interrupt handler in ioc.c.
+/// Initializes PWM and the UART console, then ramps fan duty and reports RPM.
 /// @param  None
 /// @return None
 void main(void)
@@ -89,23 +130,11 @@ void main(void)
      {
           for (uint16_t duty_cycle = 0; duty_cycle <= 100; duty_cycle += 10)
           {
-               printf("Setting duty cycle to %u%%%s", duty_cycle, CRLF);
-               PWM_SetDuty(&pwm_handle, duty_cycle);
-               __delay_ms(1000);
-               __delay_ms(1000);
-               __delay_ms(1000);
-               __delay_ms(1000);
-               __delay_ms(1000);
+               Fan_SetSpeedAndReport(duty_cycle);
           }
           for (uint16_t duty_cycle = 90; duty_cycle > 0; duty_cycle -= 10)
           {
-               printf("Setting duty cycle to %u%%%s", duty_cycle, CRLF);
-               PWM_SetDuty(&pwm_handle, duty_cycle);
-               __delay_ms(1000);
-               __delay_ms(1000);
-               __delay_ms(1000);
-               __delay_ms(1000);
-               __delay_ms(1000);
+               Fan_SetSpeedAndReport(duty_cycle);
           }
      }
 }

@@ -57,6 +57,12 @@
 
 #define CRLF "\r\n"
 
+// Adjust to match the fan's tach output specification.
+#define FAN_TACH_PULSES_PER_REVOLUTION 2U
+#if FAN_TACH_PULSES_PER_REVOLUTION == 0
+#error "FAN_TACH_PULSES_PER_REVOLUTION must be greater than zero"
+#endif
+
 void SYSTEM_Initialize(void);
 
 #endif /* CONFIG_H */
